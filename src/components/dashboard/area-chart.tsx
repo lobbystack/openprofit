@@ -1,15 +1,18 @@
-import { MONTHS } from "./mock-data";
+import { monthLabel } from "#/lib/format";
 
 // Hand-rolled SVG area chart. Current period solid, previous period dotted.
 export function AreaChart({
 	data,
 	previous,
+	months = [],
 	height = 260,
 	tone = "ink",
 	compact = false,
 }: {
 	data: number[];
 	previous?: number[];
+	// YYYY-MM per point, for the x axis.
+	months?: string[];
 	height?: number;
 	tone?: "ink" | "positive" | "negative";
 	compact?: boolean;
@@ -113,7 +116,7 @@ export function AreaChart({
 				vectorEffect="non-scaling-stroke"
 			/>
 			{!compact &&
-				MONTHS.map((m, i) =>
+				months.map((m, i) =>
 					i % 2 === 1 ? (
 						<text
 							key={m}
@@ -124,7 +127,7 @@ export function AreaChart({
 							fontFamily="var(--font-mono)"
 							fill="var(--text-3)"
 						>
-							{m}
+							{monthLabel(m)}
 						</text>
 					) : null,
 				)}

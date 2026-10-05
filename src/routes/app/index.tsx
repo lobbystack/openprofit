@@ -5,10 +5,15 @@ import {
 	OverviewBreakdowns,
 	OverviewCard,
 } from "#/components/dashboard/overview";
+import { getOverview } from "#/server/overview.functions";
 
-export const Route = createFileRoute("/app/")({ component: Overview });
+export const Route = createFileRoute("/app/")({
+	loader: () => getOverview(),
+	component: Overview,
+});
 
 function Overview() {
+	const data = Route.useLoaderData();
 	return (
 		<>
 			<PageHeader title="Overview" meta="All products">
@@ -17,16 +22,12 @@ function Overview() {
 					This month
 					<ChevronDown size={13} className="text-text-3" />
 				</Control>
-				<Control muted>
-					<span className="h-1.5 w-1.5 rounded-full bg-positive" />
-					Synced 4 min ago
-				</Control>
 			</PageHeader>
 			<div className="mt-4">
-				<OverviewCard />
+				<OverviewCard data={data} />
 			</div>
 			<div className="mt-4">
-				<OverviewBreakdowns full />
+				<OverviewBreakdowns data={data} full />
 			</div>
 		</>
 	);

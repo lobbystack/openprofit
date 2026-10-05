@@ -11,7 +11,12 @@ import {
 } from "lucide-react";
 import { AreaChart } from "../dashboard/area-chart";
 import { MetricRow } from "../dashboard/metric-row";
-import { COSTS_BY_PROVIDER, money, SERIES } from "../dashboard/mock-data";
+import {
+	COSTS_BY_PROVIDER,
+	MOCK_OVERVIEW,
+	money,
+	SERIES,
+} from "../dashboard/mock-data";
 import { PROVIDERS, type ProviderId, ProviderLogo } from "../provider-logo";
 import { Container, Section, SectionHeader, Triplet } from "./primitives";
 
@@ -36,11 +41,12 @@ export function FeatureProfit() {
 					</SectionHeader>
 				</div>
 				<div className="mt-14 rounded-xl border border-line bg-card">
-					<MetricRow selected="profit" />
+					<MetricRow data={MOCK_OVERVIEW} selected="profit" />
 					<div className="border-t border-line px-3 pt-4 pb-2">
 						<AreaChart
 							data={SERIES.profit}
 							previous={previous}
+							months={MOCK_OVERVIEW.months}
 							tone="positive"
 							height={240}
 						/>

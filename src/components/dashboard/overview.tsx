@@ -1,38 +1,38 @@
 import { useState } from "react";
+import { money } from "#/lib/format";
+import type { MetricKey, OverviewData } from "#/lib/overview";
 import { PROVIDERS, type ProviderId, ProviderLogo } from "../provider-logo";
 import { AreaChart } from "./area-chart";
 import { BreakdownCard } from "./breakdown-card";
 import { MetricRow } from "./metric-row";
-import {
-	COSTS_BY_PROVIDER,
-	type MetricKey,
-	PRODUCTS,
-	REVENUE_BY_SOURCE,
-	SERIES,
-} from "./mock-data";
 
 // Metric tiles over one chart. The selected tile drives the chart.
 export function OverviewCard({
+	data,
 	interactive = true,
 	chartHeight = 240,
 }: {
+	data: OverviewData;
 	interactive?: boolean;
 	chartHeight?: number;
 }) {
 	const [metric, setMetric] = useState<MetricKey>("profit");
-	const previous = SERIES[metric].map((v) => Math.round(v * 0.88));
+	const series = data.series[metric];
+	const previous = series.map((v) => Math.round(v * 0.88));
 	const tone =
 		metric === "costs" ? "negative" : metric === "profit" ? "positive" : "ink";
 	return (
 		<div className="rounded-xl border border-line bg-card">
 			<MetricRow
+				data={data}
 				selected={metric}
 				onSelect={interactive ? setMetric : undefined}
 			/>
 			<div className="border-t border-line px-3 pt-4 pb-2">
 				<AreaChart
-					data={SERIES[metric]}
+					data={series}
 					previous={previous}
+					months={data.months}
 					tone={tone}
 					height={chartHeight}
 				/>
@@ -41,53 +41,71 @@ export function OverviewCard({
 	);
 }
 
-const providerLabel = (id: string) => (
-	<>
-		<ProviderLogo id={id as ProviderId} size={14} />
-		{PROVIDERS[id].name}
-	</>
-);
+export const providerLabel = (id: string) => {
+	const p = PROVIDERS[id];
+	return (
+		<>
+			{p ? <ProviderLogo id={id as ProviderId} size={14} /> : null}
+			{p?.name ?? id.charAt(0).toUpperCase() + id.slice(1)}
+		</>
+	);
+};
 
-export function OverviewBreakdowns({ full = false }: { full?: boolean }) {
-	const profit = PRODUCTS.map((p) => ({
+export function OverviewBreakdowns({
+	data,
+	full = false,
+}: {
+	data: OverviewData;
+	full?: boolean;
+}) {
+	const fmt = (n: number) => money(n, { currency: data.currency });
+	const profit = data.byProduct.map((p) => ({
 		label: p.name,
 		value: p.revenue - p.costs,
-		secondary: `${Math.round(((p.revenue - p.costs) / p.revenue) * 100)}%`,
+		secondary: p.revenue
+			? `${Math.round(((p.revenue - p.costs) / p.revenue) * 100)}%`
+			: undefined,
 	}));
-	const costs = [...COSTS_BY_PROVIDER]
+	const costs = data.costsByProvider
 		.slice(0, full ? undefined : 5)
-		.map((c) => ({ label: providerLabel(c.id), value: c.amount }));
-	const revenue = REVENUE_BY_SOURCE.map((r) => ({
-		label: providerLabel(r.id),
+		.map((c) => ({ label: providerLabel(c.provider), value: c.amount }));
+	const revenue = data.revenueBySource.map((r) => ({
+		label: providerLabel(r.provider),
 		value: r.amount,
 	}));
-	const costsByProduct = PRODUCTS.map((p) => ({
+	const costsByProduct = data.byProduct.map((p) => ({
 		label: p.name,
 		value: p.costs,
 	}));
+	const sum = (rows: { value: number }[]) =>
+		rows.reduce((a, r) => a + r.value, 0);
 	return (
 		<div className="grid gap-4 md:grid-cols-2">
 			<BreakdownCard
-				tabs={["Profit by product", "Margin"]}
-				total={profit.reduce((a, r) => a + r.value, 0)}
+				tabs={["Profit by product"]}
+				total={sum(profit)}
 				rows={profit}
+				formatter={fmt}
 			/>
 			<BreakdownCard
 				tabs={["Costs by provider"]}
-				total={costs.reduce((a, r) => a + r.value, 0)}
+				total={sum(costs)}
 				rows={costs}
+				formatter={fmt}
 			/>
 			{full && (
 				<>
 					<BreakdownCard
 						tabs={["Revenue by source"]}
-						total={revenue.reduce((a, r) => a + r.value, 0)}
+						total={sum(revenue)}
 						rows={revenue}
+						formatter={fmt}
 					/>
 					<BreakdownCard
 						tabs={["Costs by product"]}
-						total={costsByProduct.reduce((a, r) => a + r.value, 0)}
+						total={sum(costsByProduct)}
 						rows={costsByProduct}
+						formatter={fmt}
 					/>
 				</>
 			)}

@@ -10,7 +10,8 @@ import {
 	Settings,
 } from "lucide-react";
 import { APP_NAME } from "#/lib/app";
-import { money, PRODUCTS } from "../dashboard/mock-data";
+import { money } from "#/lib/format";
+import type { WorkspaceSummary } from "#/server/workspace.functions";
 
 const NAV = [
 	{ to: "/app", label: "Overview", icon: LayoutGrid, exact: true },
@@ -21,7 +22,13 @@ const NAV = [
 ] as const;
 
 // 240px sidebar, paper background, hairline right border. See design/DESIGN.md.
-export function Shell({ children }: { children: React.ReactNode }) {
+export function Shell({
+	workspace,
+	children,
+}: {
+	workspace: WorkspaceSummary;
+	children: React.ReactNode;
+}) {
 	const path = useRouterState({ select: (s) => s.location.pathname });
 	return (
 		<div className="flex min-h-screen">
@@ -32,9 +39,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
 				>
 					<span className="flex items-center gap-2">
 						<span className="flex h-5 w-5 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
-							A
+							{workspace.name[0]}
 						</span>
-						Acme Labs
+						{workspace.name}
 					</span>
 					<ChevronsUpDown size={14} className="text-text-3" />
 				</button>
@@ -74,15 +81,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
 				<div className="label-mono mt-6 px-2">Products</div>
 				<ul className="mt-2 space-y-px">
-					{PRODUCTS.map((p) => (
-						<li key={p.name}>
+					{workspace.products.map((p) => (
+						<li key={p.id}>
 							<Link
 								to="/app/products"
 								className="flex h-8 items-center justify-between rounded-md px-2 text-[13px] text-text-2 hover:bg-surface-1 hover:text-ink"
 							>
 								<span>{p.name}</span>
 								<span className="num text-[11px] text-text-3">
-									{money(p.revenue - p.costs)}
+									{money(p.profit, { currency: workspace.currency })}
 								</span>
 							</Link>
 						</li>

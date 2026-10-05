@@ -1,4 +1,5 @@
-import { money, PRODUCTS } from "./mock-data";
+import { money } from "#/lib/format";
+import { MOCK_OVERVIEW } from "./mock-data";
 import { OverviewBreakdowns, OverviewCard } from "./overview";
 
 const NAV = [
@@ -37,7 +38,7 @@ export function DashboardPreview({
 				</ul>
 				<div className="label-mono mt-6 px-2">Products</div>
 				<ul className="mt-2 space-y-px">
-					{PRODUCTS.map((p) => (
+					{MOCK_OVERVIEW.byProduct.map((p) => (
 						<li
 							key={p.name}
 							className="flex h-7 items-center justify-between rounded-md px-2 text-[13px] text-text-2"
@@ -68,10 +69,14 @@ export function DashboardPreview({
 					</div>
 				</div>
 				<div className="mt-4">
-					<OverviewCard interactive={interactive} chartHeight={220} />
+					<OverviewCard
+						data={MOCK_OVERVIEW}
+						interactive={interactive}
+						chartHeight={220}
+					/>
 				</div>
 				<div className="mt-4">
-					<OverviewBreakdowns />
+					<OverviewBreakdowns data={MOCK_OVERVIEW} />
 				</div>
 			</div>
 		</div>

@@ -13,12 +13,15 @@
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
-    "start": "node .output/server/index.mjs"
+    "start": "node .output/server/index.mjs",
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx --env-file=.env scripts/seed.ts"
   },
   "dependencies": {
     "@fontsource-variable/eb-garamond": "^5.3.0",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource/commit-mono": "^5.3.0",
+    "@libsql/client": "^0.18.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "0.10.13",
     "@tanstack/react-query": "5.104.1",
@@ -29,6 +32,7 @@
     "@tanstack/react-start": "1.168.60",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.3",
     "lucide-react": "^0.577.0",
     "nitro": "3.0.260610-beta",
     "react": "^19.2.0",
@@ -36,7 +40,8 @@
     "simple-icons": "^16.34.0",
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^4.1.18",
-    "tw-animate-css": "^1.3.6"
+    "tw-animate-css": "^1.3.6",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.5",
@@ -47,6 +52,8 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.2",
     "vite": "^8.0.0"
   },

@@ -1,18 +1,21 @@
-// Static numbers for the landing page and the dashboard prototype.
+// Static numbers for the landing page. The app reads the database.
+import type { OverviewData } from "#/lib/overview";
 
-export const MONTHS = [
-	"Nov",
-	"Dec",
-	"Jan",
-	"Feb",
-	"Mar",
-	"Apr",
-	"May",
-	"Jun",
-	"Jul",
-	"Aug",
-	"Sep",
-	"Oct",
+export { delta, money } from "#/lib/format";
+
+const MONTHS = [
+	"2025-11",
+	"2025-12",
+	"2026-01",
+	"2026-02",
+	"2026-03",
+	"2026-04",
+	"2026-05",
+	"2026-06",
+	"2026-07",
+	"2026-08",
+	"2026-09",
+	"2026-10",
 ];
 
 export const SERIES = {
@@ -31,20 +34,10 @@ export const SERIES = {
 	customers: [212, 224, 241, 256, 273, 291, 312, 331, 356, 378, 399, 418],
 };
 
-export type MetricKey = keyof typeof SERIES;
-
-export const METRICS: { key: MetricKey; label: string; money: boolean }[] = [
-	{ key: "revenue", label: "Revenue", money: true },
-	{ key: "costs", label: "Costs", money: true },
-	{ key: "profit", label: "Profit", money: true },
-	{ key: "mrr", label: "MRR", money: true },
-	{ key: "customers", label: "Customers", money: false },
-];
-
 export const PRODUCTS = [
-	{ name: "Draftly", revenue: 7240, costs: 1890 },
-	{ name: "Shipmail", revenue: 3610, costs: 720 },
-	{ name: "Quoteflow", revenue: 1630, costs: 502 },
+	{ id: "draftly", name: "Draftly", revenue: 7240, costs: 1890 },
+	{ id: "shipmail", name: "Shipmail", revenue: 3610, costs: 720 },
+	{ id: "quoteflow", name: "Quoteflow", revenue: 1630, costs: 502 },
 ];
 
 export const COSTS_BY_PROVIDER = [
@@ -63,16 +56,17 @@ export const REVENUE_BY_SOURCE = [
 	{ id: "polar", amount: 2620 },
 ] as const;
 
-export function money(n: number, opts: { cents?: boolean } = {}) {
-	return new Intl.NumberFormat("en-US", {
-		style: "currency",
-		currency: "USD",
-		maximumFractionDigits: opts.cents ? 2 : 0,
-	}).format(n);
-}
-
-export function delta(series: number[]) {
-	const a = series[series.length - 2];
-	const b = series[series.length - 1];
-	return ((b - a) / a) * 100;
-}
+export const MOCK_OVERVIEW: OverviewData = {
+	currency: "USD",
+	months: MONTHS,
+	series: SERIES,
+	byProduct: PRODUCTS,
+	costsByProvider: COSTS_BY_PROVIDER.map((c) => ({
+		provider: c.id,
+		amount: c.amount,
+	})),
+	revenueBySource: REVENUE_BY_SOURCE.map((r) => ({
+		provider: r.id,
+		amount: r.amount,
+	})),
+};
