@@ -72,8 +72,7 @@ Requires Node 22 and pnpm.
 ```bash
 pnpm install
 cp .env.example .env   # then set SECRET_KEY
-pnpm db:push           # creates the SQLite schema
-pnpm db:seed           # one workspace with twelve months of demo data
+pnpm db:seed           # one workspace with twelve months of demo data (migrations run first)
 pnpm dev
 ```
 

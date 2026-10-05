@@ -224,3 +224,21 @@
   line-height: 1.5;
   color: var(--text-2);
 }
+
+@utility prose-docs {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-2);
+
+  & h1 { font-size: 28px; line-height: 1.2; color: var(--ink); margin: 0 0 20px; }
+  & h2 { font-size: 18px; color: var(--ink); margin: 36px 0 10px; }
+  & p { margin: 0 0 14px; }
+  & a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+  & code { font-family: var(--font-mono); font-size: 13px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+  & pre { background: var(--surface-1); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin: 0 0 16px; }
+  & pre code { background: none; padding: 0; font-size: 13px; }
+  & table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 0 0 16px; }
+  & th { text-align: left; font-weight: 500; color: var(--ink); border-bottom: 1px solid var(--line-strong); padding: 6px 8px 6px 0; }
+  & td { border-bottom: 1px solid var(--line); padding: 7px 8px 7px 0; vertical-align: top; }
+  & ul, & ol { padding-left: 20px; margin: 0 0 14px; }
+}

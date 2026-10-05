@@ -8,11 +8,13 @@ import {
 	Receipt,
 	Search,
 	Settings,
+	SunMoon,
 } from "lucide-react";
 import { APP_NAME } from "#/lib/app";
 import { authClient } from "#/lib/auth-client";
 import { money } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
+import { toggleTheme } from "#/lib/theme";
 import type { WorkspaceSummary } from "#/server/workspace.functions";
 
 const NAV = [
@@ -106,6 +108,14 @@ export function Shell({
 						<Settings size={16} />
 						Settings
 					</Link>
+					<button
+						type="button"
+						onClick={toggleTheme}
+						className="flex h-8 w-full items-center gap-2.5 rounded-md px-2 text-[13px] text-text-2 hover:bg-surface-1 hover:text-ink"
+					>
+						<SunMoon size={16} />
+						Theme
+					</button>
 					<button
 						type="button"
 						onClick={() =>

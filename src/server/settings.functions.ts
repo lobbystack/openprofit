@@ -15,6 +15,7 @@ export type Settings = {
 	plan: "free" | "indie" | "pro";
 	cadenceMinutes: number;
 	weeklyEmail: boolean;
+	telemetry: boolean;
 	email: string;
 	// Hosted instance: billing rows show and the plan caps the cadence.
 	cloud: boolean;
@@ -32,6 +33,7 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 			plan: ws.plan,
 			cadenceMinutes: conn?.cadenceMinutes ?? 60,
 			weeklyEmail: ws.weeklyEmail,
+			telemetry: ws.telemetry,
 			email: user.email,
 			cloud: isCloud,
 		};
@@ -48,17 +50,25 @@ export const updateSettings = createServerFn({ method: "POST" })
 				.union([z.literal(15), z.literal(60), z.literal(360), z.literal(1440)])
 				.optional(),
 			weeklyEmail: z.boolean().optional(),
+			telemetry: z.boolean().optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
 		const ws = await currentWorkspace();
-		if (data.name !== undefined || data.weeklyEmail !== undefined) {
+		if (
+			data.name !== undefined ||
+			data.weeklyEmail !== undefined ||
+			data.telemetry !== undefined
+		) {
 			await db
 				.update(schema.workspaces)
 				.set({
 					...(data.name !== undefined ? { name: data.name } : {}),
 					...(data.weeklyEmail !== undefined
 						? { weeklyEmail: data.weeklyEmail }
+						: {}),
+					...(data.telemetry !== undefined
+						? { telemetry: data.telemetry }
 						: {}),
 				})
 				.where(eq(schema.workspaces.id, ws.id));

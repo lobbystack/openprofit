@@ -14,8 +14,8 @@
     "lint": "biome lint",
     "check": "biome check",
     "start": "node .output/server/index.mjs",
-    "db:push": "drizzle-kit push",
-    "db:seed": "tsx --env-file=.env scripts/seed.ts"
+    "db:seed": "tsx --env-file=.env scripts/seed.ts",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.7",
@@ -36,6 +36,7 @@
     "croner": "^10.0.1",
     "drizzle-orm": "^0.45.3",
     "lucide-react": "^0.577.0",
+    "marked": "^18.0.14",
     "nitro": "3.0.260610-beta",
     "pg": "^8.23.1",
     "react": "^19.2.0",
@@ -67,5 +68,6 @@
       "lightningcss"
     ]
   },
-  "packageManager": "pnpm@11.1.3"
+  "packageManager": "pnpm@11.1.3",
+  "version": "0.1.0"
 }

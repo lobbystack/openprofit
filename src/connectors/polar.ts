@@ -57,9 +57,25 @@ export const polar = register({
 	// One line per day from the metrics endpoint: gross and net, so Polar's
 	// fee is the difference.
 	async fetchRevenue(c, range: SyncRange) {
-		const m = await metrics(c, range.from, range.to, "day");
+		// Polar caps day-interval queries at 366 days.
+		const periods: Period[] = [];
+		let from = range.from;
+		while (from <= range.to) {
+			const chunkEnd = new Date(
+				Math.min(
+					Date.parse(`${from}T00:00:00Z`) + 365 * 86_400_000,
+					Date.parse(`${range.to}T00:00:00Z`),
+				),
+			)
+				.toISOString()
+				.slice(0, 10);
+			periods.push(...(await metrics(c, from, chunkEnd, "day")).periods);
+			from = new Date(Date.parse(`${chunkEnd}T00:00:00Z`) + 86_400_000)
+				.toISOString()
+				.slice(0, 10);
+		}
 		const out: RevenueLine[] = [];
-		for (const p of m.periods) {
+		for (const p of periods) {
 			const gross = p.revenue ?? 0;
 			const net = p.net_revenue ?? gross;
 			if (!gross && !net) continue;

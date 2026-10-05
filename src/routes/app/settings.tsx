@@ -116,6 +116,22 @@ function Settings() {
 					) : (
 						<Row label="Plan">Self-hosted</Row>
 					)}
+					{!s.cloud && (
+						<Row label="Usage ping">
+							<button
+								type="button"
+								onClick={() => save({ telemetry: !s.telemetry })}
+								className="flex items-center gap-1.5 text-[13px] hover:text-ink"
+							>
+								<span
+									className={`h-1.5 w-1.5 rounded-full ${s.telemetry ? "bg-positive" : "bg-surface-4"}`}
+								/>
+								{s.telemetry
+									? "Daily: version and counts, nothing else"
+									: "Off"}
+							</button>
+						</Row>
+					)}
 					<Row label="Weekly email">
 						<button
 							type="button"

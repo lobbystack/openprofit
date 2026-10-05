@@ -4,6 +4,7 @@ import type { Credentials } from "#/connectors/types";
 import { db, schema } from "#/db";
 import { decrypt } from "#/lib/crypto";
 import { evaluateAlerts } from "./alerts.server";
+import { isCloud } from "./billing.server";
 import { convert } from "./fx.server";
 
 type Connection = typeof schema.connections.$inferSelect;
@@ -28,9 +29,10 @@ export async function syncConnection(
 		.values({ connectionId: conn.id, startedAt: Date.now(), status: "running" })
 		.returning();
 
-	// First sync pulls a year so the chart has history; later runs pull a
-	// short tail. Polar caps day-interval queries at 366 days.
-	const from = daysAgo(opts.backfillDays ?? (conn.lastSyncedAt ? 3 : 365));
+	// First sync pulls the plan's history (two years, one on the free hosted
+	// plan); later runs pull a short tail.
+	const history = isCloud && ws.plan === "free" ? 365 : 730;
+	const from = daysAgo(opts.backfillDays ?? (conn.lastSyncedAt ? 3 : history));
 	const range = { from, to: today() };
 	let written = 0;
 

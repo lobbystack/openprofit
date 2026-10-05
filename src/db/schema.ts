@@ -36,6 +36,8 @@ export const workspaces = pgTable("workspaces", {
 		.notNull()
 		.default("free"),
 	weeklyEmail: boolean("weekly_email").notNull().default(true),
+	// Self-host: send a daily anonymous usage ping. Off until switched on.
+	telemetry: boolean("telemetry").notNull().default(false),
 	createdAt: createdAt(),
 });
 
@@ -276,4 +278,13 @@ export const alerts = pgTable("alerts", {
 		.default("ink"),
 	openedAt: ms("opened_at").notNull(),
 	resolvedAt: ms("resolved_at"),
+});
+
+// Pings received from self-hosted instances that opted in.
+export const telemetryPings = pgTable("telemetry_pings", {
+	id: id(),
+	instance: text("instance").notNull(),
+	version: text("version").notNull(),
+	payload: text("payload").notNull(),
+	seenAt: ms("seen_at").notNull(),
 });
