@@ -10,33 +10,120 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppAlertsRouteImport } from './routes/app/alerts'
+import { Route as AppConnectionsRouteImport } from './routes/app/connections'
+import { Route as AppCostsRouteImport } from './routes/app/costs'
+import { Route as AppProductsRouteImport } from './routes/app/products'
+import { Route as AppSettingsRouteImport } from './routes/app/settings'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAlertsRoute = AppAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConnectionsRoute = AppConnectionsRouteImport.update({
+  id: '/connections',
+  path: '/connections',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCostsRoute = AppCostsRouteImport.update({
+  id: '/costs',
+  path: '/costs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProductsRoute = AppProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/alerts': typeof AppAlertsRoute
+  '/app/connections': typeof AppConnectionsRoute
+  '/app/costs': typeof AppCostsRoute
+  '/app/products': typeof AppProductsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app/alerts': typeof AppAlertsRoute
+  '/app/connections': typeof AppConnectionsRoute
+  '/app/costs': typeof AppCostsRoute
+  '/app/products': typeof AppProductsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/alerts': typeof AppAlertsRoute
+  '/app/connections': typeof AppConnectionsRoute
+  '/app/costs': typeof AppCostsRoute
+  '/app/products': typeof AppProductsRoute
+  '/app/settings': typeof AppSettingsRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/app/alerts'
+    | '/app/connections'
+    | '/app/costs'
+    | '/app/products'
+    | '/app/settings'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/app/alerts'
+    | '/app/connections'
+    | '/app/costs'
+    | '/app/products'
+    | '/app/settings'
+    | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/app/alerts'
+    | '/app/connections'
+    | '/app/costs'
+    | '/app/products'
+    | '/app/settings'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +135,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/alerts': {
+      id: '/app/alerts'
+      path: '/alerts'
+      fullPath: '/app/alerts'
+      preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/connections': {
+      id: '/app/connections'
+      path: '/connections'
+      fullPath: '/app/connections'
+      preLoaderRoute: typeof AppConnectionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/costs': {
+      id: '/app/costs'
+      path: '/costs'
+      fullPath: '/app/costs'
+      preLoaderRoute: typeof AppCostsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/products': {
+      id: '/app/products'
+      path: '/products'
+      fullPath: '/app/products'
+      preLoaderRoute: typeof AppProductsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAlertsRoute: typeof AppAlertsRoute
+  AppConnectionsRoute: typeof AppConnectionsRoute
+  AppCostsRoute: typeof AppCostsRoute
+  AppProductsRoute: typeof AppProductsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAlertsRoute: AppAlertsRoute,
+  AppConnectionsRoute: AppConnectionsRoute,
+  AppCostsRoute: AppCostsRoute,
+  AppProductsRoute: AppProductsRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
