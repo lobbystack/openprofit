@@ -1,6 +1,12 @@
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, lt, sql } from "drizzle-orm";
+import type { PgColumn } from "drizzle-orm/pg-core";
 import { db, schema } from "#/db";
-import type { OverviewData } from "#/lib/overview";
+import {
+	type MetricKey,
+	type OverviewData,
+	PERIODS,
+	type PeriodKey,
+} from "#/lib/overview";
 import type { Workspace } from "./workspace.server";
 
 const ym = (d: Date) =>
@@ -8,13 +14,38 @@ const ym = (d: Date) =>
 
 export function lastMonths(n: number, now = new Date()) {
 	const out: string[] = [];
-	for (let i = n - 1; i >= 0; i--) {
+	for (const i of Array.from({ length: n }, (_, k) => n - 1 - k)) {
 		out.push(
 			ym(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1))),
 		);
 	}
 	return out;
 }
+
+// Months inside a period, oldest first, ending this month or last month.
+export function periodMonths(key: PeriodKey, now = new Date()) {
+	const monthsBack = (n: number, end = now) => lastMonths(n, end);
+	const lastMonth = new Date(
+		Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1),
+	);
+	switch (key) {
+		case "last-month":
+			return monthsBack(1, lastMonth);
+		case "3m":
+			return monthsBack(3);
+		case "12m":
+			return monthsBack(12);
+		case "ytd":
+			return monthsBack(now.getUTCMonth() + 1);
+		default:
+			return monthsBack(1);
+	}
+}
+
+const nextMonth = (m: string) => {
+	const [y, mo] = m.split("-").map(Number);
+	return ym(new Date(Date.UTC(y, mo, 1)));
+};
 
 // Flat costs count once per month they are active. Yearly ones spread over 12.
 function flatMonthlyCents(
@@ -29,11 +60,19 @@ function flatMonthlyCents(
 
 export async function overview(
 	ws: Workspace,
-	monthsBack = 12,
+	periodKey: PeriodKey = "this-month",
 ): Promise<OverviewData> {
-	const months = lastMonths(monthsBack);
-	const from = `${months[0]}-01`;
-	const current = months[months.length - 1];
+	const period = periodMonths(periodKey);
+	const end = period[period.length - 1];
+	const endDate = new Date(`${end}-15T00:00:00Z`);
+	// Chart: 12 months to the period's end. Series: 24, for the previous
+	// year and the previous period.
+	const months = lastMonths(12, endDate);
+	const all = lastMonths(24, endDate);
+	const from = `${all[0]}-01`;
+	const rangeFrom = `${period[0]}-01`;
+	const rangeTo = `${nextMonth(end)}-01`;
+	const inRange = (col: PgColumn) => and(gte(col, rangeFrom), lt(col, rangeTo));
 	const wsId = ws.id;
 	const month = (col: unknown) => sql<string>`substr(${col}, 1, 7)`;
 
@@ -96,7 +135,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.revenueLines.workspaceId, wsId),
-					gte(schema.revenueLines.date, `${current}-01`),
+					inRange(schema.revenueLines.date),
 				),
 			)
 			.groupBy(schema.revenueLines.productId),
@@ -109,7 +148,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.costLines.workspaceId, wsId),
-					gte(schema.costLines.date, `${current}-01`),
+					inRange(schema.costLines.date),
 				),
 			)
 			.groupBy(schema.costLines.productId),
@@ -126,7 +165,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.revenueLines.workspaceId, wsId),
-					gte(schema.revenueLines.date, `${current}-01`),
+					inRange(schema.revenueLines.date),
 				),
 			)
 			.groupBy(schema.connections.provider),
@@ -139,7 +178,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.costLines.workspaceId, wsId),
-					gte(schema.costLines.date, `${current}-01`),
+					inRange(schema.costLines.date),
 				),
 			)
 			.groupBy(schema.costLines.provider),
@@ -151,17 +190,19 @@ export async function overview(
 	const costM = byMonth(cost);
 	const units = (c: number) => Math.round(c) / 100;
 
-	const revenue = months.map((m) => units(revM[m] ?? 0));
-	const costs = months.map((m) =>
+	const revenueAll = all.map((m) => units(revM[m] ?? 0));
+	const costsAll = all.map((m) =>
 		units(
 			(costM[m] ?? 0) + flats.reduce((a, f) => a + flatMonthlyCents(f, m), 0),
 		),
 	);
-	const profit = revenue.map((r, i) => Math.round((r - costs[i]) * 100) / 100);
+	const profitAll = revenueAll.map(
+		(r, i) => Math.round((r - costsAll[i]) * 100) / 100,
+	);
 
 	// Latest snapshot per connection within each month, summed.
 	const snapshot = (metric: "mrr_base_cents" | "customers") =>
-		months.map((m) => {
+		all.map((m) => {
 			const latest = new Map<string, { date: string; value: number }>();
 			for (const s of snaps) {
 				if (s.metric !== metric || s.date.slice(0, 7) > m) continue;
@@ -173,10 +214,33 @@ export async function overview(
 			return metric === "customers" ? total : units(total);
 		});
 
+	const seriesAll: Record<MetricKey, number[]> = {
+		revenue: revenueAll,
+		costs: costsAll,
+		profit: profitAll,
+		mrr: snapshot("mrr_base_cents"),
+		customers: snapshot("customers"),
+	};
+	const keys = Object.keys(seriesAll) as MetricKey[];
+	const pick = (f: (v: number[]) => number[]) =>
+		Object.fromEntries(keys.map((k) => [k, f(seriesAll[k])])) as Record<
+			MetricKey,
+			number[]
+		>;
+	const n = period.length;
+	const sum = (v: number[]) =>
+		Math.round(v.reduce((a, b) => a + b, 0) * 100) / 100;
+	const total = (k: MetricKey, v: number[]) =>
+		k === "mrr" || k === "customers" ? (v[v.length - 1] ?? 0) : sum(v);
+	const totals = (slice: (v: number[]) => number[]) =>
+		Object.fromEntries(
+			keys.map((k) => [k, total(k, slice(seriesAll[k]))]),
+		) as Record<MetricKey, number>;
+
 	const flatByProduct = new Map<string | null, number>();
 	const flatByProvider = new Map<string, number>();
 	for (const f of flats) {
-		const c = flatMonthlyCents(f, current);
+		const c = period.reduce((a, m) => a + flatMonthlyCents(f, m), 0);
 		if (!c) continue;
 		flatByProduct.set(f.productId, (flatByProduct.get(f.productId) ?? 0) + c);
 		flatByProvider.set(f.provider, (flatByProvider.get(f.provider) ?? 0) + c);
@@ -218,12 +282,13 @@ export async function overview(
 		currency: ws.baseCurrency,
 		workspaceSlug: ws.slug,
 		months,
-		series: {
-			revenue,
-			costs,
-			profit,
-			mrr: snapshot("mrr_base_cents"),
-			customers: snapshot("customers"),
+		series: pick((v) => v.slice(12)),
+		previousSeries: pick((v) => v.slice(0, 12)),
+		period: {
+			key: periodKey,
+			label: PERIODS.find((p) => p.key === periodKey)?.label ?? "",
+			totals: totals((v) => v.slice(24 - n)),
+			previous: totals((v) => v.slice(24 - 2 * n, 24 - n)),
 		},
 		byProduct,
 		costsByProvider,

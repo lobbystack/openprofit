@@ -10,13 +10,33 @@ export const METRICS: { key: MetricKey; label: string; money: boolean }[] = [
 	{ key: "customers", label: "Customers", money: false },
 ];
 
+export type PeriodKey = "this-month" | "last-month" | "3m" | "12m" | "ytd";
+
+export const PERIODS: { key: PeriodKey; label: string }[] = [
+	{ key: "this-month", label: "This month" },
+	{ key: "last-month", label: "Last month" },
+	{ key: "3m", label: "Last 3 months" },
+	{ key: "12m", label: "Last 12 months" },
+	{ key: "ytd", label: "This year" },
+];
+
 export type OverviewData = {
 	currency: string;
 	workspaceSlug: string;
 	// YYYY-MM, oldest first. Money series are whole units, not cents.
 	months: string[];
 	series: Record<MetricKey, number[]>;
-	// Current month.
+	// Same months one year earlier, for the dotted line.
+	previousSeries: Record<MetricKey, number[]>;
+	// Tiles: the period's totals and the equal period before it. Flows sum;
+	// MRR and customers take the value at the end.
+	period: {
+		key: PeriodKey;
+		label: string;
+		totals: Record<MetricKey, number>;
+		previous: Record<MetricKey, number>;
+	};
+	// Breakdowns cover the period.
 	byProduct: {
 		id: string;
 		name: string;

@@ -21,7 +21,7 @@ export const getWorkspace = createServerFn({ method: "GET" }).handler(
 	async (): Promise<WorkspaceSummary> => {
 		boot();
 		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
-		const data = await overview(ws, 1);
+		const data = await overview(ws);
 		const cap = PLANS[ws.plan].mrrCapCents;
 		const mrr = (data.series.mrr.at(-1) ?? 0) * 100;
 		return {

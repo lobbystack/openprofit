@@ -77,11 +77,28 @@ export const REVENUE_BY_SOURCE = [
 	{ id: "polar", amount: 2620 },
 ] as const;
 
+const last = <T>(v: T[]) => v[v.length - 1];
+const keys = Object.keys(SERIES) as (keyof typeof SERIES)[];
+const at = (f: (v: number[]) => number) =>
+	Object.fromEntries(keys.map((k) => [k, f(SERIES[k])])) as Record<
+		keyof typeof SERIES,
+		number
+	>;
+
 export const MOCK_OVERVIEW: OverviewData = {
 	currency: "USD",
 	workspaceSlug: "acme",
 	months: MONTHS,
 	series: SERIES,
+	previousSeries: Object.fromEntries(
+		keys.map((k) => [k, SERIES[k].map((v) => Math.round(v * 0.72))]),
+	) as OverviewData["previousSeries"],
+	period: {
+		key: "this-month",
+		label: "This month",
+		totals: at(last),
+		previous: at((v) => v[v.length - 2]),
+	},
 	byProduct: PRODUCTS,
 	costsByProvider: COSTS_BY_PROVIDER.map((c) => ({
 		provider: c.id,

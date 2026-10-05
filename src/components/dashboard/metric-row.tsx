@@ -1,4 +1,4 @@
-import { delta, money } from "#/lib/format";
+import { money } from "#/lib/format";
 import { METRICS, type MetricKey, type OverviewData } from "#/lib/overview";
 
 export function MetricRow({
@@ -13,9 +13,9 @@ export function MetricRow({
 	return (
 		<div className="grid grid-cols-[repeat(5,minmax(132px,1fr))] divide-x divide-line overflow-x-auto">
 			{METRICS.map((m) => {
-				const series = data.series[m.key];
-				const value = series[series.length - 1] ?? 0;
-				const d = delta(series);
+				const value = data.period.totals[m.key];
+				const prev = data.period.previous[m.key];
+				const d = prev ? ((value - prev) / prev) * 100 : 0;
 				// Costs going up is bad; everything else going up is good.
 				const good = m.key === "costs" ? d <= 0 : d >= 0;
 				const active = selected === m.key;

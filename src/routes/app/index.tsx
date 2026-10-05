@@ -1,19 +1,25 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calendar, ChevronDown } from "lucide-react";
-import { Control, PageHeader } from "#/components/app/shell";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Calendar } from "lucide-react";
+import { PageHeader } from "#/components/app/shell";
 import {
 	OverviewBreakdowns,
 	OverviewCard,
 } from "#/components/dashboard/overview";
-import { getOverview } from "#/server/overview.functions";
+import { PERIODS, type PeriodKey } from "#/lib/overview";
+import { getOverview, periodSchema } from "#/server/overview.functions";
 
 export const Route = createFileRoute("/app/")({
-	loader: () => getOverview(),
+	validateSearch: (s: Record<string, unknown>): { period?: PeriodKey } => ({
+		period: periodSchema.catch("this-month").parse(s.period),
+	}),
+	loaderDeps: ({ search }) => ({ period: search.period ?? "this-month" }),
+	loader: ({ deps }) => getOverview({ data: { period: deps.period } }),
 	component: Overview,
 });
 
 function Overview() {
 	const data = Route.useLoaderData();
+	const navigate = useNavigate();
 	const empty =
 		data.revenueBySource.length === 0 && data.costsByProvider.length === 0;
 	if (empty) {
@@ -35,11 +41,25 @@ function Overview() {
 	return (
 		<>
 			<PageHeader title="Overview" meta="All products">
-				<Control>
-					<Calendar size={13} />
-					This month
-					<ChevronDown size={13} className="text-text-3" />
-				</Control>
+				<label className="flex h-8 items-center gap-1.5 rounded-md border border-line bg-paper px-2.5 text-[13px] hover:border-line-strong">
+					<Calendar size={13} className="text-text-3" />
+					<select
+						value={data.period.key}
+						onChange={(e) =>
+							navigate({
+								to: "/app",
+								search: { period: e.target.value as PeriodKey },
+							})
+						}
+						className="bg-transparent outline-none"
+					>
+						{PERIODS.map((p) => (
+							<option key={p.key} value={p.key}>
+								{p.label}
+							</option>
+						))}
+					</select>
+				</label>
 			</PageHeader>
 			<div className="mt-4">
 				<OverviewCard data={data} />

@@ -18,7 +18,7 @@ export function OverviewCard({
 }) {
 	const [metric, setMetric] = useState<MetricKey>("profit");
 	const series = data.series[metric];
-	const previous = series.map((v) => Math.round(v * 0.88));
+	const previous = data.previousSeries[metric];
 	const tone =
 		metric === "costs" ? "negative" : metric === "profit" ? "positive" : "ink";
 	return (
