@@ -54,10 +54,10 @@ export function Nav() {
 					</a>
 				</nav>
 				<div className="flex items-center gap-2">
-					<Button variant="secondary" size="sm" href="/app">
+					<Button variant="secondary" size="sm" href="/login">
 						Log in
 					</Button>
-					<Button size="sm" href="/app">
+					<Button size="sm" href="/login">
 						Sign up
 					</Button>
 				</div>

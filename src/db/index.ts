@@ -1,7 +1,8 @@
 import "#/server/env";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import * as schema from "./schema";
+import * as authSchema from "./auth-schema";
+import * as appSchema from "./schema";
 
 // SQLite through libsql. `file:` for self-host and local dev; a libsql URL
 // plus DATABASE_AUTH_TOKEN for hosted databases.
@@ -12,6 +13,8 @@ const client = createClient({
 	authToken: process.env.DATABASE_AUTH_TOKEN,
 });
 
+const schema = { ...appSchema, ...authSchema };
+
 export const db = drizzle(client, { schema });
 export type Db = typeof db;
-export { schema };
+export { appSchema as schema, authSchema };

@@ -1,5 +1,6 @@
 // Seeds one workspace with twelve months of numbers. Run with `pnpm db:seed`.
-import { db, schema } from "#/db";
+import { eq } from "drizzle-orm";
+import { authSchema, db, schema } from "#/db";
 import { encrypt } from "#/lib/crypto";
 
 const MONTHS = 12;
@@ -38,10 +39,29 @@ const COST_PROVIDERS = [
 	{ provider: "resend", share: 0.03, mapped: false },
 ];
 
+// `--owner=you@example.com` makes that signed-in user a member of the
+// seeded workspace.
+async function attachOwner(workspaceId: string, email: string) {
+	const user = await db.query.user.findFirst({
+		where: eq(authSchema.user.email, email),
+	});
+	if (!user) {
+		console.log(`No user with email ${email}. Sign in once, then rerun.`);
+		return;
+	}
+	await db
+		.insert(schema.workspaceMembers)
+		.values({ workspaceId, userId: user.id, role: "owner" })
+		.onConflictDoNothing();
+	console.log(`${email} now owns the seeded workspace.`);
+}
+
 async function main() {
+	const owner = process.argv.find((a) => a.startsWith("--owner="))?.slice(8);
 	const existing = await db.query.workspaces.findFirst();
 	if (existing) {
-		console.log(`Workspace "${existing.name}" exists. Delete data/pnl.db to reseed.`);
+		if (owner) await attachOwner(existing.id, owner);
+		else console.log(`Workspace "${existing.name}" exists. Delete data/pnl.db to reseed.`);
 		return;
 	}
 	const [ws] = await db
@@ -213,6 +233,7 @@ async function main() {
 		{ workspaceId: ws.id, kind: "sync_failure" },
 	]);
 
+	if (owner) await attachOwner(ws.id, owner);
 	console.log(
 		`Seeded ${ws.name}: ${products.length} products, ${connections.length} connections, ${revenueLines.length + costLines.length} lines.`,
 	);
