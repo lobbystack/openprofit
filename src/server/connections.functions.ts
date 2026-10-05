@@ -105,6 +105,10 @@ export const createConnection = createServerFn({ method: "POST" })
 		const ws = await currentWorkspace();
 		const c = connector(data.provider);
 		const { label } = await c.verify(data.credentials);
+		// One product: lines land there. More: the user assigns them.
+		const products = await db.query.products.findMany({
+			where: eq(schema.products.workspaceId, ws.id),
+		});
 		const [conn] = await db
 			.insert(schema.connections)
 			.values({
@@ -113,6 +117,7 @@ export const createConnection = createServerFn({ method: "POST" })
 				kind: c.kind,
 				label,
 				authKind: "key",
+				productId: products.length === 1 ? products[0].id : null,
 				credentials: await encrypt(data.credentials),
 				cadenceMinutes: 60,
 			})

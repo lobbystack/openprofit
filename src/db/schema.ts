@@ -89,6 +89,10 @@ export const connections = pgTable(
 		status: text("status", { enum: ["active", "error", "paused"] })
 			.notNull()
 			.default("active"),
+		// Product for lines with no sub-unit mapping. Null means shared.
+		productId: text("product_id").references(() => products.id, {
+			onDelete: "set null",
+		}),
 		cadenceMinutes: integer("cadence_minutes").notNull().default(360),
 		lastSyncedAt: ms("last_synced_at"),
 		lastError: text("last_error"),

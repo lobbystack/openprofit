@@ -175,14 +175,14 @@ export async function syncConnection(
 
 // Product for a provider sub-unit, through the workspace's mappings.
 async function productFor(conn: Connection, subUnitId?: string) {
-	if (!subUnitId) return null;
+	if (!subUnitId) return conn.productId;
 	const m = await db.query.productMappings.findFirst({
 		where: and(
 			eq(schema.productMappings.connectionId, conn.id),
 			eq(schema.productMappings.subUnitId, subUnitId),
 		),
 	});
-	return m?.productId ?? null;
+	return m?.productId ?? conn.productId;
 }
 
 // Every active connection whose cadence has elapsed.

@@ -6,12 +6,22 @@ import {
 	ProviderLogo,
 } from "#/components/provider-logo";
 import { money } from "#/lib/format";
-import { getConnection, setMapping } from "#/server/mappings.functions";
+import {
+	getConnection,
+	setConnectionProduct,
+	setMapping,
+} from "#/server/mappings.functions";
 
 export const Route = createFileRoute("/app/connections/$id")({
 	loader: ({ params }) => getConnection({ data: { id: params.id } }),
 	component: Connection,
 });
+
+const UNIT: Record<string, string> = {
+	openai: "project",
+	anthropic: "workspace",
+	cloudflare: "zone",
+};
 
 function Connection() {
 	const c = Route.useLoaderData();
@@ -23,22 +33,47 @@ function Connection() {
 		router.invalidate();
 	}
 
+	async function assignConnection(productId: string | null) {
+		await setConnectionProduct({ data: { connectionId: c.id, productId } });
+		router.invalidate();
+	}
+
+	const select = (
+		value: string | null,
+		onChange: (v: string | null) => void,
+	) => (
+		<select
+			value={value ?? ""}
+			onChange={(e) => onChange(e.target.value || null)}
+			className="h-7 w-40 rounded-md border border-line bg-paper px-1.5 text-[12px] outline-none focus:border-line-strong"
+		>
+			<option value="">Shared</option>
+			{c.products.map((pr) => (
+				<option key={pr.id} value={pr.id}>
+					{pr.name}
+				</option>
+			))}
+		</select>
+	);
+
 	return (
 		<>
 			<PageHeader title={p?.name ?? c.provider} meta={c.label ?? undefined} />
-			{c.subUnits.length > 0 ? (
+			<div className="mt-4 flex h-11 items-center justify-between rounded-xl border border-line bg-card px-4 text-[13px]">
+				<span>
+					{c.kind === "revenue"
+						? "Revenue counts toward"
+						: `Costs without a ${UNIT[c.provider] ?? "project"} count toward`}
+				</span>
+				{select(c.productId, assignConnection)}
+			</div>
+			{c.subUnits.length > 0 && (
 				<div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
 					<div className="flex items-center justify-between border-b border-line px-4 py-3">
 						<span className="flex items-center gap-2 text-[13px]">
 							{p && <ProviderLogo id={c.provider as ProviderId} size={14} />}
 							{c.kind === "cost" ? "Costs by" : "Revenue by"}{" "}
-							{c.provider === "openai"
-								? "project"
-								: c.provider === "anthropic"
-									? "workspace"
-									: c.provider === "cloudflare"
-										? "zone"
-										: "project"}
+							{UNIT[c.provider] ?? "project"}
 						</span>
 						<span className="label-mono">This month</span>
 					</div>
@@ -57,28 +92,11 @@ function Connection() {
 									)}
 								</span>
 								<span className="num w-24 text-right">{money(u.amount)}</span>
-								<select
-									value={u.productId ?? ""}
-									onChange={(e) => assign(u.id, e.target.value || null)}
-									className="h-7 w-40 rounded-md border border-line bg-paper px-1.5 text-[12px] outline-none focus:border-line-strong"
-								>
-									<option value="">Shared</option>
-									{c.products.map((pr) => (
-										<option key={pr.id} value={pr.id}>
-											{pr.name}
-										</option>
-									))}
-								</select>
+								{select(u.productId, (v) => assign(u.id, v))}
 							</li>
 						))}
 					</ul>
 				</div>
-			) : (
-				<p className="mt-4 text-[13px] text-text-2">
-					{c.kind === "revenue"
-						? "Revenue counts toward every product."
-						: "No projects reported yet."}
-				</p>
 			)}
 			<Link
 				to="/app/connections"

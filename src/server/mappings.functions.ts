@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, gte, isNotNull, sql } from "drizzle-orm";
+import { and, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "#/db";
 import { lastMonths } from "./overview.server";
@@ -18,6 +18,7 @@ export type ConnectionDetail = {
 	provider: string;
 	kind: "revenue" | "cost";
 	label: string | null;
+	productId: string | null;
 	subUnits: SubUnit[];
 	products: { id: string; name: string }[];
 };
@@ -74,6 +75,7 @@ export const getConnection = createServerFn({ method: "GET" })
 			provider: conn.provider,
 			kind: conn.kind,
 			label: conn.label,
+			productId: conn.productId,
 			subUnits: rows
 				.filter((r) => r.id)
 				.map((r) => ({
@@ -138,6 +140,40 @@ export const setMapping = createServerFn({ method: "POST" })
 				and(
 					eq(schema.costLines.connectionId, conn.id),
 					eq(schema.costLines.subUnitId, data.subUnitId),
+				),
+			);
+		return { ok: true };
+	});
+
+// Product for the connection's lines that have no sub-unit mapping.
+export const setConnectionProduct = createServerFn({ method: "POST" })
+	.validator(
+		z.object({ connectionId: z.string(), productId: z.string().nullable() }),
+	)
+	.handler(async ({ data }) => {
+		const ws = await currentWorkspace();
+		const conn = await db.query.connections.findFirst({
+			where: and(
+				eq(schema.connections.id, data.connectionId),
+				eq(schema.connections.workspaceId, ws.id),
+			),
+		});
+		if (!conn) throw new Error("Not found");
+		await db
+			.update(schema.connections)
+			.set({ productId: data.productId })
+			.where(eq(schema.connections.id, conn.id));
+		await db
+			.update(schema.revenueLines)
+			.set({ productId: data.productId })
+			.where(eq(schema.revenueLines.connectionId, conn.id));
+		await db
+			.update(schema.costLines)
+			.set({ productId: data.productId })
+			.where(
+				and(
+					eq(schema.costLines.connectionId, conn.id),
+					isNull(schema.costLines.subUnitId),
 				),
 			);
 		return { ok: true };
