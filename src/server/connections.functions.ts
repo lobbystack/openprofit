@@ -4,6 +4,8 @@ import { z } from "zod";
 import { connector, connectorInfo, connectors } from "#/connectors";
 import { db, schema } from "#/db";
 import { encrypt } from "#/lib/crypto";
+import { PLANS } from "#/lib/plans";
+import { isCloud } from "./billing.server";
 import { lastMonths } from "./overview.server";
 import { syncConnection } from "./sync.server";
 import { currentWorkspace } from "./workspace.server";
@@ -119,7 +121,7 @@ export const createConnection = createServerFn({ method: "POST" })
 				authKind: "key",
 				productId: products.length === 1 ? products[0].id : null,
 				credentials: await encrypt(data.credentials),
-				cadenceMinutes: 60,
+				cadenceMinutes: isCloud ? PLANS[ws.plan].cadenceMinutes : 60,
 			})
 			.returning();
 		// First sync runs now so the overview has a number right away.

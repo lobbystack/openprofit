@@ -19,6 +19,7 @@ import { Route as AppCostsRouteImport } from './routes/app/costs'
 import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiPolarWebhookRouteImport } from './routes/api/polar/webhook'
 import { Route as AppConnectProviderRouteImport } from './routes/app/connect.$provider'
 import { Route as AppConnectionsIndexRouteImport } from './routes/app/connections.index'
 import { Route as AppConnectionsIdRouteImport } from './routes/app/connections.$id'
@@ -74,6 +75,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPolarWebhookRoute = ApiPolarWebhookRouteImport.update({
+  id: '/api/polar/webhook',
+  path: '/api/polar/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppConnectProviderRoute = AppConnectProviderRouteImport.update({
   id: '/connect/$provider',
   path: '/connect/$provider',
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/polar/webhook': typeof ApiPolarWebhookRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/polar/webhook': typeof ApiPolarWebhookRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/polar/webhook': typeof ApiPolarWebhookRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/'
     | '/api/auth/$'
+    | '/api/polar/webhook'
     | '/app/connect/$provider'
     | '/app/connections/$id'
     | '/p/$workspace/$product'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app'
     | '/api/auth/$'
+    | '/api/polar/webhook'
     | '/app/connect/$provider'
     | '/app/connections/$id'
     | '/p/$workspace/$product'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/app/'
     | '/api/auth/$'
+    | '/api/polar/webhook'
     | '/app/connect/$provider'
     | '/app/connections/$id'
     | '/p/$workspace/$product'
@@ -199,6 +211,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiPolarWebhookRoute: typeof ApiPolarWebhookRoute
   PWorkspaceProductRoute: typeof PWorkspaceProductRoute
 }
 
@@ -274,6 +287,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/polar/webhook': {
+      id: '/api/polar/webhook'
+      path: '/api/polar/webhook'
+      fullPath: '/api/polar/webhook'
+      preLoaderRoute: typeof ApiPolarWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/connect/$provider': {
       id: '/app/connect/$provider'
       path: '/connect/$provider'
@@ -335,6 +355,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiPolarWebhookRoute: ApiPolarWebhookRoute,
   PWorkspaceProductRoute: PWorkspaceProductRoute,
 }
 export const routeTree = rootRouteImport

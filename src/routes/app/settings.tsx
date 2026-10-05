@@ -1,6 +1,8 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "#/components/app/shell";
+import { PLANS, type Plan } from "#/lib/plans";
+import { openPortal, startCheckout } from "#/server/billing.functions";
 import {
 	CADENCES,
 	getSettings,
@@ -22,7 +24,10 @@ const cadenceLabel = (m: number) =>
 				? "Every 6 h"
 				: "Daily";
 
-const PLAN = { free: "Free", indie: "Indie · $19 / mo", pro: "Pro · $49 / mo" };
+const planLabel = (p: Plan) =>
+	PLANS[p].priceCents
+		? `${PLANS[p].name} · $${PLANS[p].priceCents / 100} / mo`
+		: PLANS[p].name;
 
 const input =
 	"h-8 rounded-md border border-line bg-paper px-2.5 text-[13px] outline-none focus:border-line-strong";
@@ -66,14 +71,51 @@ function Settings() {
 							}
 							className={input}
 						>
-							{CADENCES.map((c) => (
-								<option key={c} value={c}>
-									{cadenceLabel(c)}
-								</option>
-							))}
+							{CADENCES.map((c) => {
+								const locked = s.cloud && c < PLANS[s.plan].cadenceMinutes;
+								const needs = locked
+									? c <= PLANS.pro.cadenceMinutes
+										? "Pro"
+										: "Indie"
+									: null;
+								return (
+									<option key={c} value={c} disabled={locked}>
+										{cadenceLabel(c)}
+										{needs ? ` (${needs})` : ""}
+									</option>
+								);
+							})}
 						</select>
 					</Row>
-					<Row label="Plan">{PLAN[s.plan]}</Row>
+					{s.cloud ? (
+						<Row label="Plan">
+							{planLabel(s.plan)}
+							{s.plan === "free" && (
+								<>
+									<Go
+										onClick={() => startCheckout({ data: { plan: "indie" } })}
+									>
+										Indie, $19
+									</Go>
+									<Go onClick={() => startCheckout({ data: { plan: "pro" } })}>
+										Pro, $49
+									</Go>
+								</>
+							)}
+							{s.plan === "indie" && (
+								<Go onClick={() => startCheckout({ data: { plan: "pro" } })}>
+									Pro, $49
+								</Go>
+							)}
+							{s.plan !== "free" && (
+								<Go onClick={() => openPortal()} className="ml-auto">
+									Manage billing
+								</Go>
+							)}
+						</Row>
+					) : (
+						<Row label="Plan">Self-hosted</Row>
+					)}
 					<Row label="Weekly email">
 						<button
 							type="button"
@@ -114,5 +156,29 @@ function Row({
 			<span className="w-40 text-text-2">{label}</span>
 			<span className="flex flex-1 items-center gap-3">{children}</span>
 		</li>
+	);
+}
+
+// Button that sends the browser to a URL a server function returns.
+function Go({
+	onClick,
+	className = "",
+	children,
+}: {
+	onClick: () => Promise<{ url: string }>;
+	className?: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={async () => {
+				const { url } = await onClick();
+				window.location.href = url;
+			}}
+			className={`h-7 rounded-md border border-line bg-paper px-2.5 text-[12px] hover:border-line-strong ${className}`}
+		>
+			{children}
+		</button>
 	);
 }

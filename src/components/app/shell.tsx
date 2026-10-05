@@ -10,7 +10,9 @@ import {
 	Settings,
 } from "lucide-react";
 import { APP_NAME } from "#/lib/app";
+import { authClient } from "#/lib/auth-client";
 import { money } from "#/lib/format";
+import { PLANS } from "#/lib/plans";
 import type { WorkspaceSummary } from "#/server/workspace.functions";
 
 const NAV = [
@@ -106,12 +108,20 @@ export function Shell({
 					</Link>
 					<button
 						type="button"
+						onClick={() =>
+							authClient.signOut().then(() => {
+								window.location.href = "/login";
+							})
+						}
+						title="Sign out"
 						className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-[13px] hover:bg-surface-2"
 					>
-						<span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-3 text-[10px]">
-							R
+						<span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-3 text-[10px] uppercase">
+							{workspace.email[0]}
 						</span>
-						<span className="flex-1 text-left text-text-2">raphael</span>
+						<span className="flex-1 truncate text-left text-text-2">
+							{workspace.email}
+						</span>
 					</button>
 				</div>
 			</aside>
@@ -122,7 +132,20 @@ export function Shell({
 						{APP_NAME}
 					</Link>
 				</header>
-				<main className="mx-auto max-w-[1024px] p-4 md:p-6">{children}</main>
+				<main className="mx-auto max-w-[1024px] p-4 md:p-6">
+					{workspace.overCap && (
+						<Link
+							to="/app/settings"
+							className="mb-4 flex h-10 items-center justify-between rounded-md border border-pending px-3 text-[13px]"
+						>
+							<span>
+								MRR passed the {PLANS[workspace.plan].name} plan's cap.
+							</span>
+							<span className="text-text-2">Pick a plan</span>
+						</Link>
+					)}
+					{children}
+				</main>
 			</div>
 		</div>
 	);

@@ -47,7 +47,8 @@ Set `RESEND_API_KEY` and `EMAIL_FROM` to send links and the weekly email by mail
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | No | | Adds "Sign in with GitHub" |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | No | | Adds "Sign in with Google" |
 | `SYNC_SCHEDULER` | No | `on` | Set to `off` to disable the in-process sync and weekly-email jobs |
-| `APP_MODE` | No | `selfhost` | `cloud` enables the pricing page and plan limits |
+| `APP_MODE` | No | `selfhost` | `cloud` turns on plans, Polar billing and the cadence caps |
+| `POLAR_ACCESS_TOKEN`, `POLAR_PRODUCT_INDIE`, `POLAR_PRODUCT_PRO`, `POLAR_WEBHOOK_SECRET` | Cloud only | | Polar organization token, product ids for the two paid plans, webhook secret for `/api/polar/webhook` |
 
 ## Connectors
 

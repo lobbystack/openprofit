@@ -82,7 +82,7 @@ export function Pricing() {
 							<div className="mt-8">
 								<Button
 									variant={p.primary ? "primary" : "secondary"}
-									href="/signup"
+									href="/login"
 									className="w-full"
 								>
 									{p.cta}

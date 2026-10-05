@@ -34,7 +34,7 @@ export function Hero() {
 						costs and profit for every product you run, updated every hour.
 					</p>
 					<div className="mt-8 flex gap-3">
-						<Button href="/signup">Start for free</Button>
+						<Button href="/login">Start for free</Button>
 						<Button variant="secondary" href="/docs/self-host">
 							Self-host
 						</Button>

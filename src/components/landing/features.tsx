@@ -33,7 +33,7 @@ export function FeatureProfit() {
 						tone="positive"
 						title="Profit, not just revenue."
 						cta="See the dashboard"
-						href="/signup"
+						href="/login"
 					>
 						Revenue dashboards are everywhere. This one subtracts Stripe fees,
 						refunds, your AI bills and your hosting, so the number you see is

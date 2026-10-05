@@ -13,7 +13,7 @@ export function Cta() {
 					month.
 				</p>
 				<div className="mt-8 flex gap-3">
-					<Button variant="paper" href="/signup">
+					<Button variant="paper" href="/login">
 						Start for free
 					</Button>
 					<Button variant="translucent" href="/docs/self-host">

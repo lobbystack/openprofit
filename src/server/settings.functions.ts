@@ -2,7 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "#/db";
+import { PLANS } from "#/lib/plans";
 import { requireUser } from "./auth.server";
+import { isCloud } from "./billing.server";
 import { sendEmail } from "./email.server";
 import { weeklySummary } from "./weekly.server";
 import { currentWorkspace } from "./workspace.server";
@@ -14,6 +16,8 @@ export type Settings = {
 	cadenceMinutes: number;
 	weeklyEmail: boolean;
 	email: string;
+	// Hosted instance: billing rows show and the plan caps the cadence.
+	cloud: boolean;
 };
 
 export const getSettings = createServerFn({ method: "GET" }).handler(
@@ -29,6 +33,7 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 			cadenceMinutes: conn?.cadenceMinutes ?? 60,
 			weeklyEmail: ws.weeklyEmail,
 			email: user.email,
+			cloud: isCloud,
 		};
 	},
 );
@@ -59,9 +64,10 @@ export const updateSettings = createServerFn({ method: "POST" })
 				.where(eq(schema.workspaces.id, ws.id));
 		}
 		if (data.cadenceMinutes !== undefined) {
+			const floor = isCloud ? PLANS[ws.plan].cadenceMinutes : 0;
 			await db
 				.update(schema.connections)
-				.set({ cadenceMinutes: data.cadenceMinutes })
+				.set({ cadenceMinutes: Math.max(data.cadenceMinutes, floor) })
 				.where(eq(schema.connections.workspaceId, ws.id));
 		}
 		return { ok: true };
