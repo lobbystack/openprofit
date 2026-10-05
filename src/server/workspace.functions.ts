@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { boot } from "./boot.server";
 import { overview } from "./overview.server";
 import { currentWorkspace } from "./workspace.server";
 
@@ -12,6 +13,7 @@ export type WorkspaceSummary = {
 
 export const getWorkspace = createServerFn({ method: "GET" }).handler(
 	async (): Promise<WorkspaceSummary> => {
+		boot();
 		const ws = await currentWorkspace();
 		const data = await overview(ws, 1);
 		return {
