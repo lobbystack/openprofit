@@ -23,7 +23,7 @@ docker run -d \
   -v openprofit_data:/app/data \
   -e SECRET_KEY=your_secret_here \
   -e APP_URL=http://localhost:3000 \
-  ghcr.io/openprofit-dev/openprofit:latest
+  ghcr.io/lobbystack/openprofit:latest
 ```
 
 Open `http://localhost:3000/login` and enter your email. Without an email provider, the sign-in link prints in the container log:
