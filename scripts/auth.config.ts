@@ -5,6 +5,6 @@ import { magicLink } from "better-auth/plugins";
 import { db } from "#/db";
 
 export const auth = betterAuth({
-	database: drizzleAdapter(db, { provider: "sqlite" }),
+	database: drizzleAdapter(db, { provider: "pg" }),
 	plugins: [magicLink({ sendMagicLink: async () => {} })],
 });

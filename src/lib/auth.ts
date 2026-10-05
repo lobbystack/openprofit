@@ -29,7 +29,7 @@ export const auth = betterAuth({
 	appName: APP_NAME,
 	baseURL: url,
 	secret: process.env.SECRET_KEY,
-	database: drizzleAdapter(db, { provider: "sqlite", schema: authSchema }),
+	database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
 	socialProviders: social,
 	plugins: [
 		magicLink({

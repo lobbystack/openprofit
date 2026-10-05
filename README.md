@@ -40,7 +40,7 @@ Set `RESEND_API_KEY` and `EMAIL_FROM` to send links and the weekly email by mail
 | --- | --- | --- | --- |
 | `SECRET_KEY` | Yes | | 32 random bytes, base64. Encrypts provider credentials and signs sessions |
 | `APP_URL` | Yes | `http://localhost:3000` | Public URL of this instance, used in sign-in links |
-| `DATABASE_URL` | No | `file:./data/openprofit.db` | SQLite file, or a libsql URL |
+| `DATABASE_URL` | No | `./data/openprofit` | A `postgres://` URL, or a directory for the embedded Postgres (PGlite) |
 | `DATABASE_AUTH_TOKEN` | No | | Token for a hosted libsql database |
 | `RESEND_API_KEY` | No | | Sends sign-in links and the weekly email through Resend |
 | `EMAIL_FROM` | No | | Sender address, for example `OpenProfit <mail@your_domain>` |

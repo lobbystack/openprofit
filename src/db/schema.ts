@@ -1,13 +1,19 @@
 import { sql } from "drizzle-orm";
 import {
+	bigint,
+	boolean,
+	doublePrecision,
 	index,
 	integer,
+	pgTable,
 	primaryKey,
-	real,
-	sqliteTable,
 	text,
 	uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/pg-core";
+
+// Runs on Postgres. Self-host and local dev use PGlite (Postgres in a
+// directory); the hosted version uses a Postgres server. See db/index.ts.
+const ms = (name: string) => bigint(name, { mode: "number" });
 
 // Money is stored as integer cents. `*_base` columns are in the workspace's
 // base currency; the others in the source currency. Dates are YYYY-MM-DD.
@@ -17,9 +23,11 @@ const id = () =>
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID());
 const createdAt = () =>
-	integer("created_at").notNull().default(sql`(unixepoch() * 1000)`);
+	ms("created_at")
+		.notNull()
+		.default(sql`(extract(epoch from now()) * 1000)::bigint`);
 
-export const workspaces = sqliteTable("workspaces", {
+export const workspaces = pgTable("workspaces", {
 	id: id(),
 	name: text("name").notNull(),
 	slug: text("slug").notNull().unique(),
@@ -27,13 +35,11 @@ export const workspaces = sqliteTable("workspaces", {
 	plan: text("plan", { enum: ["free", "indie", "pro"] })
 		.notNull()
 		.default("free"),
-	weeklyEmail: integer("weekly_email", { mode: "boolean" })
-		.notNull()
-		.default(true),
+	weeklyEmail: boolean("weekly_email").notNull().default(true),
 	createdAt: createdAt(),
 });
 
-export const workspaceMembers = sqliteTable(
+export const workspaceMembers = pgTable(
 	"workspace_members",
 	{
 		workspaceId: text("workspace_id")
@@ -48,7 +54,7 @@ export const workspaceMembers = sqliteTable(
 	(t) => [primaryKey({ columns: [t.workspaceId, t.userId] })],
 );
 
-export const products = sqliteTable(
+export const products = pgTable(
 	"products",
 	{
 		id: id(),
@@ -67,7 +73,7 @@ export const products = sqliteTable(
 	(t) => [uniqueIndex("products_ws_slug").on(t.workspaceId, t.slug)],
 );
 
-export const connections = sqliteTable(
+export const connections = pgTable(
 	"connections",
 	{
 		id: id(),
@@ -84,7 +90,7 @@ export const connections = sqliteTable(
 			.notNull()
 			.default("active"),
 		cadenceMinutes: integer("cadence_minutes").notNull().default(360),
-		lastSyncedAt: integer("last_synced_at"),
+		lastSyncedAt: ms("last_synced_at"),
 		lastError: text("last_error"),
 		createdAt: createdAt(),
 	},
@@ -93,7 +99,7 @@ export const connections = sqliteTable(
 
 // A provider sub-unit (OpenAI project, Vercel project, Railway service)
 // assigned to a product. Unmapped lines stay in the shared bucket.
-export const productMappings = sqliteTable(
+export const productMappings = pgTable(
 	"product_mappings",
 	{
 		id: id(),
@@ -112,7 +118,7 @@ export const productMappings = sqliteTable(
 	(t) => [uniqueIndex("mappings_conn_unit").on(t.connectionId, t.subUnitId)],
 );
 
-export const revenueLines = sqliteTable(
+export const revenueLines = pgTable(
 	"revenue_lines",
 	{
 		id: id(),
@@ -144,7 +150,7 @@ export const revenueLines = sqliteTable(
 	],
 );
 
-export const costLines = sqliteTable(
+export const costLines = pgTable(
 	"cost_lines",
 	{
 		id: id(),
@@ -174,7 +180,7 @@ export const costLines = sqliteTable(
 	],
 );
 
-export const flatCosts = sqliteTable("flat_costs", {
+export const flatCosts = pgTable("flat_costs", {
 	id: id(),
 	workspaceId: text("workspace_id")
 		.notNull()
@@ -193,7 +199,7 @@ export const flatCosts = sqliteTable("flat_costs", {
 });
 
 // Point-in-time values a provider reports directly: MRR, active customers.
-export const metricSnapshots = sqliteTable(
+export const metricSnapshots = pgTable(
 	"metric_snapshots",
 	{
 		id: id(),
@@ -212,30 +218,30 @@ export const metricSnapshots = sqliteTable(
 	],
 );
 
-export const fxRates = sqliteTable(
+export const fxRates = pgTable(
 	"fx_rates",
 	{
 		date: text("date").notNull(),
 		base: text("base").notNull(),
 		currency: text("currency").notNull(),
-		rate: real("rate").notNull(),
+		rate: doublePrecision("rate").notNull(),
 	},
 	(t) => [primaryKey({ columns: [t.date, t.base, t.currency] })],
 );
 
-export const syncRuns = sqliteTable("sync_runs", {
+export const syncRuns = pgTable("sync_runs", {
 	id: id(),
 	connectionId: text("connection_id")
 		.notNull()
 		.references(() => connections.id, { onDelete: "cascade" }),
-	startedAt: integer("started_at").notNull(),
-	finishedAt: integer("finished_at"),
+	startedAt: ms("started_at").notNull(),
+	finishedAt: ms("finished_at"),
 	status: text("status", { enum: ["running", "ok", "error"] }).notNull(),
 	linesWritten: integer("lines_written").notNull().default(0),
 	error: text("error"),
 });
 
-export const alertRules = sqliteTable("alert_rules", {
+export const alertRules = pgTable("alert_rules", {
 	id: id(),
 	workspaceId: text("workspace_id")
 		.notNull()
@@ -243,15 +249,15 @@ export const alertRules = sqliteTable("alert_rules", {
 	kind: text("kind", {
 		enum: ["cost_spike", "margin_floor", "sync_failure"],
 	}).notNull(),
-	threshold: real("threshold"),
+	threshold: doublePrecision("threshold"),
 	channel: text("channel", { enum: ["email"] })
 		.notNull()
 		.default("email"),
-	enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+	enabled: boolean("enabled").notNull().default(true),
 	createdAt: createdAt(),
 });
 
-export const alerts = sqliteTable("alerts", {
+export const alerts = pgTable("alerts", {
 	id: id(),
 	workspaceId: text("workspace_id")
 		.notNull()
@@ -264,6 +270,6 @@ export const alerts = sqliteTable("alerts", {
 	tone: text("tone", { enum: ["negative", "pending", "ink"] })
 		.notNull()
 		.default("ink"),
-	openedAt: integer("opened_at").notNull(),
-	resolvedAt: integer("resolved_at"),
+	openedAt: ms("opened_at").notNull(),
+	resolvedAt: ms("resolved_at"),
 });
