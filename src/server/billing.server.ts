@@ -71,7 +71,11 @@ export function verifyWebhook(body: string, h: Headers) {
 	const sig = h.get("webhook-signature");
 	if (!secret || !id || !ts || !sig) return false;
 	if (Math.abs(Date.now() / 1000 - Number(ts)) > 300) return false;
-	const expected = createHmac("sha256", secret)
+	// Standard Webhooks secrets are base64 behind a "whsec_" prefix.
+	const key = secret.startsWith("whsec_")
+		? Buffer.from(secret.slice(6), "base64")
+		: Buffer.from(secret);
+	const expected = createHmac("sha256", key)
 		.update(`${id}.${ts}.${body}`)
 		.digest();
 	return sig.split(" ").some((part) => {
