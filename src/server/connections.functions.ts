@@ -82,7 +82,7 @@ export const listConnectors = createServerFn({ method: "GET" }).handler(
 	async () => connectors().map(connectorInfo),
 );
 
-const Creds = z.record(z.string(), z.string().trim().min(1));
+const Creds = z.record(z.string(), z.string().trim());
 
 export const testConnection = createServerFn({ method: "POST" })
 	.inputValidator(z.object({ provider: z.string(), credentials: Creds }))

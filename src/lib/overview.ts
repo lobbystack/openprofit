@@ -12,11 +12,19 @@ export const METRICS: { key: MetricKey; label: string; money: boolean }[] = [
 
 export type OverviewData = {
 	currency: string;
+	workspaceSlug: string;
 	// YYYY-MM, oldest first. Money series are whole units, not cents.
 	months: string[];
 	series: Record<MetricKey, number[]>;
 	// Current month.
-	byProduct: { id: string; name: string; revenue: number; costs: number }[];
+	byProduct: {
+		id: string;
+		name: string;
+		slug: string;
+		publicPage: "off" | "full" | "revenue" | "percent";
+		revenue: number;
+		costs: number;
+	}[];
 	costsByProvider: { provider: string; amount: number }[];
 	revenueBySource: { provider: string; amount: number }[];
 };

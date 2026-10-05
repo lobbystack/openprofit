@@ -188,6 +188,8 @@ export async function overview(
 	const byProduct = prods.map((p) => ({
 		id: p.id,
 		name: p.name,
+		slug: p.slug,
+		publicPage: p.publicPage,
 		revenue: units(rp.get(p.id) ?? 0),
 		costs: units((cp.get(p.id) ?? 0) + (flatByProduct.get(p.id) ?? 0)),
 	}));
@@ -197,6 +199,8 @@ export async function overview(
 		byProduct.push({
 			id: "shared",
 			name: "Shared",
+			slug: "shared",
+			publicPage: "off" as const,
 			revenue: units(sharedRev),
 			costs: units(sharedCost),
 		});
@@ -212,6 +216,7 @@ export async function overview(
 
 	return {
 		currency: ws.baseCurrency,
+		workspaceSlug: ws.slug,
 		months,
 		series: {
 			revenue,

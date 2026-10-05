@@ -32,7 +32,9 @@ function Connect() {
 		| { state: "error"; error: string }
 	>({ state: "idle" });
 	const [saving, setSaving] = useState(false);
-	const complete = info.fields.every((f) => values[f.name]?.trim());
+	const complete = info.fields.every(
+		(f) => f.optional || values[f.name]?.trim(),
+	);
 	const logo = PROVIDERS[info.id] ? (
 		<ProviderLogo id={info.id as ProviderId} size={16} />
 	) : null;

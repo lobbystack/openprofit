@@ -1,11 +1,12 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { Plus, X } from "lucide-react";
+import { ArrowUpRight, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Control, PageHeader } from "#/components/app/shell";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { money } from "#/lib/format";
 import { getOverview } from "#/server/overview.functions";
 import { createProduct, deleteProduct } from "#/server/products.functions";
+import { setPublicPage } from "#/server/public.functions";
 
 export const Route = createFileRoute("/app/products")({
 	loader: () => getOverview(),
@@ -56,6 +57,7 @@ function Products() {
 							<th className={`${TH} text-right`}>Profit</th>
 							<th className={`${TH} text-right`}>Margin</th>
 							<th className="h-9 w-40 px-4" />
+							<th className={`${TH} w-36`}>Public</th>
 							<th className="h-9 w-10 px-2" />
 						</tr>
 					</thead>
@@ -93,6 +95,45 @@ function Products() {
 											/>
 										)}
 									</td>
+									<td className="px-4">
+										{!isShared && (
+											<span className="flex items-center gap-1">
+												<select
+													value={p.publicPage}
+													onChange={async (e) => {
+														await setPublicPage({
+															data: {
+																id: p.id,
+																mode: e.target.value as
+																	| "off"
+																	| "full"
+																	| "revenue"
+																	| "percent",
+															},
+														});
+														router.invalidate();
+													}}
+													className="h-7 rounded-md border border-line bg-paper px-1.5 text-[12px] outline-none focus:border-line-strong"
+												>
+													<option value="off">Off</option>
+													<option value="full">Full</option>
+													<option value="revenue">Revenue</option>
+													<option value="percent">Percent</option>
+												</select>
+												{p.publicPage !== "off" && (
+													<a
+														href={`/p/${data.workspaceSlug}/${p.slug}`}
+														target="_blank"
+														rel="noreferrer"
+														title="Open page"
+														className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-ink"
+													>
+														<ArrowUpRight size={13} />
+													</a>
+												)}
+											</span>
+										)}
+									</td>
 									<td className="px-2">
 										{!isShared && (
 											<button
@@ -110,7 +151,7 @@ function Products() {
 						})}
 						{adding && (
 							<tr>
-								<td colSpan={7} className="px-4 py-2">
+								<td colSpan={8} className="px-4 py-2">
 									<form onSubmit={add} className="flex items-center gap-2">
 										<input
 											value={name}

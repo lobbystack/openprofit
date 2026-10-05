@@ -1,222 +1,98 @@
-Welcome to your new TanStack Start app!
+# pnl
 
-# Getting Started
+Revenue, costs and profit for every software product you run, in one place. Connect Stripe or Polar for revenue and the services you pay for (OpenAI, Anthropic, Vercel, Cloudflare) for costs. The overview shows this month's profit per product; a weekly email keeps you current.
 
-To run this application:
+Open source under the MIT license. Self-host in one container, or use the hosted version.
+
+## Self-host
+
+One container with SQLite on a volume. You need Docker and a 32-byte secret for encrypting provider keys.
+
+Generate the secret:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+Run the image:
+
+```bash
+docker run -d \
+  --name pnl \
+  -p 3000:3000 \
+  -v pnl_data:/app/data \
+  -e SECRET_KEY=your_secret_here \
+  -e APP_URL=http://localhost:3000 \
+  ghcr.io/pnl/pnl:latest
+```
+
+Open `http://localhost:3000/login` and enter your email. Without an email provider, the sign-in link prints in the container log:
+
+```bash
+docker logs pnl
+```
+
+Set `RESEND_API_KEY` and `EMAIL_FROM` to send links and the weekly email by mail instead.
+
+## Environment variables
+
+| Variable | Required | Default | Purpose |
+| --- | --- | --- | --- |
+| `SECRET_KEY` | Yes | | 32 random bytes, base64. Encrypts provider credentials and signs sessions |
+| `APP_URL` | Yes | `http://localhost:3000` | Public URL of this instance, used in sign-in links |
+| `DATABASE_URL` | No | `file:./data/pnl.db` | SQLite file, or a libsql URL |
+| `DATABASE_AUTH_TOKEN` | No | | Token for a hosted libsql database |
+| `RESEND_API_KEY` | No | | Sends sign-in links and the weekly email through Resend |
+| `EMAIL_FROM` | No | | Sender address, for example `pnl <mail@your_domain>` |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | No | | Adds "Sign in with GitHub" |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | No | | Adds "Sign in with Google" |
+| `SYNC_SCHEDULER` | No | `on` | Set to `off` to disable the in-process sync and weekly-email jobs |
+| `APP_MODE` | No | `selfhost` | `cloud` enables the pricing page and plan limits |
+
+## Connectors
+
+Each connector takes a read-only key you create in the provider's dashboard. The connect page links to the right settings page and lists the permissions to tick. Keys are stored encrypted with `SECRET_KEY`.
+
+| Provider | Data | Key |
+| --- | --- | --- |
+| Stripe | Balance transactions, active subscriptions (MRR, customers) | Restricted key with read access to balance, balance transaction sources, charges and subscriptions |
+| Polar | Daily revenue and net revenue, MRR, active subscriptions | Organization access token with `organizations:read` and `metrics:read` |
+| OpenAI | Daily cost by project and line item | Organization admin key |
+| Anthropic | Daily cost by workspace and description | Admin key (organization accounts) |
+| Vercel | Daily charges per project (FOCUS format) | Access token scoped to the team |
+| Cloudflare | Billable usage, or invoices where usage is unavailable | API token with Billing: Read and Account Settings: Read |
+
+Costs with no API (Supabase, Resend, domains) go in as flat monthly or yearly amounts on the Costs page.
+
+## Local development
+
+Requires Node 22 and pnpm.
 
 ```bash
 pnpm install
+cp .env.example .env   # then set SECRET_KEY
+pnpm db:push           # creates the SQLite schema
+pnpm db:seed           # one workspace with twelve months of demo data
 pnpm dev
 ```
 
-# Building For Production
-
-To build this application for production:
+After signing in once at `http://localhost:3000/login`, attach the demo workspace to your user:
 
 ```bash
-pnpm build
+pnpm db:seed --owner=you@example.com
 ```
 
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
-
+Checks:
 
 ```bash
-pnpm lint
-pnpm format
-pnpm check
+pnpm check             # biome
+npx tsc --noEmit
 ```
 
+## Design
 
-## Shadcn
+Tokens and utilities live in `src/styles.css`.
 
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
+## License
 
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-
-## Deploy to Railway
-
-Railway's Railpack builder detects the project's package manager and package
-scripts automatically.
-
-1. Push this repo to GitHub
-2. Visit https://railway.com/new and create a project from your repo
-3. In the **Variables** tab, add the entries from `.env.example` with their production values
-4. Deploy, then open **Networking** and select **Generate Domain**
-
-Railpack runs the project's build script and starts the generated Nitro server
-with `node .output/server/index.mjs`. The server handles SSR, server functions,
-API routes, and static assets.
-
-Need a database? Add one from the Railway project canvas, then connect it to the
-app with a Railway reference variable. The variable name and value depend on the
-database service you choose.
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+MIT

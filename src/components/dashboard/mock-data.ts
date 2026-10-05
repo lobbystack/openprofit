@@ -35,9 +35,30 @@ export const SERIES = {
 };
 
 export const PRODUCTS = [
-	{ id: "draftly", name: "Draftly", revenue: 7240, costs: 1890 },
-	{ id: "shipmail", name: "Shipmail", revenue: 3610, costs: 720 },
-	{ id: "quoteflow", name: "Quoteflow", revenue: 1630, costs: 502 },
+	{
+		id: "draftly",
+		name: "Draftly",
+		slug: "draftly",
+		publicPage: "off" as const,
+		revenue: 7240,
+		costs: 1890,
+	},
+	{
+		id: "shipmail",
+		name: "Shipmail",
+		slug: "shipmail",
+		publicPage: "off" as const,
+		revenue: 3610,
+		costs: 720,
+	},
+	{
+		id: "quoteflow",
+		name: "Quoteflow",
+		slug: "quoteflow",
+		publicPage: "off" as const,
+		revenue: 1630,
+		costs: 502,
+	},
 ];
 
 export const COSTS_BY_PROVIDER = [
@@ -58,6 +79,7 @@ export const REVENUE_BY_SOURCE = [
 
 export const MOCK_OVERVIEW: OverviewData = {
 	currency: "USD",
+	workspaceSlug: "acme",
 	months: MONTHS,
 	series: SERIES,
 	byProduct: PRODUCTS,

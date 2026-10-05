@@ -42,6 +42,7 @@ export type KeyField = {
 	label: string;
 	placeholder?: string;
 	secret?: boolean;
+	optional?: boolean;
 };
 
 export type Connector = {

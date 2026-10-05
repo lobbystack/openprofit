@@ -21,6 +21,7 @@ import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppConnectProviderRouteImport } from './routes/app/connect.$provider'
+import { Route as PWorkspaceProductRouteImport } from './routes/p.$workspace.$product'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -82,6 +83,11 @@ const AppConnectProviderRoute = AppConnectProviderRouteImport.update({
   path: '/connect/$provider',
   getParentRoute: () => AppRoute,
 } as any)
+const PWorkspaceProductRoute = PWorkspaceProductRouteImport.update({
+  id: '/p/$workspace/$product',
+  path: '/p/$workspace/$product',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
+  '/p/$workspace/$product': typeof PWorkspaceProductRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
+  '/p/$workspace/$product': typeof PWorkspaceProductRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
+  '/p/$workspace/$product': typeof PWorkspaceProductRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/api/auth/$'
     | '/app/connect/$provider'
+    | '/p/$workspace/$product'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/api/auth/$'
     | '/app/connect/$provider'
+    | '/p/$workspace/$product'
   id:
     | '__root__'
     | '/'
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/api/auth/$'
     | '/app/connect/$provider'
+    | '/p/$workspace/$product'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  PWorkspaceProductRoute: typeof PWorkspaceProductRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -263,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConnectProviderRouteImport
       parentRoute: typeof AppRoute
     }
+    '/p/$workspace/$product': {
+      id: '/p/$workspace/$product'
+      path: '/p/$workspace/$product'
+      fullPath: '/p/$workspace/$product'
+      preLoaderRoute: typeof PWorkspaceProductRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -294,6 +314,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  PWorkspaceProductRoute: PWorkspaceProductRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
