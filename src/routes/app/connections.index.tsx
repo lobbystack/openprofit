@@ -15,7 +15,7 @@ import {
 	syncNow,
 } from "#/server/connections.functions";
 
-export const Route = createFileRoute("/app/connections")({
+export const Route = createFileRoute("/app/connections/")({
 	loader: async () => {
 		const [rows, available] = await Promise.all([
 			getConnections(),
@@ -88,7 +88,13 @@ function Connections() {
 										{p && <ProviderLogo id={r.provider} size={14} />}
 									</span>
 									<span className="w-32 shrink-0">
-										<span className="block">{p?.name ?? r.provider}</span>
+										<Link
+											to="/app/connections/$id"
+											params={{ id: r.id }}
+											className="block hover:underline"
+										>
+											{p?.name ?? r.provider}
+										</Link>
 										{r.label && (
 											<span className="num block text-[11px] text-text-3">
 												{r.label}

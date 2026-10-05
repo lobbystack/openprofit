@@ -15,12 +15,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppAlertsRouteImport } from './routes/app/alerts'
-import { Route as AppConnectionsRouteImport } from './routes/app/connections'
 import { Route as AppCostsRouteImport } from './routes/app/costs'
 import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppConnectProviderRouteImport } from './routes/app/connect.$provider'
+import { Route as AppConnectionsIndexRouteImport } from './routes/app/connections.index'
+import { Route as AppConnectionsIdRouteImport } from './routes/app/connections.$id'
 import { Route as PWorkspaceProductRouteImport } from './routes/p.$workspace.$product'
 
 const IndexRoute = IndexRouteImport.update({
@@ -53,11 +54,6 @@ const AppAlertsRoute = AppAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AppRoute,
 } as any)
-const AppConnectionsRoute = AppConnectionsRouteImport.update({
-  id: '/connections',
-  path: '/connections',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppCostsRoute = AppCostsRouteImport.update({
   id: '/costs',
   path: '/costs',
@@ -83,6 +79,16 @@ const AppConnectProviderRoute = AppConnectProviderRouteImport.update({
   path: '/connect/$provider',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConnectionsIndexRoute = AppConnectionsIndexRouteImport.update({
+  id: '/connections/',
+  path: '/connections/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConnectionsIdRoute = AppConnectionsIdRouteImport.update({
+  id: '/connections/$id',
+  path: '/connections/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const PWorkspaceProductRoute = PWorkspaceProductRouteImport.update({
   id: '/p/$workspace/$product',
   path: '/p/$workspace/$product',
@@ -95,28 +101,30 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/app/alerts': typeof AppAlertsRoute
-  '/app/connections': typeof AppConnectionsRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
+  '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
+  '/app/connections/': typeof AppConnectionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/app/alerts': typeof AppAlertsRoute
-  '/app/connections': typeof AppConnectionsRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
+  '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
+  '/app/connections': typeof AppConnectionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,14 +133,15 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/app/alerts': typeof AppAlertsRoute
-  '/app/connections': typeof AppConnectionsRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
+  '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
+  '/app/connections/': typeof AppConnectionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -142,28 +151,30 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/app/alerts'
-    | '/app/connections'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
     | '/app/'
     | '/api/auth/$'
     | '/app/connect/$provider'
+    | '/app/connections/$id'
     | '/p/$workspace/$product'
+    | '/app/connections/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/onboarding'
     | '/app/alerts'
-    | '/app/connections'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
     | '/app'
     | '/api/auth/$'
     | '/app/connect/$provider'
+    | '/app/connections/$id'
     | '/p/$workspace/$product'
+    | '/app/connections'
   id:
     | '__root__'
     | '/'
@@ -171,14 +182,15 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/app/alerts'
-    | '/app/connections'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
     | '/app/'
     | '/api/auth/$'
     | '/app/connect/$provider'
+    | '/app/connections/$id'
     | '/p/$workspace/$product'
+    | '/app/connections/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -234,13 +246,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAlertsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/connections': {
-      id: '/app/connections'
-      path: '/connections'
-      fullPath: '/app/connections'
-      preLoaderRoute: typeof AppConnectionsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/costs': {
       id: '/app/costs'
       path: '/costs'
@@ -276,6 +281,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConnectProviderRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/connections/': {
+      id: '/app/connections/'
+      path: '/connections'
+      fullPath: '/app/connections/'
+      preLoaderRoute: typeof AppConnectionsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/connections/$id': {
+      id: '/app/connections/$id'
+      path: '/connections/$id'
+      fullPath: '/app/connections/$id'
+      preLoaderRoute: typeof AppConnectionsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/p/$workspace/$product': {
       id: '/p/$workspace/$product'
       path: '/p/$workspace/$product'
@@ -288,22 +307,24 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAlertsRoute: typeof AppAlertsRoute
-  AppConnectionsRoute: typeof AppConnectionsRoute
   AppCostsRoute: typeof AppCostsRoute
   AppProductsRoute: typeof AppProductsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppConnectProviderRoute: typeof AppConnectProviderRoute
+  AppConnectionsIdRoute: typeof AppConnectionsIdRoute
+  AppConnectionsIndexRoute: typeof AppConnectionsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAlertsRoute: AppAlertsRoute,
-  AppConnectionsRoute: AppConnectionsRoute,
   AppCostsRoute: AppCostsRoute,
   AppProductsRoute: AppProductsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
   AppConnectProviderRoute: AppConnectProviderRoute,
+  AppConnectionsIdRoute: AppConnectionsIdRoute,
+  AppConnectionsIndexRoute: AppConnectionsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

@@ -188,6 +188,22 @@ async function main() {
 		}
 	});
 
+	// Mapped providers get a mapping row per product, as a real sync would.
+	const mappings: (typeof schema.productMappings.$inferInsert)[] = [];
+	for (const cp of COST_PROVIDERS.filter((x) => x.mapped)) {
+		for (const p of PRODUCTS) {
+			const product = products.find((x) => x.slug === p.slug);
+			if (!product) continue;
+			mappings.push({
+				workspaceId: ws.id,
+				connectionId: conn(cp.provider).id,
+				subUnitId: `${cp.provider}:${p.slug}`,
+				subUnitLabel: `${p.name} (${cp.provider})`,
+				productId: product.id,
+			});
+		}
+	}
+	await db.insert(schema.productMappings).values(mappings);
 	await db.insert(schema.revenueLines).values(revenueLines);
 	await db.insert(schema.costLines).values(costLines);
 	await db.insert(schema.metricSnapshots).values(snapshots);
