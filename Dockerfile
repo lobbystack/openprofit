@@ -1,4 +1,4 @@
-# Single-container self-host. SQLite lives on the /app/data volume.
+# Single-container self-host. PGlite data lives on the /app/data volume.
 FROM node:22-alpine AS build
 WORKDIR /app
 RUN corepack enable

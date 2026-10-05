@@ -6,7 +6,7 @@ Open source under the MIT license. Self-host in one container, or use the hosted
 
 ## Self-host
 
-One container with SQLite on a volume. You need Docker and a 32-byte secret for encrypting provider keys.
+One container. Data lives in an embedded Postgres (PGlite) on a volume; point `DATABASE_URL` at a `postgres://` server to use one instead. You need Docker and a 32-byte secret for encrypting provider keys.
 
 Generate the secret:
 
