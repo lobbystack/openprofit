@@ -151,13 +151,16 @@ export function PageHeader({
 export function Control({
 	children,
 	muted = false,
+	onClick,
 }: {
 	children: React.ReactNode;
 	muted?: boolean;
+	onClick?: () => void;
 }) {
 	return (
 		<button
 			type="button"
+			onClick={onClick}
 			className={`flex h-8 items-center gap-1.5 rounded-md border border-line bg-paper px-2.5 text-[12px] hover:border-line-strong ${
 				muted ? "text-text-2" : ""
 			}`}

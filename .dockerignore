@@ -1,0 +1,8 @@
+node_modules
+.output
+.nitro
+.tanstack
+data
+design
+.env
+.git

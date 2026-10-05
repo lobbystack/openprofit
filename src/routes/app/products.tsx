@@ -1,9 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Plus, X } from "lucide-react";
+import { useState } from "react";
 import { Control, PageHeader } from "#/components/app/shell";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { money } from "#/lib/format";
 import { getOverview } from "#/server/overview.functions";
+import { createProduct, deleteProduct } from "#/server/products.functions";
 
 export const Route = createFileRoute("/app/products")({
 	loader: () => getOverview(),
@@ -14,12 +16,32 @@ const TH = "label-mono h-9 px-4 font-normal";
 
 function Products() {
 	const data = Route.useLoaderData();
+	const router = useRouter();
+	const [adding, setAdding] = useState(false);
+	const [name, setName] = useState("");
 	const fmt = (n: number) => money(n, { currency: data.currency });
+	const products = data.byProduct.filter((p) => p.id !== "shared");
+	const shared = data.byProduct.find((p) => p.id === "shared");
 	const totalRevenue = data.byProduct.reduce((a, p) => a + p.revenue, 0) || 1;
+
+	async function add(e: React.FormEvent) {
+		e.preventDefault();
+		if (!name.trim()) return;
+		await createProduct({ data: { name } });
+		setName("");
+		setAdding(false);
+		router.invalidate();
+	}
+
+	async function remove(id: string) {
+		await deleteProduct({ data: { id } });
+		router.invalidate();
+	}
+
 	return (
 		<>
-			<PageHeader title="Products" meta={`${data.byProduct.length}`}>
-				<Control>
+			<PageHeader title="Products" meta={`${products.length}`}>
+				<Control onClick={() => setAdding(true)}>
 					<Plus size={13} />
 					Add product
 				</Control>
@@ -34,17 +56,22 @@ function Products() {
 							<th className={`${TH} text-right`}>Profit</th>
 							<th className={`${TH} text-right`}>Margin</th>
 							<th className="h-9 w-40 px-4" />
+							<th className="h-9 w-10 px-2" />
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-line">
-						{data.byProduct.map((p) => {
+						{[...products, ...(shared ? [shared] : [])].map((p) => {
 							const profit = p.revenue - p.costs;
 							const share = p.revenue / totalRevenue;
 							const series = data.series.profit.map((v) =>
 								Math.round(v * share),
 							);
+							const isShared = p.id === "shared";
 							return (
-								<tr key={p.id} className="hover:bg-surface-1">
+								<tr
+									key={p.id}
+									className={isShared ? "text-text-2" : "hover:bg-surface-1"}
+								>
 									<td className="h-12 px-4">{p.name}</td>
 									<td className="num px-4 text-right">{fmt(p.revenue)}</td>
 									<td className="num px-4 text-right text-negative">
@@ -66,9 +93,48 @@ function Products() {
 											/>
 										)}
 									</td>
+									<td className="px-2">
+										{!isShared && (
+											<button
+												type="button"
+												title="Remove"
+												onClick={() => remove(p.id)}
+												className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-negative"
+											>
+												<X size={13} />
+											</button>
+										)}
+									</td>
 								</tr>
 							);
 						})}
+						{adding && (
+							<tr>
+								<td colSpan={7} className="px-4 py-2">
+									<form onSubmit={add} className="flex items-center gap-2">
+										<input
+											value={name}
+											onChange={(e) => setName(e.target.value)}
+											placeholder="Name"
+											className="h-8 w-64 rounded-md border border-line bg-paper px-2.5 text-[13px] outline-none placeholder:text-text-3 focus:border-line-strong"
+										/>
+										<button
+											type="submit"
+											className="h-8 rounded-md bg-ink px-3 text-[13px] text-paper hover:bg-ink-2"
+										>
+											Add
+										</button>
+										<button
+											type="button"
+											onClick={() => setAdding(false)}
+											className="h-8 px-2 text-[13px] text-text-2 hover:text-ink"
+										>
+											Cancel
+										</button>
+									</form>
+								</td>
+							</tr>
+						)}
 					</tbody>
 				</table>
 			</div>

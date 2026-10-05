@@ -27,6 +27,9 @@ export const workspaces = sqliteTable("workspaces", {
 	plan: text("plan", { enum: ["free", "indie", "pro"] })
 		.notNull()
 		.default("free"),
+	weeklyEmail: integer("weekly_email", { mode: "boolean" })
+		.notNull()
+		.default(true),
 	createdAt: createdAt(),
 });
 
