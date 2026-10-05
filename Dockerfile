@@ -17,6 +17,5 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml drizzle.config.ts ./
 COPY src/db ./src/db
 RUN pnpm install --frozen-lockfile --prod && pnpm add -D drizzle-kit
 COPY --from=build /app/.output ./.output
-VOLUME ["/app/data"]
 EXPOSE 3000
 CMD ["sh", "-c", "npx drizzle-kit push --force && node .output/server/index.mjs"]
