@@ -1,5 +1,4 @@
 @import '@fontsource-variable/geist';
-@import '@fontsource-variable/eb-garamond';
 @import '@fontsource/commit-mono/400.css';
 @import '@fontsource/commit-mono/500.css';
 
@@ -92,7 +91,6 @@
 
 @theme inline {
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'EB Garamond Variable', 'Iowan Old Style', Georgia, serif;
   --font-mono: 'Commit Mono', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --color-paper: var(--paper);
@@ -222,8 +220,7 @@
 }
 
 @utility prose-landing {
-  font-family: var(--font-serif);
   font-size: 18px;
-  line-height: 1.4;
+  line-height: 1.5;
   color: var(--text-2);
 }

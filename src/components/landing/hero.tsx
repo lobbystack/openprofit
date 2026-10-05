@@ -29,7 +29,7 @@ export function Hero() {
 					<h1 className="mt-6 max-w-[760px] text-[40px] leading-[1.05] md:text-[56px]">
 						Know if your software makes money.
 					</h1>
-					<p className="prose-landing mt-5 max-w-[640px] text-[20px] leading-[28px]">
+					<p className="prose-landing mt-5 max-w-[640px]">
 						Connect Stripe or Polar and the services you pay for. See revenue,
 						costs and profit for every product you run, updated every hour.
 					</p>

@@ -8,7 +8,7 @@ export function Cta() {
 				<h2 className="max-w-[512px] text-[48px] leading-[1]">
 					Know if your software makes money.
 				</h2>
-				<p className="mt-5 max-w-[560px] font-serif text-[20px] leading-[28px] text-paper/60">
+				<p className="mt-5 max-w-[560px] text-[18px] leading-[28px] text-paper/60">
 					Two minutes to connect, one number to watch. Free under $2,500 a
 					month.
 				</p>
