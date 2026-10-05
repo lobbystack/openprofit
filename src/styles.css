@@ -1,0 +1,229 @@
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/eb-garamond';
+@import '@fontsource/commit-mono/400.css';
+@import '@fontsource/commit-mono/500.css';
+
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Tokens. See design/DESIGN.md.
+  Two source colors per theme: paper (--paper) and ink (--ink). Every other
+  neutral is ink mixed into paper at a percentage.
+*/
+:root {
+  --paper: #f7f7f4;
+  --ink: #26251e;
+  --ink-2: #3b3a33;
+
+  --surface-1: #f2f1ed;
+  --surface-2: #ebeae5;
+  --surface-3: #e6e5e0;
+  --surface-4: #e1e0db;
+
+  --line: color-mix(in oklab, var(--ink) 10%, transparent);
+  --line-subtle: color-mix(in oklab, var(--ink) 5%, transparent);
+  --line-strong: color-mix(in oklab, var(--ink) 20%, transparent);
+
+  --text-2: color-mix(in oklab, var(--ink) 60%, transparent);
+  --text-3: color-mix(in oklab, var(--ink) 40%, transparent);
+
+  --brand: #f54e00;
+  --positive: #1f8a65;
+  --negative: #cf2d56;
+  --pending: #c98a04;
+  --positive-bg: color-mix(in srgb, var(--positive) 8%, transparent);
+  --negative-bg: color-mix(in srgb, var(--negative) 6%, transparent);
+  --pending-bg: color-mix(in srgb, var(--pending) 8%, transparent);
+
+  /* shadcn mapping */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface-1);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-1);
+  --muted-foreground: var(--text-2);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--ink);
+  --destructive: var(--negative);
+  --destructive-foreground: var(--paper);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--line-strong);
+  --chart-1: var(--ink);
+  --chart-2: var(--text-3);
+  --chart-3: var(--positive);
+  --chart-4: var(--negative);
+  --chart-5: var(--pending);
+  --radius: 0.5rem;
+  --sidebar: var(--paper);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--paper);
+  --sidebar-accent: var(--surface-2);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--line-strong);
+}
+
+.dark {
+  --paper: #14120b;
+  --ink: #edecec;
+  --ink-2: #d6d5d2;
+
+  --surface-1: color-mix(in oklab, var(--ink) 4%, var(--paper));
+  --surface-2: color-mix(in oklab, var(--ink) 7%, var(--paper));
+  --surface-3: color-mix(in oklab, var(--ink) 10%, var(--paper));
+  --surface-4: color-mix(in oklab, var(--ink) 13%, var(--paper));
+
+  --positive: #2fa37b;
+  --negative: #e04a70;
+  --pending: #d9a023;
+}
+
+@theme inline {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'EB Garamond Variable', 'Iowan Old Style', Georgia, serif;
+  --font-mono: 'Commit Mono', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-line: var(--line);
+  --color-line-subtle: var(--line-subtle);
+  --color-line-strong: var(--line-strong);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-brand: var(--brand);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-pending: var(--pending);
+  --color-positive-bg: var(--positive-bg);
+  --color-negative-bg: var(--negative-bg);
+  --color-pending-bg: var(--pending-bg);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-xs: 4px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 400;
+    letter-spacing: -0.0125em;
+    text-wrap: balance;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-mono);
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--ink) 12%, transparent);
+  }
+}
+
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+@utility prose-landing {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
