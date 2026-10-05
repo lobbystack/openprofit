@@ -11,6 +11,6 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
-design/references/
+design/
 data/
 .env
