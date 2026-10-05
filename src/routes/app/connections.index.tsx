@@ -57,6 +57,8 @@ function Connections() {
 		setBusy(id);
 		try {
 			await syncNow({ data: { id } });
+		} catch {
+			// The row shows the error after invalidate.
 		} finally {
 			setBusy(null);
 			router.invalidate();

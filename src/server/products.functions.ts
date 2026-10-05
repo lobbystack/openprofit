@@ -12,7 +12,7 @@ const slugify = (s: string) =>
 		.slice(0, 40) || "product";
 
 export const createProduct = createServerFn({ method: "POST" })
-	.inputValidator(z.object({ name: z.string().trim().min(1).max(60) }))
+	.validator(z.object({ name: z.string().trim().min(1).max(60) }))
 	.handler(async ({ data }) => {
 		const ws = await currentWorkspace();
 		const base = slugify(data.name);
@@ -35,7 +35,7 @@ export const createProduct = createServerFn({ method: "POST" })
 	});
 
 export const deleteProduct = createServerFn({ method: "POST" })
-	.inputValidator(z.object({ id: z.string() }))
+	.validator(z.object({ id: z.string() }))
 	.handler(async ({ data }) => {
 		const ws = await currentWorkspace();
 		await db

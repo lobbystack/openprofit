@@ -58,7 +58,7 @@ export const getAlerts = createServerFn({ method: "GET" }).handler(
 );
 
 export const setRuleEnabled = createServerFn({ method: "POST" })
-	.inputValidator(z.object({ id: z.string(), enabled: z.boolean() }))
+	.validator(z.object({ id: z.string(), enabled: z.boolean() }))
 	.handler(async ({ data }) => {
 		const ws = await currentWorkspace();
 		await db

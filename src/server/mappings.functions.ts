@@ -25,7 +25,7 @@ export type ConnectionDetail = {
 // Sub-units (projects, workspaces, zones) seen in this connection's lines,
 // with the product each one is assigned to.
 export const getConnection = createServerFn({ method: "GET" })
-	.inputValidator(z.object({ id: z.string() }))
+	.validator(z.object({ id: z.string() }))
 	.handler(async ({ data }): Promise<ConnectionDetail> => {
 		const ws = await currentWorkspace();
 		const conn = await db.query.connections.findFirst({
@@ -89,7 +89,7 @@ export const getConnection = createServerFn({ method: "GET" })
 
 // Assigns a sub-unit to a product and relabels every line already synced.
 export const setMapping = createServerFn({ method: "POST" })
-	.inputValidator(
+	.validator(
 		z.object({
 			connectionId: z.string(),
 			subUnitId: z.string(),

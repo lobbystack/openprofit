@@ -17,7 +17,7 @@ export type PublicProduct = {
 
 // No auth: anyone with the link can read a product whose page is on.
 export const getPublicProduct = createServerFn({ method: "GET" })
-	.inputValidator(z.object({ workspace: z.string(), product: z.string() }))
+	.validator(z.object({ workspace: z.string(), product: z.string() }))
 	.handler(async ({ data }): Promise<PublicProduct> => {
 		const ws = await db.query.workspaces.findFirst({
 			where: eq(schema.workspaces.slug, data.workspace),
@@ -39,7 +39,7 @@ export const getPublicProduct = createServerFn({ method: "GET" })
 	});
 
 export const setPublicPage = createServerFn({ method: "POST" })
-	.inputValidator(
+	.validator(
 		z.object({
 			id: z.string(),
 			mode: z.enum(["off", "full", "revenue", "percent"]),

@@ -36,7 +36,7 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 export const CADENCES = [15, 60, 360, 1440] as const;
 
 export const updateSettings = createServerFn({ method: "POST" })
-	.inputValidator(
+	.validator(
 		z.object({
 			name: z.string().trim().min(1).max(60).optional(),
 			cadenceMinutes: z

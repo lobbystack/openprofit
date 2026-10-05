@@ -75,7 +75,7 @@ export const getConnections = createServerFn({ method: "GET" }).handler(
 );
 
 export const getConnectorInfo = createServerFn({ method: "GET" })
-	.inputValidator(z.object({ id: z.string() }))
+	.validator(z.object({ id: z.string() }))
 	.handler(async ({ data }) => connectorInfo(connector(data.id)));
 
 export const listConnectors = createServerFn({ method: "GET" }).handler(
@@ -85,7 +85,7 @@ export const listConnectors = createServerFn({ method: "GET" }).handler(
 const Creds = z.record(z.string(), z.string().trim());
 
 export const testConnection = createServerFn({ method: "POST" })
-	.inputValidator(z.object({ provider: z.string(), credentials: Creds }))
+	.validator(z.object({ provider: z.string(), credentials: Creds }))
 	.handler(async ({ data }) => {
 		await currentWorkspace();
 		try {
@@ -100,7 +100,7 @@ export const testConnection = createServerFn({ method: "POST" })
 	});
 
 export const createConnection = createServerFn({ method: "POST" })
-	.inputValidator(z.object({ provider: z.string(), credentials: Creds }))
+	.validator(z.object({ provider: z.string(), credentials: Creds }))
 	.handler(async ({ data }) => {
 		const ws = await currentWorkspace();
 		const c = connector(data.provider);
@@ -127,7 +127,7 @@ export const createConnection = createServerFn({ method: "POST" })
 	});
 
 export const syncNow = createServerFn({ method: "POST" })
-	.inputValidator(z.object({ id: z.string() }))
+	.validator(z.object({ id: z.string() }))
 	.handler(async ({ data }) => {
 		const ws = await currentWorkspace();
 		const conn = await db.query.connections.findFirst({
@@ -142,7 +142,7 @@ export const syncNow = createServerFn({ method: "POST" })
 	});
 
 export const deleteConnection = createServerFn({ method: "POST" })
-	.inputValidator(z.object({ id: z.string() }))
+	.validator(z.object({ id: z.string() }))
 	.handler(async ({ data }) => {
 		const ws = await currentWorkspace();
 		await db

@@ -11,7 +11,7 @@ const Input = z.object({
 });
 
 export const createWorkspaceFn = createServerFn({ method: "POST" })
-	.inputValidator(Input)
+	.validator(Input)
 	.handler(async ({ data }) => {
 		const user = await requireUser();
 		const ws = await createWorkspace(user.id, data);
