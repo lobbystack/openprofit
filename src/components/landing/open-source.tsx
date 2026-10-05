@@ -1,3 +1,4 @@
+import { GITHUB_URL } from "#/lib/app";
 import { Container, Section, SectionHeader } from "./primitives";
 
 const STATS = [
@@ -16,7 +17,7 @@ export function OpenSource() {
 					title="Open source. Self-host it if you'd rather."
 					size={36}
 					cta="Read the source"
-					href="https://github.com"
+					href={GITHUB_URL}
 				>
 					One Docker image, SQLite by default, Postgres if you want it. Your
 					Stripe keys never leave your server.

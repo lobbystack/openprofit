@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { GITHUB_URL } from "#/lib/app";
 import { DashboardPreview } from "../dashboard/dashboard-preview";
 import { Button, Container } from "./primitives";
 
@@ -16,7 +17,7 @@ export function Hero() {
 			<section className="pt-14">
 				<Container className="flex flex-col items-center pt-16 pb-12 text-center">
 					<a
-						href="https://github.com"
+						href={GITHUB_URL}
 						className="flex h-[30px] items-center gap-2 rounded-full border border-line-strong bg-paper pr-1 pl-3 text-[12px] font-medium"
 					>
 						Open source, MIT licensed

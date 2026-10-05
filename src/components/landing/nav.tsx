@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { siGithub } from "simple-icons";
-import { APP_NAME } from "#/lib/app";
+import { APP_NAME, GITHUB_URL } from "#/lib/app";
 import { Button, Container } from "./primitives";
 
 const LINKS = [
@@ -37,7 +37,7 @@ export function Nav() {
 						</a>
 					))}
 					<a
-						href="https://github.com"
+						href={GITHUB_URL}
 						className="flex items-center gap-1.5 hover:text-ink"
 					>
 						<svg

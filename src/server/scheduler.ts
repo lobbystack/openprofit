@@ -4,11 +4,11 @@ import { sendWeeklyEmails } from "./weekly.server";
 
 // In-process scheduler. Runs once per process; survives Vite reloads.
 declare global {
-	var __pnlScheduler: { sync: Cron; weekly: Cron } | undefined;
+	var __openprofitScheduler: { sync: Cron; weekly: Cron } | undefined;
 }
 
 export function startScheduler() {
-	if (globalThis.__pnlScheduler) return globalThis.__pnlScheduler;
+	if (globalThis.__openprofitScheduler) return globalThis.__openprofitScheduler;
 	const sync = new Cron("*/5 * * * *", { protect: true }, async () => {
 		const n = await syncDue();
 		if (n) console.log(`[sync] ${n} connection(s) synced`);
@@ -17,6 +17,6 @@ export function startScheduler() {
 	const weekly = new Cron("0 9 * * 1", { protect: true }, async () => {
 		await sendWeeklyEmails();
 	});
-	globalThis.__pnlScheduler = { sync, weekly };
-	return globalThis.__pnlScheduler;
+	globalThis.__openprofitScheduler = { sync, weekly };
+	return globalThis.__openprofitScheduler;
 }

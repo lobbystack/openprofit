@@ -61,7 +61,7 @@ async function main() {
 	const existing = await db.query.workspaces.findFirst();
 	if (existing) {
 		if (owner) await attachOwner(existing.id, owner);
-		else console.log(`Workspace "${existing.name}" exists. Delete data/pnl.db to reseed.`);
+		else console.log(`Workspace "${existing.name}" exists. Delete data/openprofit.db to reseed.`);
 		return;
 	}
 	const [ws] = await db

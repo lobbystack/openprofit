@@ -6,7 +6,7 @@ import * as appSchema from "./schema";
 
 // SQLite through libsql. `file:` for self-host and local dev; a libsql URL
 // plus DATABASE_AUTH_TOKEN for hosted databases.
-const url = process.env.DATABASE_URL ?? "file:./data/pnl.db";
+const url = process.env.DATABASE_URL ?? "file:./data/openprofit.db";
 
 const client = createClient({
 	url,
