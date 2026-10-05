@@ -28,13 +28,9 @@ export async function syncConnection(
 		.values({ connectionId: conn.id, startedAt: Date.now(), status: "running" })
 		.returning();
 
-	// First sync pulls the current month and a short tail; the scheduled
-	// backfill extends it later.
-	const from = opts.backfillDays
-		? daysAgo(opts.backfillDays)
-		: conn.lastSyncedAt
-			? daysAgo(3)
-			: `${today().slice(0, 7)}-01`;
+	// First sync pulls a year so the chart has history; later runs pull a
+	// short tail. Polar caps day-interval queries at 366 days.
+	const from = daysAgo(opts.backfillDays ?? (conn.lastSyncedAt ? 3 : 365));
 	const range = { from, to: today() };
 	let written = 0;
 

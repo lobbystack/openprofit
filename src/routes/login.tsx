@@ -16,7 +16,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
-	const { social } = Route.useLoaderData();
+	const { social, mailer } = Route.useLoaderData();
 	const [email, setEmail] = useState("");
 	const [state, setState] = useState<"idle" | "sending" | "sent" | "error">(
 		"idle",
@@ -40,9 +40,16 @@ function Login() {
 			</a>
 			<div className="mt-8 w-full max-w-[360px] rounded-xl border border-line bg-card p-6">
 				{state === "sent" ? (
-					<p className="text-[14px]">
-						Check <span className="num">{email}</span> for a sign-in link.
-					</p>
+					mailer ? (
+						<p className="text-[14px]">
+							Check <span className="num">{email}</span> for a sign-in link.
+						</p>
+					) : (
+						<p className="text-[14px]">
+							No email provider is set, so the link is in the server log. Open
+							it in this browser.
+						</p>
+					)
 				) : (
 					<form onSubmit={submit} className="space-y-3">
 						{social.length > 0 && (

@@ -9,5 +9,8 @@ export const getSession = createServerFn({ method: "GET" }).handler(() =>
 );
 
 export const getAuthOptions = createServerFn({ method: "GET" }).handler(
-	async () => ({ social: SOCIAL_PROVIDERS }),
+	async () => ({
+		social: SOCIAL_PROVIDERS,
+		mailer: Boolean(process.env.RESEND_API_KEY),
+	}),
 );
