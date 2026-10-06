@@ -1,5 +1,5 @@
-// Importing a connector module registers it. Keep this list in the order
-// users should see providers.
+// Importing a connector module registers it. The UI orders providers by
+// PROVIDERS in components/provider-logo.tsx, not by this list.
 import "./stripe";
 import "./polar";
 import "./openai";

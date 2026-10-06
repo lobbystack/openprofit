@@ -144,7 +144,7 @@ export const syncNow = createServerFn({ method: "POST" })
 			),
 		});
 		if (!conn) throw new Error("Not found");
-		const { written } = await syncConnection(conn, { backfillDays: 730 });
+		const { written } = await syncConnection(conn, { full: true });
 		return { written };
 	});
 

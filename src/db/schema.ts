@@ -103,8 +103,8 @@ export const connections = pgTable(
 	(t) => [index("connections_ws").on(t.workspaceId)],
 );
 
-// A provider sub-unit (OpenAI project, Vercel project, Railway service)
-// assigned to a product. Unmapped lines stay in the shared bucket.
+// A provider sub-unit (OpenAI project, Vercel project, Railway project)
+// assigned to a product. Unmapped lines follow the connection's product.
 export const productMappings = pgTable(
 	"product_mappings",
 	{
@@ -147,6 +147,8 @@ export const revenueLines = pgTable(
 		kind: text("kind", { enum: ["subscription", "one_time", "other"] })
 			.notNull()
 			.default("other"),
+		subUnitId: text("sub_unit_id"),
+		subUnitLabel: text("sub_unit_label"),
 		externalId: text("external_id").notNull(),
 		createdAt: createdAt(),
 	},
@@ -176,6 +178,7 @@ export const costLines = pgTable(
 		amountBaseCents: integer("amount_base_cents").notNull(),
 		service: text("service"),
 		subUnitId: text("sub_unit_id"),
+		subUnitLabel: text("sub_unit_label"),
 		source: text("source", { enum: ["sync", "flat"] }).notNull(),
 		externalId: text("external_id").notNull(),
 		createdAt: createdAt(),
@@ -205,6 +208,8 @@ export const flatCosts = pgTable("flat_costs", {
 });
 
 // Point-in-time values a provider reports directly: MRR, active customers.
+// Connectors report `mrr_base_cents` in the provider's currency; the sync
+// converts it, so the stored value is in base cents.
 export const metricSnapshots = pgTable(
 	"metric_snapshots",
 	{

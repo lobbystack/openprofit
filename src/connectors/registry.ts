@@ -1,6 +1,7 @@
 import type { Connector } from "./types";
 
-// Populated by each connector module. Order is the order shown to users.
+// Populated by each connector module, in import order. The connections page
+// orders providers by PROVIDERS in components/provider-logo.tsx instead.
 const registry = new Map<string, Connector>();
 
 export function register(c: Connector) {

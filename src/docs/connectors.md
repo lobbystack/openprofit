@@ -40,7 +40,7 @@ OpenProfit assigns a cost to a product through the provider’s own grouping. Th
 
 Open a connection from **Connections** to see each grouping with this month’s spend, then pick the product it serves. Past lines move to that product too.
 
-Lines with no grouping, and all revenue from the connection, go to the product you pick at the top of the same page. If your workspace has one product, everything goes to it by default. Anything left unassigned appears as **Shared** on the overview.
+Lines with no grouping or an unassigned one go to the product you pick at the top of the page. Revenue follows the same rules. If your workspace has one product, everything goes to it by default. Anything left unassigned appears as **Shared** on the overview.
 
 ## Add costs that have no API
 

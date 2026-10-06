@@ -1,5 +1,5 @@
-import { and, eq, lte, or, sql } from "drizzle-orm";
-import { connector } from "#/connectors";
+import { and, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm";
+import { connector, connectors } from "#/connectors";
 import type { Credentials } from "#/connectors/types";
 import { db, schema } from "#/db";
 import { decrypt } from "#/lib/crypto";
@@ -8,18 +8,22 @@ import { isCloud } from "./billing.server";
 import { convert } from "./fx.server";
 
 type Connection = typeof schema.connections.$inferSelect;
+type Workspace = typeof schema.workspaces.$inferSelect;
 
 const today = () => new Date().toISOString().slice(0, 10);
 const daysAgo = (n: number) =>
 	new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
 
+// Days a full sync reads: two years, one on the free hosted plan.
+const historyDays = (ws: Workspace) =>
+	isCloud && ws.plan === "free" ? 365 : 730;
+
 // Pull one connection. Lines are upserted by external id, so re-running a
-// range is safe.
+// range is safe. `full` rereads the plan's whole history.
 export async function syncConnection(
 	conn: Connection,
-	opts: { backfillDays?: number } = {},
+	opts: { full?: boolean } = {},
 ) {
-	const c = connector(conn.provider);
 	const ws = await db.query.workspaces.findFirst({
 		where: eq(schema.workspaces.id, conn.workspaceId),
 	});
@@ -29,39 +33,48 @@ export async function syncConnection(
 		.values({ connectionId: conn.id, startedAt: Date.now(), status: "running" })
 		.returning();
 
-	// First sync pulls the plan's history (two years, one on the free hosted
-	// plan); later runs pull a short tail.
-	const history = isCloud && ws.plan === "free" ? 365 : 730;
-	const from = daysAgo(opts.backfillDays ?? (conn.lastSyncedAt ? 3 : history));
+	// First sync pulls the plan's history; later runs pull a short tail.
+	const from = daysAgo(opts.full || !conn.lastSyncedAt ? historyDays(ws) : 3);
 	const range = { from, to: today() };
 	let written = 0;
 
 	try {
+		const c = connector(conn.provider);
 		const creds = await decrypt<Credentials>(conn.credentials);
+		const mappings = await db.query.productMappings.findMany({
+			where: eq(schema.productMappings.connectionId, conn.id),
+		});
+		const mapped = new Map(mappings.map((m) => [m.subUnitId, m.productId]));
+		const productFor = (subUnitId?: string) =>
+			(subUnitId && mapped.get(subUnitId)) || conn.productId;
 
 		if (c.fetchRevenue) {
 			const lines = await c.fetchRevenue(creds, range);
 			for (const l of lines) {
-				const netBase = await convert(
-					l.netCents,
-					l.currency,
-					ws.baseCurrency,
-					l.date,
-				);
+				const line = {
+					productId: productFor(l.subUnitId),
+					date: l.date,
+					currency: l.currency,
+					grossCents: l.grossCents,
+					feesCents: l.feesCents,
+					refundsCents: l.refundsCents,
+					netCents: l.netCents,
+					netBaseCents: await convert(
+						l.netCents,
+						l.currency,
+						ws.baseCurrency,
+						l.date,
+					),
+					kind: l.kind,
+					subUnitId: l.subUnitId ?? null,
+					subUnitLabel: l.subUnitLabel ?? null,
+				};
 				await db
 					.insert(schema.revenueLines)
 					.values({
+						...line,
 						workspaceId: ws.id,
 						connectionId: conn.id,
-						productId: await productFor(conn, l.subUnitId),
-						date: l.date,
-						currency: l.currency,
-						grossCents: l.grossCents,
-						feesCents: l.feesCents,
-						refundsCents: l.refundsCents,
-						netCents: l.netCents,
-						netBaseCents: netBase,
-						kind: l.kind,
 						externalId: l.externalId,
 					})
 					.onConflictDoUpdate({
@@ -69,54 +82,64 @@ export async function syncConnection(
 							schema.revenueLines.connectionId,
 							schema.revenueLines.externalId,
 						],
-						set: {
-							grossCents: l.grossCents,
-							feesCents: l.feesCents,
-							refundsCents: l.refundsCents,
-							netCents: l.netCents,
-							netBaseCents: netBase,
-						},
+						set: line,
 					});
 				written++;
 			}
+			await deleteMissing(
+				schema.revenueLines,
+				conn.id,
+				range,
+				new Set(lines.map((l) => l.externalId)),
+			);
 		}
 
 		if (c.fetchCosts) {
 			const lines = await c.fetchCosts(creds, range);
 			for (const l of lines) {
-				const base = await convert(
-					l.amountCents,
-					l.currency,
-					ws.baseCurrency,
-					l.date,
-				);
+				const line = {
+					productId: productFor(l.subUnitId),
+					date: l.date,
+					currency: l.currency,
+					amountCents: l.amountCents,
+					amountBaseCents: await convert(
+						l.amountCents,
+						l.currency,
+						ws.baseCurrency,
+						l.date,
+					),
+					service: l.service ?? null,
+					subUnitId: l.subUnitId ?? null,
+					subUnitLabel: l.subUnitLabel ?? null,
+				};
 				await db
 					.insert(schema.costLines)
 					.values({
+						...line,
 						workspaceId: ws.id,
 						connectionId: conn.id,
-						productId: await productFor(conn, l.subUnitId),
 						provider: conn.provider,
-						date: l.date,
-						currency: l.currency,
-						amountCents: l.amountCents,
-						amountBaseCents: base,
-						service: l.service,
-						subUnitId: l.subUnitId,
 						source: "sync",
 						externalId: `${conn.id}:${l.externalId}`,
 					})
 					.onConflictDoUpdate({
 						target: [schema.costLines.workspaceId, schema.costLines.externalId],
-						set: { amountCents: l.amountCents, amountBaseCents: base },
+						set: line,
 					});
 				written++;
 			}
+			await deleteMissing(
+				schema.costLines,
+				conn.id,
+				range,
+				new Set(lines.map((l) => `${conn.id}:${l.externalId}`)),
+			);
 		}
 
 		if (c.fetchSnapshots) {
 			const snaps = await c.fetchSnapshots(creds, range.to);
 			for (const s of snaps) {
+				// `mrr_base_cents` arrives in the provider's currency; stored in base.
 				const value =
 					s.metric === "mrr_base_cents"
 						? await convert(
@@ -175,33 +198,75 @@ export async function syncConnection(
 	}
 }
 
-// Product for a provider sub-unit, through the workspace's mappings.
-async function productFor(conn: Connection, subUnitId?: string) {
-	if (!subUnitId) return conn.productId;
-	const m = await db.query.productMappings.findFirst({
-		where: and(
-			eq(schema.productMappings.connectionId, conn.id),
-			eq(schema.productMappings.subUnitId, subUnitId),
-		),
-	});
-	return m?.productId ?? conn.productId;
+// Deletes the connection's synced lines that the provider no longer returns.
+// Only lines dated inside [from, to] go, since the fetch covered those days
+// in full. A monthly line is dated the 1st, so a range that starts mid-month
+// never deletes it. Runs only after the whole range was fetched without error.
+async function deleteMissing(
+	table: typeof schema.revenueLines | typeof schema.costLines,
+	connectionId: string,
+	range: { from: string; to: string },
+	keep: Set<string>,
+) {
+	const rows = await db
+		.select({ id: table.id, externalId: table.externalId })
+		.from(table)
+		.where(
+			and(
+				eq(table.connectionId, connectionId),
+				gte(table.date, range.from),
+				lte(table.date, range.to),
+			),
+		);
+	const gone = rows.filter((r) => !keep.has(r.externalId)).map((r) => r.id);
+	for (let i = 0; i < gone.length; i += 1000)
+		await db.delete(table).where(inArray(table.id, gone.slice(i, i + 1000)));
 }
 
-// Every active connection whose cadence has elapsed.
+// When an errored connection may retry: 1h after its last attempt, doubling
+// with each consecutive failure, capped at 24h.
+async function retryAt(connectionId: string) {
+	const runs = await db
+		.select({ status: schema.syncRuns.status, at: schema.syncRuns.startedAt })
+		.from(schema.syncRuns)
+		.where(eq(schema.syncRuns.connectionId, connectionId))
+		.orderBy(desc(schema.syncRuns.startedAt))
+		.limit(6);
+	const ok = runs.findIndex((r) => r.status === "ok");
+	const failures = ok === -1 ? runs.length : ok;
+	const hours = Math.min(2 ** Math.max(failures - 1, 0), 24);
+	return (runs[0]?.at ?? 0) + hours * 3_600_000;
+}
+
+// Active connections whose cadence has elapsed, and errored ones whose
+// backoff has. Providers without a registered connector are skipped.
 export async function dueConnections() {
 	const now = Date.now();
-	return db.query.connections.findMany({
+	const conns = await db.query.connections.findMany({
 		where: and(
-			eq(schema.connections.status, "active"),
+			inArray(
+				schema.connections.provider,
+				connectors().map((c) => c.id),
+			),
 			or(
-				sql`${schema.connections.lastSyncedAt} is null`,
-				lte(
-					sql`${schema.connections.lastSyncedAt} + ${schema.connections.cadenceMinutes} * 60000`,
-					now,
+				eq(schema.connections.status, "error"),
+				and(
+					eq(schema.connections.status, "active"),
+					or(
+						sql`${schema.connections.lastSyncedAt} is null`,
+						lte(
+							sql`${schema.connections.lastSyncedAt} + ${schema.connections.cadenceMinutes} * 60000`,
+							now,
+						),
+					),
 				),
 			),
 		),
 	});
+	const due: Connection[] = [];
+	for (const c of conns)
+		if (c.status !== "error" || (await retryAt(c.id)) <= now) due.push(c);
+	return due;
 }
 
 export async function syncDue() {

@@ -57,7 +57,12 @@ export const PROVIDERS: Record<string, Provider> = {
 		path: siCloudflare.path,
 	},
 	railway: { name: "Railway", kind: "cost", v1: true, path: siRailway.path },
-	supabase: { name: "Supabase", kind: "cost", v1: true, path: siSupabase.path },
+	supabase: {
+		name: "Supabase",
+		kind: "cost",
+		v1: false,
+		path: siSupabase.path,
+	},
 	resend: { name: "Resend", kind: "cost", v1: true, path: siResend.path },
 	github: { name: "GitHub", kind: "cost", v1: false, path: siGithub.path },
 };

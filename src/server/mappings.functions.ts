@@ -1,5 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
+import {
+	and,
+	eq,
+	gte,
+	isNotNull,
+	isNull,
+	notInArray,
+	or,
+	sql,
+} from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "#/db";
 import { lastMonths } from "./overview.server";
@@ -42,24 +51,24 @@ export const getConnection = createServerFn({ method: "GET" })
 			conn.kind === "cost"
 				? schema.costLines.amountBaseCents
 				: schema.revenueLines.netBaseCents;
-		const subCol =
-			conn.kind === "cost" ? schema.costLines.subUnitId : undefined;
-		const rows = subCol
-			? await db
-					.select({
-						id: subCol,
-						v: sql<number>`sum(${amountCol})`,
-					})
-					.from(table)
-					.where(
-						and(
-							eq(table.connectionId, conn.id),
-							isNotNull(subCol),
-							gte(table.date, from),
-						),
-					)
-					.groupBy(subCol)
-			: [];
+		const rows = await db
+			.select({
+				id: table.subUnitId,
+				// The most recent label the provider reported.
+				label: sql<
+					string | null
+				>`(array_agg(${table.subUnitLabel} order by ${table.date} desc) filter (where ${table.subUnitLabel} is not null))[1]`,
+				v: sql<number>`sum(${amountCol})`,
+			})
+			.from(table)
+			.where(
+				and(
+					eq(table.connectionId, conn.id),
+					isNotNull(table.subUnitId),
+					gte(table.date, from),
+				),
+			)
+			.groupBy(table.subUnitId);
 		const [mappings, products] = await Promise.all([
 			db.query.productMappings.findMany({
 				where: eq(schema.productMappings.connectionId, conn.id),
@@ -80,7 +89,7 @@ export const getConnection = createServerFn({ method: "GET" })
 				.filter((r) => r.id)
 				.map((r) => ({
 					id: r.id as string,
-					label: byUnit.get(r.id as string)?.subUnitLabel ?? null,
+					label: r.label ?? byUnit.get(r.id as string)?.subUnitLabel ?? null,
 					amount: Math.round(Number(r.v)) / 100,
 					productId: byUnit.get(r.id as string)?.productId ?? null,
 				}))
@@ -133,15 +142,15 @@ export const setMapping = createServerFn({ method: "POST" })
 					),
 				);
 		}
-		await db
-			.update(schema.costLines)
-			.set({ productId: data.productId })
-			.where(
-				and(
-					eq(schema.costLines.connectionId, conn.id),
-					eq(schema.costLines.subUnitId, data.subUnitId),
-				),
-			);
+		// Unassigned lines follow the connection's product.
+		const productId = data.productId ?? conn.productId;
+		for (const t of [schema.revenueLines, schema.costLines])
+			await db
+				.update(t)
+				.set({ productId })
+				.where(
+					and(eq(t.connectionId, conn.id), eq(t.subUnitId, data.subUnitId)),
+				);
 		return { ok: true };
 	});
 
@@ -163,18 +172,20 @@ export const setConnectionProduct = createServerFn({ method: "POST" })
 			.update(schema.connections)
 			.set({ productId: data.productId })
 			.where(eq(schema.connections.id, conn.id));
-		await db
-			.update(schema.revenueLines)
-			.set({ productId: data.productId })
-			.where(eq(schema.revenueLines.connectionId, conn.id));
-		await db
-			.update(schema.costLines)
-			.set({ productId: data.productId })
-			.where(
-				and(
-					eq(schema.costLines.connectionId, conn.id),
-					isNull(schema.costLines.subUnitId),
-				),
-			);
+		// Every line without a mapped sub-unit, as the sync assigns them.
+		const mapped = db
+			.select({ id: schema.productMappings.subUnitId })
+			.from(schema.productMappings)
+			.where(eq(schema.productMappings.connectionId, conn.id));
+		for (const t of [schema.revenueLines, schema.costLines])
+			await db
+				.update(t)
+				.set({ productId: data.productId })
+				.where(
+					and(
+						eq(t.connectionId, conn.id),
+						or(isNull(t.subUnitId), notInArray(t.subUnitId, mapped)),
+					),
+				);
 		return { ok: true };
 	});
