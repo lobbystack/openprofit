@@ -50,7 +50,8 @@
 				"rules": {
 					"a11y": {
 						"useSemanticElements": "off",
-						"noLabelWithoutControl": "off"
+						"noLabelWithoutControl": "off",
+						"useKeyWithClickEvents": "off"
 					},
 					"suspicious": { "noDoubleEquals": "off", "noArrayIndexKey": "off" }
 				}

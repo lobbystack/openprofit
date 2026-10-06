@@ -13,8 +13,16 @@ import {
 	Settings,
 	SunMoon,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { Logo } from "#/components/logo";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "#/components/ui/dropdown-menu";
 import { authClient } from "#/lib/auth-client";
 import { money } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
@@ -34,61 +42,10 @@ const NAV = [
 	{ to: "/app/settings", label: "Settings", icon: Settings },
 ] as const;
 
-const item =
-	"flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[13px] text-text-2 hover:bg-surface-2 hover:text-ink";
-
 function signOut() {
 	authClient.signOut().then(() => {
 		window.location.href = "/login";
 	});
-}
-
-// A button that opens a small panel. Closes on outside click and Escape.
-function Menu({
-	trigger,
-	className,
-	panelClassName,
-	children,
-}: {
-	trigger: React.ReactNode;
-	className: string;
-	panelClassName: string;
-	children: (close: () => void) => React.ReactNode;
-}) {
-	const [open, setOpen] = useState(false);
-	const ref = useRef<HTMLDivElement>(null);
-	useEffect(() => {
-		if (!open) return;
-		const onDown = (e: MouseEvent) => {
-			if (!ref.current?.contains(e.target as Node)) setOpen(false);
-		};
-		const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-		document.addEventListener("mousedown", onDown);
-		document.addEventListener("keydown", onKey);
-		return () => {
-			document.removeEventListener("mousedown", onDown);
-			document.removeEventListener("keydown", onKey);
-		};
-	}, [open]);
-	return (
-		<div ref={ref} className="relative">
-			<button
-				type="button"
-				aria-expanded={open}
-				onClick={() => setOpen(!open)}
-				className={className}
-			>
-				{trigger}
-			</button>
-			{open && (
-				<div
-					className={`menu-panel absolute z-50 rounded-lg border border-line bg-paper p-1 shadow-[0_8px_24px_-12px_rgb(0_0_0/0.25)] ${panelClassName}`}
-				>
-					{children(() => setOpen(false))}
-				</div>
-			)}
-		</div>
-	);
 }
 
 // 240px sidebar, paper background, hairline right border. See design/DESIGN.md.
@@ -103,23 +60,20 @@ export function Shell({
 	return (
 		<div className="flex min-h-screen">
 			<aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-line bg-paper p-3 md:flex">
-				<Menu
-					className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2"
-					panelClassName="inset-x-0 top-10 origin-top"
-					trigger={
-						<>
-							<span className="flex min-w-0 items-center gap-2">
-								<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
-									{workspace.name[0]}
-								</span>
-								<span className="truncate">{workspace.name}</span>
+				<DropdownMenu>
+					<DropdownMenuTrigger className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2">
+						<span className="flex min-w-0 items-center gap-2">
+							<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
+								{workspace.name[0]}
 							</span>
-							<ChevronsUpDown size={14} className="shrink-0 text-text-3" />
-						</>
-					}
-				>
-					{(close) => <WorkspaceItems workspace={workspace} close={close} />}
-				</Menu>
+							<span className="truncate">{workspace.name}</span>
+						</span>
+						<ChevronsUpDown size={14} className="shrink-0 text-text-3" />
+					</DropdownMenuTrigger>
+					<DropdownMenuContent>
+						<WorkspaceItems workspace={workspace} />
+					</DropdownMenuContent>
+				</DropdownMenu>
 
 				<Search
 					pages={NAV}
@@ -169,33 +123,19 @@ export function Shell({
 				</ul>
 
 				<div className="mt-auto">
-					<Menu
-						className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-[13px] hover:bg-surface-2"
-						panelClassName="inset-x-0 bottom-10 origin-bottom"
-						trigger={
-							<>
-								<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-3 text-[10px]">
-									{workspace.email[0]}
-								</span>
-								<span className="flex-1 truncate text-left text-text-2">
-									{workspace.email}
-								</span>
-							</>
-						}
-					>
-						{() => (
-							<>
-								<button type="button" className={item} onClick={toggleTheme}>
-									<SunMoon size={14} />
-									Theme
-								</button>
-								<button type="button" className={item} onClick={signOut}>
-									<LogOut size={14} />
-									Sign out
-								</button>
-							</>
-						)}
-					</Menu>
+					<DropdownMenu>
+						<DropdownMenuTrigger className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-[13px] hover:bg-surface-2">
+							<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-3 text-[10px]">
+								{workspace.email[0]}
+							</span>
+							<span className="flex-1 truncate text-left text-text-2">
+								{workspace.email}
+							</span>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent side="top">
+							<AccountItems />
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</aside>
 
@@ -206,29 +146,19 @@ export function Shell({
 						<Link to="/app">
 							<Logo size={15} />
 						</Link>
-						<Menu
-							className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-[12px]"
-							panelClassName="right-0 top-10 w-56 origin-top-right"
-							trigger={workspace.email[0]}
-						>
-							{(close) => (
-								<>
-									<WorkspaceItems workspace={workspace} close={close} />
-									<div className="my-1 h-px bg-line" />
-									<div className="truncate px-2 py-1.5 text-[12px] text-text-3">
-										{workspace.email}
-									</div>
-									<button type="button" className={item} onClick={toggleTheme}>
-										<SunMoon size={14} />
-										Theme
-									</button>
-									<button type="button" className={item} onClick={signOut}>
-										<LogOut size={14} />
-										Sign out
-									</button>
-								</>
-							)}
-						</Menu>
+						<DropdownMenu>
+							<DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-[12px]">
+								{workspace.email[0]}
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end" sideOffset={8} className="w-56">
+								<WorkspaceItems workspace={workspace} />
+								<DropdownMenuSeparator />
+								<DropdownMenuGroup>
+									<DropdownMenuLabel>{workspace.email}</DropdownMenuLabel>
+									<AccountItems />
+								</DropdownMenuGroup>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 					<nav className="flex gap-1 overflow-x-auto px-3 pb-2 [scrollbar-width:none]">
 						{NAV.map(({ to, label, ...rest }) => {
@@ -342,41 +272,51 @@ export function SettingsRow({
 }
 
 // The workspace list with a check on the current one, then "New workspace".
-function WorkspaceItems({
-	workspace,
-	close,
-}: {
-	workspace: WorkspaceSummary;
-	close: () => void;
-}) {
+function WorkspaceItems({ workspace }: { workspace: WorkspaceSummary }) {
 	const router = useRouter();
 	const switchTo = useServerFn(switchWorkspace);
 	return (
 		<>
-			{workspace.workspaces.map((w) => (
-				<button
-					key={w.id}
-					type="button"
-					className={item}
-					onClick={async () => {
-						close();
-						if (w.id === workspace.id) return;
-						await switchTo({ data: { id: w.id } });
-						router.invalidate();
-					}}
-				>
-					<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-surface-3 text-[10px] text-ink">
-						{w.name[0]}
-					</span>
-					<span className="flex-1 truncate">{w.name}</span>
-					{w.id === workspace.id && <Check size={14} />}
-				</button>
-			))}
-			<div className="my-1 h-px bg-line" />
-			<Link to="/onboarding" className={item} onClick={close}>
-				<Plus size={14} />
-				New workspace
-			</Link>
+			<DropdownMenuGroup>
+				{workspace.workspaces.map((w) => (
+					<DropdownMenuItem
+						key={w.id}
+						onClick={async () => {
+							if (w.id === workspace.id) return;
+							await switchTo({ data: { id: w.id } });
+							router.invalidate();
+						}}
+					>
+						<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-surface-3 text-[10px] text-ink">
+							{w.name[0]}
+						</span>
+						<span className="flex-1 truncate">{w.name}</span>
+						{w.id === workspace.id && <Check size={14} />}
+					</DropdownMenuItem>
+				))}
+			</DropdownMenuGroup>
+			<DropdownMenuSeparator />
+			<DropdownMenuGroup>
+				<DropdownMenuItem render={<Link to="/onboarding" />}>
+					<Plus size={14} />
+					New workspace
+				</DropdownMenuItem>
+			</DropdownMenuGroup>
 		</>
+	);
+}
+
+function AccountItems() {
+	return (
+		<DropdownMenuGroup>
+			<DropdownMenuItem onClick={toggleTheme}>
+				<SunMoon size={14} />
+				Theme
+			</DropdownMenuItem>
+			<DropdownMenuItem onClick={signOut}>
+				<LogOut size={14} />
+				Sign out
+			</DropdownMenuItem>
+		</DropdownMenuGroup>
 	);
 }

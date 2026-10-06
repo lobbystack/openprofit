@@ -14,6 +14,7 @@ const buttonVariants = cva(
 				outline:
 					"border border-line bg-paper text-ink hover:border-line-strong",
 				ghost: "text-text-2 hover:text-ink",
+				destructive: "bg-negative text-paper hover:bg-negative/90",
 				// Icon buttons in rows: muted until hovered.
 				quiet: "text-text-3 hover:bg-surface-2 hover:text-ink",
 				"quiet-destructive":

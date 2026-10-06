@@ -2,6 +2,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowUpRight, Plus, X } from "lucide-react";
 import { useState } from "react";
+import { useConfirm } from "#/components/app/confirm";
 import { PageHeader } from "#/components/app/shell";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { Button } from "#/components/ui/button";
@@ -34,6 +35,7 @@ function Products() {
 	const router = useRouter();
 	const create = useServerFn(createProduct);
 	const del = useServerFn(deleteProduct);
+	const [confirm, confirmDialog] = useConfirm();
 	const setPage = useServerFn(setPublicPage);
 	const [adding, setAdding] = useState(false);
 	const [name, setName] = useState("");
@@ -51,18 +53,20 @@ function Products() {
 	}
 
 	async function remove(id: string, name: string) {
-		if (
-			!window.confirm(
-				`Remove ${name}? Its costs and revenue move to Shared, and its public page goes offline.`,
-			)
-		)
-			return;
+		const ok = await confirm({
+			title: `Remove ${name}?`,
+			description:
+				"Its costs and revenue move to Shared, and its public page goes offline.",
+			action: "Remove product",
+		});
+		if (!ok) return;
 		await del({ data: { id } });
 		router.invalidate();
 	}
 
 	return (
 		<>
+			{confirmDialog}
 			<PageHeader title="Products" meta={`${products.length}`}>
 				<Button variant="outline" onClick={() => setAdding(true)}>
 					<Plus size={13} />

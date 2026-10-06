@@ -2,6 +2,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { RefreshCw, X } from "lucide-react";
 import { useState } from "react";
+import { useConfirm } from "#/components/app/confirm";
 import { PageHeader } from "#/components/app/shell";
 import {
 	PROVIDERS,
@@ -52,6 +53,7 @@ function Connections() {
 	const router = useRouter();
 	const syncFn = useServerFn(syncNow);
 	const del = useServerFn(deleteConnection);
+	const [confirm, confirmDialog] = useConfirm();
 	const [busy, setBusy] = useState<string | null>(null);
 	const connected = new Set(rows.map((r) => r.provider));
 	const implemented = new Set(available.map((c) => c.id));
@@ -72,12 +74,13 @@ function Connections() {
 	}
 
 	async function remove(id: string, name: string) {
-		if (
-			!window.confirm(
-				`Remove the ${name} connection? Its synced revenue and costs are deleted. Reconnecting syncs the history again.`,
-			)
-		)
-			return;
+		const ok = await confirm({
+			title: `Remove the ${name} connection?`,
+			description:
+				"Its synced revenue and costs are deleted. Reconnecting syncs the history again.",
+			action: "Remove connection",
+		});
+		if (!ok) return;
 		setBusy(id);
 		await del({ data: { id } });
 		setBusy(null);
@@ -86,6 +89,7 @@ function Connections() {
 
 	return (
 		<>
+			{confirmDialog}
 			<PageHeader title="Connections" meta={`${rows.length}`} />
 
 			{rows.length === 0 && (

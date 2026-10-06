@@ -6,6 +6,7 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import { Pencil, Plus, X } from "lucide-react";
 import { useState } from "react";
+import { useConfirm } from "#/components/app/confirm";
 import { PageHeader } from "#/components/app/shell";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { BreakdownCard } from "#/components/dashboard/breakdown-card";
@@ -49,6 +50,7 @@ function Costs() {
 	const navigate = useNavigate();
 	const router = useRouter();
 	const del = useServerFn(deleteFlatCost);
+	const [confirm, confirmDialog] = useConfirm();
 	// "new", a flat cost's id, or null when the form is closed.
 	const [editing, setEditing] = useState<string | null>(null);
 	const fmt = (n: number) => money(n, { currency: overview.currency });
@@ -58,18 +60,20 @@ function Costs() {
 	};
 
 	async function remove(f: FlatCostRow) {
-		if (
-			!window.confirm(
-				`Remove ${f.name}? It stops counting in costs and profit for every month, past months included. To keep past months, set an end date instead.`,
-			)
-		)
-			return;
+		const ok = await confirm({
+			title: `Remove ${f.name}?`,
+			description:
+				"It stops counting in costs and profit for every month, past months included. To keep past months, set an end date instead.",
+			action: "Remove cost",
+		});
+		if (!ok) return;
 		await del({ data: { id: f.id } });
 		await router.invalidate({ sync: true });
 	}
 
 	return (
 		<>
+			{confirmDialog}
 			<PageHeader title="Costs" meta={fmt(overview.period.totals.costs)}>
 				<PeriodSelect
 					value={overview.period.key}
