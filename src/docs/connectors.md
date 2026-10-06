@@ -34,6 +34,8 @@ Each connector needs a key with specific permissions. The table lists what each 
 | [DigitalOcean](/integrations/digitalocean) | Monthly cost per project and product, from invoices and the current month’s preview | Personal access token with the `billing:read` and `account:read` scopes |
 | [GitHub](/integrations/github) | Daily net usage cost per SKU and repository, for an organization or a personal account | Fine-grained token with Administration read access on the organization, or Plan read access on your account |
 | [Twilio](/integrations/twilio) | Daily total usage cost, subaccounts included | Restricted API key with `/twilio/billing/usage/read` |
+| [Firecrawl](/integrations/firecrawl) | Credits per API key per billing period, priced at Firecrawl’s published plan and extra-credit rates | Any API key on the team |
+| [Resend](/integrations/resend) | Transactional emails per sending domain per month, priced at Resend’s published plan and overage rates | API key with full access |
 
 ## Assign costs to products
 
@@ -47,6 +49,8 @@ OpenProfit assigns a cost to a product through the provider’s own grouping. Th
 - **Cloudflare**: zones
 - **DigitalOcean**: projects
 - **GitHub**: repositories
+- **Firecrawl**: API keys
+- **Resend**: sending domains
 
 Open a connection from **Connections** to see each grouping with this month’s spend, then pick the product it serves. Past lines move to that product too.
 
@@ -54,7 +58,7 @@ Lines with no grouping or an unassigned one go to the product you pick at the to
 
 ## Add costs that have no API
 
-Services like Supabase, Resend or a domain registrar don’t expose billing data. Add them on the **Costs** page as a fixed amount per month or per year, with a start date. OpenProfit counts them from that date and spreads a yearly amount evenly over 12 months.
+Services like Supabase or a domain registrar don’t expose billing data, and neither do Resend’s marketing plans and add-ons. Add them on the **Costs** page as a fixed amount per month or per year, with a start date. OpenProfit counts them from that date and spreads a yearly amount evenly over 12 months.
 
 ## Currency conversion
 

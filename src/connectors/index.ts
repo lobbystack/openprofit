@@ -14,6 +14,8 @@ import "./cloudflare";
 import "./digitalocean";
 import "./github";
 import "./twilio";
+import "./firecrawl";
+import "./resend";
 
 export type { ConnectorInfo } from "./registry";
 export { connector, connectorInfo, connectors } from "./registry";

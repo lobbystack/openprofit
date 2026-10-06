@@ -16,6 +16,10 @@ import {
 	siVercel,
 } from "simple-icons";
 
+// Firecrawl is not in simple-icons; a flame drawn by hand.
+const FLAME_PATH =
+	"M12 1c1 4 7 7 7 13.5a7 7 0 0 1-14 0C5 11 6.5 9 8 7.5c.2 2 1 3.5 2.5 4C10 8 10.5 4 12 1Z";
+
 type Provider = {
 	name: string;
 	kind: "revenue" | "cost";
@@ -91,6 +95,7 @@ export const PROVIDERS: Record<string, Provider> = {
 		path: siDigitalocean.path,
 	},
 	twilio: { name: "Twilio", kind: "cost", v1: true, path: TWILIO_PATH },
+	firecrawl: { name: "Firecrawl", kind: "cost", v1: true, path: FLAME_PATH },
 };
 
 export type ProviderId = keyof typeof PROVIDERS;

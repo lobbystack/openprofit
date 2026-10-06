@@ -43,6 +43,8 @@ export type KeyField = {
 	placeholder?: string;
 	secret?: boolean;
 	optional?: boolean;
+	// Renders a select. The first option is the default.
+	options?: { value: string; label: string }[];
 };
 
 export type Connector = {
@@ -101,3 +103,20 @@ export async function getJson<T>(
 export const toCents = (n: number) => Math.round(n * 100);
 export const dayOf = (unixSeconds: number) =>
 	new Date(unixSeconds * 1000).toISOString().slice(0, 10);
+
+// Split cents by weights so the parts add up to the total exactly (largest
+// remainder).
+export function splitCents(total: number, weights: number[]) {
+	const sum = weights.reduce((a, b) => a + b, 0);
+	const exact = weights.map((w) => (total * w) / sum);
+	const parts = exact.map(Math.floor);
+	let left = total - parts.reduce((a, b) => a + b, 0);
+	const order = exact
+		.map((x, i) => [x - Math.floor(x), i])
+		.sort((a, b) => b[0] - a[0]);
+	for (const [, i] of order) {
+		if (left-- <= 0) break;
+		parts[i]++;
+	}
+	return parts;
+}

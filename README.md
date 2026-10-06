@@ -40,7 +40,7 @@ Revenue minus fees, refunds, AI bills and hosting, for every product you run. Th
 OpenAI, Anthropic, Vercel, Cloudflare and Railway report what they charged you, by day and by project. Subscriptions without an API take ten seconds to add.
 
 - **Usage billing.** Per-token and per-GB charges come from the provider's own billing data.
-- **Flat subscriptions.** Supabase, Resend, domains. Enter the price once and it counts every month.
+- **Flat subscriptions.** Supabase, domains, anything else. Enter the price once and it counts every month.
 - **Mapped to products.** Point each OpenAI or Vercel project at the product it serves. The rest stays shared until you decide.
 
 ### Know when something moves
@@ -88,9 +88,11 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 | DigitalOcean | Cost | Monthly cost per project and product |
 | GitHub | Cost | Daily usage cost per SKU and repository |
 | Twilio | Cost | Daily total usage cost |
+| Firecrawl | Cost | Credits per API key at published rates |
+| Resend | Cost | Emails per sending domain at published rates |
 | Flat costs | Cost | Any monthly or yearly amount, typed in |
 
-App Store, Google Play, Supabase and Resend are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.
+App Store, Google Play and Supabase are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.
 
 ## Getting started
 

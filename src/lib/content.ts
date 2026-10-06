@@ -60,6 +60,8 @@ export const INTEGRATIONS = order(
 		"digitalocean",
 		"github",
 		"twilio",
+		"firecrawl",
+		"resend",
 	],
 );
 
