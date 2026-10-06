@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "#/components/logo";
+import { resetAnalytics } from "#/lib/analytics";
 import { authClient } from "#/lib/auth-client";
 import { money } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
@@ -35,6 +36,13 @@ const NAV = [
 
 const item =
 	"flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[13px] text-text-2 hover:bg-surface-2 hover:text-ink";
+
+function signOut() {
+	resetAnalytics();
+	authClient.signOut().then(() => {
+		window.location.href = "/login";
+	});
+}
 
 // A button that opens a small panel. Closes on outside click and Escape.
 function Menu({
@@ -188,15 +196,7 @@ export function Shell({
 						}
 					>
 						{() => (
-							<button
-								type="button"
-								className={item}
-								onClick={() =>
-									authClient.signOut().then(() => {
-										window.location.href = "/login";
-									})
-								}
-							>
+							<button type="button" className={item} onClick={signOut}>
 								<LogOut size={14} />
 								Sign out
 							</button>
@@ -228,15 +228,7 @@ export function Shell({
 										<SunMoon size={14} />
 										Theme
 									</button>
-									<button
-										type="button"
-										className={item}
-										onClick={() =>
-											authClient.signOut().then(() => {
-												window.location.href = "/login";
-											})
-										}
-									>
+									<button type="button" className={item} onClick={signOut}>
 										<LogOut size={14} />
 										Sign out
 									</button>

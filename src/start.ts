@@ -1,8 +1,10 @@
+import { isNotFound, isRedirect } from "@tanstack/react-router";
 import { createMiddleware, createStart } from "@tanstack/react-start";
 
 // www goes to the bare domain; agents asking for markdown get the page's
 // markdown; HTML pages advertise it with Link headers; text responses are
-// gzipped (the host only compresses static assets).
+// gzipped (the host only compresses static assets). With POSTHOG_KEY set,
+// each request is a trace span.
 const edge = createMiddleware({ type: "request" }).server(
 	async ({ request, next }) => {
 		const url = new URL(request.url);
@@ -25,7 +27,19 @@ const edge = createMiddleware({ type: "request" }).server(
 			});
 		}
 
-		const result = await next();
+		const o = await import("./server/observability.server");
+		const result = url.pathname.startsWith("/ingest/")
+			? await next()
+			: await o.traced(
+					`${request.method} ${url.pathname}`,
+					{ "http.request.method": request.method, "url.path": url.pathname },
+					async (span) => {
+						const r = await next();
+						span.setAttribute("http.response.status_code", r.response.status);
+						return r;
+					},
+					o.SpanKind.SERVER,
+				);
 		const res = result.response;
 		const type = res.headers.get("content-type") ?? "";
 		const headers = new Headers(res.headers);
@@ -75,6 +89,23 @@ const edge = createMiddleware({ type: "request" }).server(
 	},
 );
 
+// Server function errors go to PostHog error tracking. Redirects and
+// not-found are control flow, not errors.
+const errors = createMiddleware({ type: "function" }).server(
+	async ({ next }) => {
+		try {
+			return await next();
+		} catch (err) {
+			if (!isRedirect(err) && !isNotFound(err)) {
+				const { reportError } = await import("./server/observability.server");
+				reportError(err);
+			}
+			throw err;
+		}
+	},
+);
+
 export const startInstance = createStart(() => ({
 	requestMiddleware: [edge],
+	functionMiddleware: [errors],
 }));

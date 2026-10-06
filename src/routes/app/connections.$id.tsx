@@ -5,6 +5,7 @@ import {
 	type ProviderId,
 	ProviderLogo,
 } from "#/components/provider-logo";
+import { track } from "#/lib/analytics";
 import { money } from "#/lib/format";
 import {
 	getConnection,
@@ -30,11 +31,21 @@ function Connection() {
 
 	async function assign(subUnitId: string, productId: string | null) {
 		await setMapping({ data: { connectionId: c.id, subUnitId, productId } });
+		track("mapping_changed", {
+			provider: c.provider,
+			scope: "sub_unit",
+			assigned: productId !== null,
+		});
 		router.invalidate();
 	}
 
 	async function assignConnection(productId: string | null) {
 		await setConnectionProduct({ data: { connectionId: c.id, productId } });
+		track("mapping_changed", {
+			provider: c.provider,
+			scope: "connection",
+			assigned: productId !== null,
+		});
 		router.invalidate();
 	}
 

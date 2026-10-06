@@ -1,4 +1,6 @@
+import { useLoaderData } from "@tanstack/react-router";
 import { Logo } from "#/components/logo";
+import { openCookieSettings } from "#/lib/analytics";
 import { APP_NAME, GITHUB_URL } from "#/lib/app";
 import { Container } from "./primitives";
 
@@ -33,12 +35,17 @@ const COLUMNS: [string, [string, string][]][] = [
 		[
 			["Privacy", "/privacy"],
 			["Terms", "/terms"],
+			["Cookies", "/cookies"],
 		],
 	],
 ];
 
 // 1024px wide, brand column plus link columns with 14px titles.
 export function Footer() {
+	const analytics = useLoaderData({
+		from: "__root__",
+		select: (d) => d.key !== null,
+	});
 	return (
 		<footer className="border-t border-line">
 			<Container width={1024} className="py-16">
@@ -63,6 +70,17 @@ export function Footer() {
 										</a>
 									</li>
 								))}
+								{title === "Legal" && analytics && (
+									<li>
+										<button
+											type="button"
+											onClick={openCookieSettings}
+											className="text-[14px] text-text-2 hover:text-ink"
+										>
+											Cookie settings
+										</button>
+									</li>
+								)}
 							</ul>
 						</div>
 					))}

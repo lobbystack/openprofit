@@ -1,0 +1,50 @@
+name: Bug report
+description: Something in OpenProfit doesn't work as described.
+body:
+  - type: markdown
+    attributes:
+      value: Remove API keys, tokens and email addresses from anything you paste. For a security problem, email hello@openprofit.dev instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Connections → Stripe
+        2. Click Test
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where you run OpenProfit
+      options:
+        - openprofit.dev
+        - Self-hosted, Docker image
+        - Self-hosted, from source
+        - Local development
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Image tag or commit, if self-hosted.
+  - type: input
+    id: connector
+    attributes:
+      label: Connector
+      description: The provider involved, if any.
+      placeholder: Vercel
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error message or logs
+      description: The error shown on the connections page, or lines from the server log.
+      render: text

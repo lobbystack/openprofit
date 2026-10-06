@@ -6,6 +6,7 @@ import { decrypt } from "#/lib/crypto";
 import { evaluateAlerts } from "./alerts.server";
 import { isCloud } from "./billing.server";
 import { convert } from "./fx.server";
+import { traced } from "./observability.server";
 
 type Connection = typeof schema.connections.$inferSelect;
 
@@ -210,7 +211,9 @@ export async function syncDue() {
 	for (const conn of due) {
 		touched.add(conn.workspaceId);
 		try {
-			await syncConnection(conn);
+			await traced(`sync ${conn.provider}`, { "connection.id": conn.id }, () =>
+				syncConnection(conn),
+			);
 		} catch (err) {
 			console.error(`[sync] ${conn.provider} ${conn.id}:`, err);
 		}

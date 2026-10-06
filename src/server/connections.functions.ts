@@ -127,10 +127,11 @@ export const createConnection = createServerFn({ method: "POST" })
 		// First sync runs now so the overview has a number right away.
 		try {
 			await syncConnection(conn);
+			return { id: conn.id, synced: true };
 		} catch (err) {
 			console.error(`[sync] first sync ${c.id}:`, err);
+			return { id: conn.id, synced: false };
 		}
-		return { id: conn.id };
 	});
 
 export const syncNow = createServerFn({ method: "POST" })

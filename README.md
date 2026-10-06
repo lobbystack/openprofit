@@ -143,7 +143,7 @@ Checks: `pnpm check` (Biome), `npx tsc --noEmit`, `pnpm build`. After a schema c
 
 ## Contributing
 
-Issues and pull requests are welcome. Connectors are the most useful contribution: copy [`src/connectors/polar.ts`](src/connectors/polar.ts), implement it against the provider's API, and register it in [`src/connectors/index.ts`](src/connectors/index.ts).
+Issues and pull requests are welcome. Connectors are the most useful contribution. [CONTRIBUTING.md](CONTRIBUTING.md) lists the files a connector touches, the data it must return and how to test it against a real account.
 
 Found a security problem? Email hello@openprofit.dev rather than opening an issue.
 

@@ -49,7 +49,8 @@ export async function checkoutUrl(
 		products: [product],
 		customer_email: email,
 		external_customer_id: ws.id,
-		success_url: `${process.env.APP_URL}/app/settings`,
+		// Polar fills in the id; Settings records the completed checkout.
+		success_url: `${process.env.APP_URL}/app/settings?checkout_id={CHECKOUT_ID}`,
 		metadata: { workspaceId: ws.id },
 	});
 	return r.url;

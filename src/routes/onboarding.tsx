@@ -1,7 +1,8 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "#/components/landing/primitives";
 import { Logo } from "#/components/logo";
+import { identify, track } from "#/lib/analytics";
 import { NOINDEX } from "#/lib/app";
 import { getSession } from "#/server/auth.functions";
 import { CURRENCIES, createWorkspaceFn } from "#/server/onboarding.functions";
@@ -20,15 +21,26 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 function Onboarding() {
+	const user = Route.useLoaderData();
 	const navigate = useNavigate();
 	const [name, setName] = useState("");
 	const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>("USD");
 	const [busy, setBusy] = useState(false);
 
+	// New accounts land here from the sign-in link with ?signup=1.
+	useEffect(() => {
+		identify(user.id);
+		if (!location.search.includes("signup=1")) return;
+		track("user_signed_up");
+		history.replaceState(null, "", location.pathname);
+	}, [user.id]);
+
 	async function submit(e: React.FormEvent) {
 		e.preventDefault();
 		setBusy(true);
-		await createWorkspaceFn({ data: { name, currency } });
+		const ws = await createWorkspaceFn({ data: { name, currency } });
+		identify(user.id, ws.id, "free");
+		track("workspace_created", { currency });
 		navigate({ to: "/app/connections" });
 	}
 

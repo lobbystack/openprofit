@@ -1,0 +1,52 @@
+name: Connector request
+description: Ask for a provider OpenProfit should read revenue or costs from.
+title: "Connector: "
+body:
+  - type: markdown
+    attributes:
+      value: A connector needs an API that returns billing or usage data with a key. Links to the provider's own docs help most. To build it yourself, see [CONTRIBUTING.md](https://github.com/lobbystack/openprofit/blob/main/CONTRIBUTING.md#build-a-connector).
+  - type: input
+    id: provider
+    attributes:
+      label: Provider
+      placeholder: Supabase
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Revenue (it pays you)
+        - Cost (you pay it)
+    validations:
+      required: true
+  - type: input
+    id: api_docs
+    attributes:
+      label: Billing or usage API docs
+      description: Link to the endpoint that returns revenue, invoices, charges or usage.
+      placeholder: https://
+    validations:
+      required: true
+  - type: textarea
+    id: auth
+    attributes:
+      label: Authentication
+      description: How the API authenticates, and the narrowest key that can read billing. Link the provider's page on creating it.
+      placeholder: Read-only API token with the Billing read scope, created under Settings → Tokens.
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: What the API returns
+      description: Amounts and currency, granularity (per day, per month, per invoice), and any grouping you'd map to a product, such as projects or workspaces.
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I can open a pull request for this connector

@@ -19,6 +19,7 @@ export type WorkspaceSummary = {
 	plan: "free" | "indie" | "pro";
 	// Hosted instance and MRR past the plan's cap: the shell shows a notice.
 	overCap: boolean;
+	userId: string;
 	email: string;
 	workspaces: { id: string; name: string }[];
 	products: { id: string; name: string; profit: number }[];
@@ -46,6 +47,7 @@ export const getWorkspace = createServerFn({ method: "GET" }).handler(
 			currency: ws.baseCurrency,
 			plan: ws.plan,
 			overCap: isCloud && cap !== null && mrr > cap,
+			userId: user.id,
 			email: user.email,
 			workspaces: await userWorkspaces(user.id),
 			products: data.byProduct

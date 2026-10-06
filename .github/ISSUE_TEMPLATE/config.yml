@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issue
+    url: https://github.com/lobbystack/openprofit/blob/main/CONTRIBUTING.md#report-a-security-issue
+    about: Email hello@openprofit.dev. Don't report security problems in a public issue.
+  - name: Setup questions
+    url: https://openprofit.dev/docs
+    about: Self-hosting, connecting providers and environment variables.

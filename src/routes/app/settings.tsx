@@ -1,6 +1,11 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import {
+	createFileRoute,
+	useLoaderData,
+	useRouter,
+} from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { PageHeader } from "#/components/app/shell";
+import { setConsent, track } from "#/lib/analytics";
 import { PLANS, type Plan } from "#/lib/plans";
 import { openPortal, startCheckout } from "#/server/billing.functions";
 import { CURRENCIES } from "#/server/onboarding.functions";
@@ -39,6 +44,20 @@ function Settings() {
 	const [name, setName] = useState(s.name);
 	const [sent, setSent] = useState(false);
 	const [billingError, setBillingError] = useState<string | null>(null);
+	const analytics = useLoaderData({ from: "__root__" });
+	const [tracking, setTracking] = useState(analytics.consent === "yes");
+
+	// Polar sends the browser back here with ?checkout_id= after paying.
+	useEffect(() => {
+		if (!location.search.includes("checkout_id=")) return;
+		track("checkout_completed");
+		history.replaceState(null, "", location.pathname);
+	}, []);
+
+	function checkout(plan: "indie" | "pro") {
+		track("checkout_started", { plan });
+		return startCheckout({ data: { plan } });
+	}
 
 	async function save(patch: Parameters<typeof updateSettings>[0]["data"]) {
 		await updateSettings({ data: patch });
@@ -114,23 +133,17 @@ function Settings() {
 								<>
 									<Go
 										onError={setBillingError}
-										onClick={() => startCheckout({ data: { plan: "indie" } })}
+										onClick={() => checkout("indie")}
 									>
 										Indie, $19
 									</Go>
-									<Go
-										onError={setBillingError}
-										onClick={() => startCheckout({ data: { plan: "pro" } })}
-									>
+									<Go onError={setBillingError} onClick={() => checkout("pro")}>
 										Pro, $49
 									</Go>
 								</>
 							)}
 							{s.plan === "indie" && (
-								<Go
-									onError={setBillingError}
-									onClick={() => startCheckout({ data: { plan: "pro" } })}
-								>
+								<Go onError={setBillingError} onClick={() => checkout("pro")}>
 									Pro, $49
 								</Go>
 							)}
@@ -151,6 +164,25 @@ function Settings() {
 						</Row>
 					) : (
 						<Row label="Plan">Self-hosted</Row>
+					)}
+					{analytics.key && (
+						<Row label="Analytics">
+							<button
+								type="button"
+								onClick={() => {
+									setConsent(analytics, !tracking);
+									setTracking(!tracking);
+								}}
+								className="flex items-center gap-1.5 text-[13px] hover:text-ink"
+							>
+								<span
+									className={`h-1.5 w-1.5 rounded-full ${tracking ? "bg-positive" : "bg-surface-4"}`}
+								/>
+								{tracking
+									? "On in this browser: events and replays, amounts hidden"
+									: "Off in this browser"}
+							</button>
+						</Row>
 					)}
 					{!s.cloud && (
 						<Row label="Usage ping">

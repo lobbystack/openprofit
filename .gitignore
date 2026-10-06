@@ -14,3 +14,4 @@ todos.json
 design/
 data/
 .env
+.claude/worktrees/

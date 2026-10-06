@@ -1,8 +1,9 @@
 import { marked } from "marked";
+import cookies from "../legal/cookies.md?raw";
 import privacy from "../legal/privacy.md?raw";
 import terms from "../legal/terms.md?raw";
 
-export const LEGAL_MD = { privacy, terms };
+export const LEGAL_MD = { privacy, terms, cookies };
 
 export const LEGAL = {
 	privacy: {
@@ -12,5 +13,9 @@ export const LEGAL = {
 	terms: {
 		title: "Terms of Service",
 		html: marked.parse(terms, { async: false }) as string,
+	},
+	cookies: {
+		title: "Cookie Policy",
+		html: marked.parse(cookies, { async: false }) as string,
 	},
 };

@@ -3,6 +3,7 @@ import { ArrowUpRight, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Control, PageHeader } from "#/components/app/shell";
 import { AreaChart } from "#/components/dashboard/area-chart";
+import { track } from "#/lib/analytics";
 import { money } from "#/lib/format";
 import { getOverview } from "#/server/overview.functions";
 import { createProduct, deleteProduct } from "#/server/products.functions";
@@ -29,6 +30,7 @@ function Products() {
 		e.preventDefault();
 		if (!name.trim()) return;
 		await createProduct({ data: { name } });
+		track("product_created");
 		setName("");
 		setAdding(false);
 		router.invalidate();
@@ -42,6 +44,7 @@ function Products() {
 		)
 			return;
 		await deleteProduct({ data: { id } });
+		track("product_removed");
 		router.invalidate();
 	}
 

@@ -7,6 +7,7 @@ import {
 	type ProviderId,
 	ProviderLogo,
 } from "#/components/provider-logo";
+import { track } from "#/lib/analytics";
 import {
 	createConnection,
 	getConnectorInfo,
@@ -55,9 +56,15 @@ function Connect() {
 		e.preventDefault();
 		setSaving(true);
 		try {
-			await createConnection({
+			const { synced } = await createConnection({
 				data: { provider: info.id, credentials: values },
 			});
+			track("connection_added", { provider: info.id, kind: info.kind });
+			if (!synced)
+				track("connection_sync_failed", {
+					provider: info.id,
+					trigger: "first",
+				});
 			navigate({ to: "/app/connections" });
 		} catch (err) {
 			setSaving(false);

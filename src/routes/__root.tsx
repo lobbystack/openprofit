@@ -3,12 +3,15 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { Consent } from "../components/consent";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { APP_NAME, SITE_DESCRIPTION, SITE_URL } from "../lib/app";
 import { THEME_SCRIPT } from "../lib/theme";
+import { getAnalyticsConfig } from "../server/analytics.functions";
 import appCss from "../styles.css?url";
 
 interface MyRouterContext {
@@ -39,8 +42,22 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		],
 		scripts: [{ children: THEME_SCRIPT }],
 	}),
+	// PostHog settings and the saved cookie choice, read during SSR so the
+	// banner renders without a flash.
+	loader: () => getAnalyticsConfig(),
+	staleTime: Number.POSITIVE_INFINITY,
+	component: Root,
 	shellComponent: RootDocument,
 });
+
+function Root() {
+	return (
+		<>
+			<Outlet />
+			<Consent />
+		</>
+	);
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (

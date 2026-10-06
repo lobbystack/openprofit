@@ -22,6 +22,7 @@ export function markdownFor(path: string): string | null {
 	if (p === "/changelog") return CHANGELOG.body;
 	if (p === "/privacy") return LEGAL_MD.privacy;
 	if (p === "/terms") return LEGAL_MD.terms;
+	if (p === "/cookies") return LEGAL_MD.cookies;
 	const [, section, slug] = p.split("/");
 	const list =
 		section === "docs"

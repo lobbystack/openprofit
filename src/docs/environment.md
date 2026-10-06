@@ -1,7 +1,7 @@
 ---
 navLabel: Environment Variables
 contentType: Reference
-description: Every environment variable a self-hosted OpenProfit instance reads, with defaults, and what the optional usage ping sends.
+description: Every environment variable a self-hosted OpenProfit instance reads, with defaults, what the optional usage ping sends, and how to connect PostHog.
 ---
 
 # Environment variables
@@ -54,6 +54,20 @@ These variables apply only to the hosted version at openprofit.dev. A self-hoste
 | `POLAR_ACCESS_TOKEN` | None | Polar organization token used to create checkouts and open the billing portal |
 | `POLAR_PRODUCT_INDIE`, `POLAR_PRODUCT_PRO` | None | Polar product ids for the two paid plans |
 | `POLAR_WEBHOOK_SECRET` | None | Secret that verifies subscription events sent to `/api/polar/webhook` |
+
+## Analytics and monitoring
+
+OpenProfit sends nothing to PostHog unless you set `POSTHOG_KEY`. With it set:
+
+- Visitors see a cookie banner. PostHog loads in the browser only after they accept, and they can change their choice under **Cookie settings** in the footer or **Analytics** in **Settings**.
+- Browser requests go to `/ingest` on your own domain, so ad blockers let them through. To send them to a PostHog managed reverse proxy instead, set `POSTHOG_PROXY`.
+- The server sends PostHog its `console.info`, `console.warn` and `console.error` output, a trace span for each request and background sync, and server function errors. None of these include a user id.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `POSTHOG_KEY` | None | Project token from your PostHog project settings, starting with `phc_` |
+| `POSTHOG_HOST` | `https://us.i.posthog.com` | PostHog ingestion host. Use `https://eu.i.posthog.com` for an EU project |
+| `POSTHOG_PROXY` | `/ingest` | Address of a PostHog managed reverse proxy on your own subdomain, such as `https://e.example.com` |
 
 ## Usage ping
 

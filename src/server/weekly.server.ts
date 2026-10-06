@@ -111,6 +111,7 @@ export async function sendWeeklyEmails() {
 			sent++;
 		}
 	}
-	if (sent) console.log(`[${APP_NAME}] weekly email sent to ${sent} member(s)`);
+	if (sent)
+		console.info(`[${APP_NAME}] weekly email sent to ${sent} member(s)`);
 	return sent;
 }
