@@ -59,9 +59,10 @@ function clearOldStorage() {
 				"",
 				`; Domain=${location.hostname}`,
 				`; Domain=.${location.hostname}`,
-			])
+			]) {
 				// biome-ignore lint/suspicious/noDocumentCookie: deleting cookies by name
 				document.cookie = `${name}=; Path=/; Max-Age=0${domain}`;
+			}
 	}
 	for (const k of Object.keys(localStorage))
 		if (posthogKey(k)) localStorage.removeItem(k);
