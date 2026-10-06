@@ -11,14 +11,15 @@ const config = defineConfig({
 	resolve: { tsconfigPaths: true },
 	// PGlite docs: keep it out of Vite's dependency pre-bundling.
 	optimizeDeps: { exclude: ["@electric-sql/pglite"] },
+	// devtools first; tanstackStart before nitro and react.
 	plugins: [
 		devtools(),
-		nitro({
-			// PGlite ships wasm and data files next to its JS; bundling drops them.
-			rollupConfig: { external: [/^@sentry\//, /^@electric-sql\/pglite/] },
-		}),
 		tailwindcss(),
 		tanstackStart(),
+		nitro({
+			// PGlite ships wasm and data files next to its JS; bundling drops them.
+			rollupConfig: { external: [/^@electric-sql\/pglite/] },
+		}),
 		viteReact(),
 	],
 });
