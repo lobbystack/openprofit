@@ -104,18 +104,14 @@ const edge = createMiddleware({ type: "request" }).server(
 );
 
 // Server functions only answer same-origin browser requests. Browsers send
-// Sec-Fetch-Site, which is checked first. The Origin/Referer fallback
-// compares hosts only: behind the host's proxy the request URL is http
+// Sec-Fetch-Site, which is checked first. The Origin/Referer fallback also
+// accepts APP_URL's origin: behind the host's proxy the request URL is http
 // while the browser's origin is https.
 const csrf = createCsrfMiddleware({
 	filter: (ctx) => ctx.handlerType === "serverFn",
-	origin: (origin, ctx) => {
-		try {
-			return new URL(origin).host === new URL(ctx.request.url).host;
-		} catch {
-			return false;
-		}
-	},
+	origin: (origin, ctx) =>
+		origin === new URL(ctx.request.url).origin ||
+		(!!process.env.APP_URL && origin === new URL(process.env.APP_URL).origin),
 });
 
 // Server function errors go to PostHog error tracking. Redirects and
