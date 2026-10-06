@@ -60,8 +60,15 @@ export function AreaChart({
 	const padT = 12;
 	const padB = compact ? 0 : 28;
 	const all = [...data, ...(previous ?? [])];
-	const max = Math.max(...all, 1) * 1.08;
-	const min = 0;
+	// Axis on 1-2-5 steps that always includes zero, so losses go below it.
+	const ticks = 4;
+	const lo = Math.min(0, ...all);
+	const hi = Math.max(0, ...all);
+	const raw = (hi - lo || ticks) / ticks;
+	const mag = 10 ** Math.floor(Math.log10(raw));
+	const step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
+	const min = Math.floor(lo / step) * step;
+	const max = Math.max(Math.ceil(hi / step) * step, min + step);
 	const x = (i: number) => padL + (i / (data.length - 1)) * (W - padL - padR);
 	const y = (v: number) =>
 		padT + (1 - (v - min) / (max - min)) * (H - padT - padB);
@@ -72,7 +79,9 @@ export function AreaChart({
 				(v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`,
 			)
 			.join(" ");
-	const area = `${line(data)} L${x(data.length - 1).toFixed(1)},${(H - padB).toFixed(1)} L${padL},${(H - padB).toFixed(1)} Z`;
+	// The area fills to the zero line, above it for gains and below for losses.
+	const zero = y(0).toFixed(1);
+	const area = `${line(data)} L${x(data.length - 1).toFixed(1)},${zero} L${padL},${zero} Z`;
 
 	const stroke =
 		tone === "positive"
@@ -81,13 +90,14 @@ export function AreaChart({
 				? "var(--negative)"
 				: "var(--ink)";
 
-	const ticks = 4;
 	const tickVals = Array.from(
-		{ length: ticks + 1 },
-		(_, i) => (max / ticks) * i,
+		{ length: Math.round((max - min) / step) + 1 },
+		(_, i) => min + step * i,
 	);
 	const fmt = (v: number) =>
-		v >= 1000 ? `${Math.round(v / 100) / 10}k` : `${Math.round(v)}`;
+		Math.abs(v) >= 1000
+			? `${Math.round(v / 100) / 10}k`
+			: `${Number(v.toFixed(2))}`;
 
 	return (
 		<svg
