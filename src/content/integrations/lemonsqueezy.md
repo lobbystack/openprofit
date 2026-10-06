@@ -17,6 +17,7 @@ OpenProfit reads every store your API key can see:
 - **Orders:** one-time purchases and the first payment of each subscription.
 - **Subscription invoices:** renewals and plan changes.
 - **Refunds:** recorded on the day of the refund, without the tax share.
+- **Tax:** the sales tax or VAT on each order and renewal, less the share refunded. It shows as **Tax collected** on the overview, kept apart from revenue. Lemon Squeezy files it.
 - **Subscriptions:** monthly recurring revenue (MRR) from active subscriptions at their price, and the number of active subscriptions. Prices with tiers or usage billing have no fixed amount, so MRR leaves them out.
 
 The first sync goes back two years. Amounts in other currencies convert to your base currency at the European Central Bank rate for the day of the sale.

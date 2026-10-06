@@ -14,9 +14,11 @@ Paddle sells your product as merchant of record, so it collects sales tax and VA
 
 OpenProfit reads three things from Paddle Billing:
 
-- **Completed transactions:** revenue without tax, and Paddle's fee. Free trial transactions total zero and are skipped.
-- **Approved refunds, credits and chargebacks:** each one subtracts its amount before tax, on the day Paddle created it. When Paddle returns part of its fee on a refund, that part comes back to you.
+- **Completed transactions:** revenue without tax, the tax, and Paddle's fee. Free trial transactions total zero and are skipped.
+- **Approved refunds, credits and chargebacks:** each one subtracts its amount before tax, and the tax it returns, on the day Paddle created it. When Paddle returns part of its fee on a refund, that part comes back to you.
 - **Metrics:** monthly recurring revenue (MRR) and paying subscribers, in your balance currency. Trials don't count.
+
+The tax shows as **Tax collected** on the overview, kept apart from revenue. Paddle files it, so you don't owe it.
 
 Transactions stay in the currency the customer paid in and convert to your base currency at the European Central Bank rate for that day. The first sync goes back two years. Invoices you send manually get paid later than they're billed, so each sync rereads 90 days of them.
 

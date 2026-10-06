@@ -13,13 +13,14 @@ Stripe's dashboard leads with gross volume. What reaches your bank is less: Stri
 ## What it reads
 
 - **Balance transactions:** every charge, refund, fee and dispute, with its gross amount, fee and net. Payouts and transfers are movements of money you already earned, so they're skipped.
+- **Invoices:** the sales tax or VAT on each invoice. OpenProfit takes that tax out of the charge that paid the invoice and shows it as **Tax collected** on the overview. A refund takes back the same share of tax. Payments without an invoice, such as one-off Checkout and Payment Links payments, carry no tax figure, so their tax stays in revenue.
 - **Subscriptions:** active subscriptions give your MRR and customer count. Yearly and weekly prices are converted to a monthly figure. Metered prices are left out of MRR because their amount isn't known until the period ends.
 
 Amounts in other currencies convert to your base currency at the European Central Bank rate for the day of the transaction.
 
 ## Connect it
 
-1. In the Stripe dashboard, open **Developers → API keys** and create a restricted key with read access to **Balance**, **Balance transaction sources**, **Charges** and **Subscriptions**.
+1. In the Stripe dashboard, open **Developers → API keys** and create a restricted key with read access to **Balance**, **Balance transaction sources**, **Charges**, **Invoices** and **Subscriptions**. Without **Invoices**, the connection still syncs, but revenue includes tax.
 2. In OpenProfit, open **Connections → Stripe**, paste the key and press **Test**. The test shows your account's name.
 3. Press **Connect**. The first sync reads two years of transactions.
 

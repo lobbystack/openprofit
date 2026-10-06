@@ -189,7 +189,9 @@ A fetch that returns no lines at all deletes nothing, whatever the range. Provid
 - **`refundsCents`**: money returned, as a positive number
 - **`netCents`**: what you keep. It's negative on a refund line
 
-The overview sums `netCents`. The sync stores the other amounts and `kind`, but no page shows them yet. Set `kind` to `subscription` or `one_time` when the provider tells you, and `other` when it doesn't. Skip cash movements such as payouts and transfers; `stripe.ts` lists the types it skips.
+None of them include sales tax or VAT. Return the tax in **`taxCents`**: the tax the customer paid, whether the price added it on top or included it. On a refund line, return the tax handed back as a negative number. Leave it out when the provider doesn't report tax; it defaults to 0. If the provider files and pays the tax as merchant of record, as Paddle does, or the app stores do for RevenueCat, set `remitsTax: true` on the connector. The overview reports the rest as tax the seller files.
+
+The overview sums `netCents`, and `taxCents` for **Tax collected**. The sync stores the other amounts and `kind`, but no page shows them yet. Set `kind` to `subscription` or `one_time` when the provider tells you, and `other` when it doesn't. Skip cash movements such as payouts and transfers; `stripe.ts` lists the types it skips.
 
 #### Cost lines
 

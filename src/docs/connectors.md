@@ -22,7 +22,7 @@ Each connector needs a key with specific permissions. The table lists what each 
 
 | Provider | What it reads | Key |
 | --- | --- | --- |
-| [Stripe](/integrations/stripe) | Balance transactions, and active subscriptions for monthly recurring revenue (MRR) and customer count | Restricted key with read access to Balance, Balance transaction sources, Charges and Subscriptions |
+| [Stripe](/integrations/stripe) | Balance transactions, and active subscriptions for monthly recurring revenue (MRR) and customer count | Restricted key with read access to Balance, Balance transaction sources, Charges, Invoices and Subscriptions |
 | [Polar](/integrations/polar) | Daily revenue and net revenue, MRR, active subscriptions | Organization access token with `organizations:read` and `metrics:read` |
 | [Paddle](/integrations/paddle) | Completed transactions without tax, Paddle’s fee, refunds, credits and chargebacks, MRR, paying subscribers | API key with `transaction.read`, `adjustment.read` and `metrics.read` |
 | [Lemon Squeezy](/integrations/lemonsqueezy) | Orders and subscription renewals without tax, refunds, MRR, active subscriptions. No fees: the API doesn’t report them | API key, which has full access |
@@ -41,6 +41,20 @@ Each connector needs a key with specific permissions. The table lists what each 
 | [xAI](/integrations/xai) | Daily cost by billing description, such as a model | Management key |
 | [Neon](/integrations/neon) | Monthly compute, storage, transfer and branch usage per project, priced at Neon’s published rates | Organization API key |
 | [MongoDB Atlas](/integrations/mongodb) | Daily invoice line items per project and stock keeping unit (SKU), including the current month’s pending invoice | Service account with the Organization Billing Viewer role |
+
+## Sales tax and VAT
+
+Revenue, profit, MRR and margins leave out the sales tax and VAT your customers pay. OpenProfit stores the tax on each revenue line, in the line’s currency and your base currency. When a period has tax, the overview shows **Tax collected** under the chart, with the share you file yourself.
+
+| Provider | Tax it records | Who files it |
+| --- | --- | --- |
+| Stripe | The tax on the invoice behind each charge. A refund or dispute takes back the same share of tax. Payments without an invoice, such as one-off Checkout and Payment Links payments, record no tax, and their tax stays in revenue | You |
+| Polar | None. Polar’s metrics leave tax out of revenue and don’t report it | Polar, as merchant of record |
+| Paddle | The tax on each transaction, and the tax returned on each refund, credit or chargeback | Paddle, as merchant of record |
+| Lemon Squeezy | The tax on each order and renewal, and the tax share of each refund | Lemon Squeezy, as merchant of record |
+| RevenueCat | RevenueCat’s monthly estimate: revenue minus revenue net of taxes | The App Store and Google Play. For RevenueCat Web Billing sales, you |
+
+Stripe needs read access to **Invoices** to find the tax. A key without it still syncs, but its revenue includes tax.
 
 ## Assign costs to products
 
