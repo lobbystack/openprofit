@@ -93,7 +93,6 @@ export function Shell({
 	children: React.ReactNode;
 }) {
 	const path = useRouterState({ select: (s) => s.location.pathname });
-	const router = useRouter();
 	return (
 		<div className="flex min-h-screen">
 			<aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-line bg-paper p-3 md:flex">
@@ -112,34 +111,7 @@ export function Shell({
 						</>
 					}
 				>
-					{(close) => (
-						<>
-							{workspace.workspaces.map((w) => (
-								<button
-									key={w.id}
-									type="button"
-									className={item}
-									onClick={async () => {
-										close();
-										if (w.id === workspace.id) return;
-										await switchWorkspace({ data: { id: w.id } });
-										router.invalidate();
-									}}
-								>
-									<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-surface-3 text-[10px] text-ink">
-										{w.name[0]}
-									</span>
-									<span className="flex-1 truncate">{w.name}</span>
-									{w.id === workspace.id && <Check size={14} />}
-								</button>
-							))}
-							<div className="my-1 h-px bg-line" />
-							<Link to="/onboarding" className={item} onClick={close}>
-								<Plus size={14} />
-								New workspace
-							</Link>
-						</>
-					)}
+					{(close) => <WorkspaceItems workspace={workspace} close={close} />}
 				</Menu>
 
 				<button
@@ -245,8 +217,10 @@ export function Shell({
 							panelClassName="right-0 top-10 w-56 origin-top-right"
 							trigger={workspace.email[0]}
 						>
-							{() => (
+							{(close) => (
 								<>
+									<WorkspaceItems workspace={workspace} close={close} />
+									<div className="my-1 h-px bg-line" />
 									<div className="truncate px-2 py-1.5 text-[12px] text-text-3">
 										{workspace.email}
 									</div>
@@ -348,5 +322,44 @@ export function Control({
 		>
 			{children}
 		</button>
+	);
+}
+
+// The workspace list with a check on the current one, then "New workspace".
+function WorkspaceItems({
+	workspace,
+	close,
+}: {
+	workspace: WorkspaceSummary;
+	close: () => void;
+}) {
+	const router = useRouter();
+	return (
+		<>
+			{workspace.workspaces.map((w) => (
+				<button
+					key={w.id}
+					type="button"
+					className={item}
+					onClick={async () => {
+						close();
+						if (w.id === workspace.id) return;
+						await switchWorkspace({ data: { id: w.id } });
+						router.invalidate();
+					}}
+				>
+					<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-surface-3 text-[10px] text-ink">
+						{w.name[0]}
+					</span>
+					<span className="flex-1 truncate">{w.name}</span>
+					{w.id === workspace.id && <Check size={14} />}
+				</button>
+			))}
+			<div className="my-1 h-px bg-line" />
+			<Link to="/onboarding" className={item} onClick={close}>
+				<Plus size={14} />
+				New workspace
+			</Link>
+		</>
 	);
 }

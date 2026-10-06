@@ -1,9 +1,41 @@
+import { useEffect, useRef, useState } from "react";
 import { monthLabel } from "#/lib/format";
+
+// Values glide from what's on screen to the new target. A new target
+// mid-animation starts from the current frame, so it never jumps.
+function useGlide(target: number[], ms = 420) {
+	const [shown, setShown] = useState(target);
+	const current = useRef(target);
+	const key = target.join(",");
+	// biome-ignore lint/correctness/useExhaustiveDependencies: keyed on values
+	useEffect(() => {
+		const from = current.current;
+		const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+		if (calm || from.length !== target.length) {
+			current.current = target;
+			setShown(target);
+			return;
+		}
+		const start = performance.now();
+		let frame = 0;
+		const tick = (now: number) => {
+			const k = Math.min(1, (now - start) / ms);
+			const e = 1 - (1 - k) ** 3;
+			const next = target.map((v, i) => from[i] + (v - from[i]) * e);
+			current.current = next;
+			setShown(next);
+			if (k < 1) frame = requestAnimationFrame(tick);
+		};
+		frame = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(frame);
+	}, [key]);
+	return shown;
+}
 
 // Hand-rolled SVG area chart. Current period solid, previous period dotted.
 export function AreaChart({
-	data,
-	previous,
+	data: dataIn,
+	previous: previousIn,
 	months = [],
 	height = 260,
 	tone = "ink",
@@ -17,6 +49,9 @@ export function AreaChart({
 	tone?: "ink" | "positive" | "negative";
 	compact?: boolean;
 }) {
+	const data = useGlide(dataIn);
+	const glidedPrevious = useGlide(previousIn ?? []);
+	const previous = previousIn ? glidedPrevious : undefined;
 	const W = 1000;
 	const H = height;
 	const padL = compact ? 0 : 56;
@@ -24,7 +59,7 @@ export function AreaChart({
 	const padT = 12;
 	const padB = compact ? 0 : 28;
 	const all = [...data, ...(previous ?? [])];
-	const max = Math.max(...all) * 1.08;
+	const max = Math.max(...all, 1) * 1.08;
 	const min = 0;
 	const x = (i: number) => padL + (i / (data.length - 1)) * (W - padL - padR);
 	const y = (v: number) =>
