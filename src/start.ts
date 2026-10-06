@@ -5,33 +5,14 @@ import {
 	createStart,
 } from "@tanstack/react-start";
 
-// www goes to the bare domain; agents asking for markdown get the page's
-// markdown; HTML pages advertise it with Link headers; text responses are
-// gzipped (the host only compresses static assets). Signed-in pages and
-// server function results are never cached. With POSTHOG_KEY set, each
-// request is a trace span.
+// Server-rendered responses: text is gzipped (the host only compresses
+// static assets), signed-in pages and server function results are never
+// cached, and with POSTHOG_KEY set each request is a trace span. www,
+// markdown and Link headers live in server/edge.server.ts so they also cover
+// prerendered pages.
 const edge = createMiddleware({ type: "request" }).server(
 	async ({ request, next, handlerType }) => {
 		const url = new URL(request.url);
-		if (url.hostname.startsWith("www.")) {
-			url.hostname = url.hostname.slice(4);
-			url.protocol = "https:";
-			return Response.redirect(url.toString(), 301);
-		}
-
-		const { markdownFor } = await import("./server/markdown.server");
-		const md = markdownFor(url.pathname);
-		const wantsMd = /text\/markdown/.test(request.headers.get("accept") ?? "");
-		if (md && wantsMd && request.method === "GET") {
-			return new Response(md, {
-				headers: {
-					"Content-Type": "text/markdown; charset=utf-8",
-					"x-markdown-tokens": String(Math.ceil(md.length / 4)),
-					Vary: "Accept",
-				},
-			});
-		}
-
 		const o = await import("./server/observability.server");
 		const route = o.routePattern(url.pathname);
 		const result = url.pathname.startsWith("/ingest/")
@@ -63,17 +44,6 @@ const edge = createMiddleware({ type: "request" }).server(
 		const type = res.headers.get("content-type") ?? "";
 		const headers = new Headers(res.headers);
 		if (noStore) headers.set("Cache-Control", "no-store");
-
-		// RFC 8288 links: the markdown version and the docs.
-		if (type.includes("text/html")) {
-			const links = ['</docs/self-host>; rel="service-doc"'];
-			if (md)
-				links.unshift(
-					`<${url.pathname}>; rel="alternate"; type="text/markdown"`,
-				);
-			headers.append("Link", links.join(", "));
-			headers.append("Vary", "Accept");
-		}
 
 		const gzip =
 			res.body &&

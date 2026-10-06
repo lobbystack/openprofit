@@ -24,6 +24,8 @@ export type Settings = {
 	analytics: boolean;
 	// Hosted instance: billing rows show and the plan caps the cadence.
 	cloud: boolean;
+	// POSTHOG_KEY is set, so the analytics switch does something.
+	posthog: boolean;
 };
 
 export const getSettings = createServerFn({ method: "GET" }).handler(
@@ -51,6 +53,7 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 			telemetry: ws.telemetry,
 			analytics: me?.analytics ?? true,
 			cloud: isCloud,
+			posthog: !!process.env.POSTHOG_KEY,
 		};
 	},
 );

@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq, ne } from "drizzle-orm";
-import { db, schema } from "#/db";
 import { SITE_URL } from "#/lib/app";
 import { COMPARISONS, INTEGRATIONS } from "#/lib/content";
 import { DOCS } from "#/lib/docs";
@@ -21,6 +20,8 @@ export const Route = createFileRoute("/sitemap.xml")({
 	server: {
 		handlers: {
 			GET: async () => {
+				// Imported here so pages that skip the database never open it.
+				const { db, schema } = await import("#/db");
 				// Product pages their owners made public.
 				const pub = await db
 					.select({ ws: schema.workspaces.slug, p: schema.products.slug })

@@ -7,6 +7,9 @@ import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
+const PRERENDER =
+	/^\/(|changelog|privacy|terms|cookies|integrations|(docs|integrations|compare)\/[\w-]+)\/?$/;
+
 const config = defineConfig({
 	resolve: { tsconfigPaths: true },
 	// PGlite docs: keep it out of Vite's dependency pre-bundling.
@@ -15,10 +18,24 @@ const config = defineConfig({
 	plugins: [
 		devtools(),
 		tailwindcss(),
-		tanstackStart(),
+		tanstackStart({
+			// Pages that read no live data are built once to static HTML,
+			// starting from the landing page and following its links. Product
+			// pages, the sitemap and the app stay server-rendered.
+			prerender: {
+				enabled: true,
+				crawlLinks: true,
+				filter: ({ path }) => PRERENDER.test(path),
+			},
+		}),
 		nitro({
 			// PGlite ships wasm and data files next to its JS; bundling drops them.
 			rollupConfig: { external: [/^@electric-sql\/pglite/] },
+			// Scripts and styles ship as .gz and .br next to the file.
+			compressPublicAssets: { gzip: true, brotli: true },
+			// www, markdown, Link headers and prerendered pages, ahead of the
+			// static files.
+			plugins: ["./src/server/edge.server.ts"],
 		}),
 		viteReact(),
 	],

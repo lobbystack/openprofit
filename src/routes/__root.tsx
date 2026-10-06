@@ -40,17 +40,17 @@ export const Route = createRootRoute({
 		],
 		scripts: [{ children: THEME_SCRIPT }],
 	}),
-	// PostHog settings for the browser.
-	loader: () => getAnalyticsConfig(),
-	staleTime: Number.POSITIVE_INFINITY,
 	component: Root,
 	shellComponent: RootDocument,
 });
 
 function Root() {
-	const cfg = Route.useLoaderData();
 	const router = useRouter();
-	useEffect(() => initAnalytics(cfg), [cfg]);
+	// PostHog settings come from the running server, not the HTML, so
+	// prerendered pages pick up the deployment's key.
+	useEffect(() => {
+		getAnalyticsConfig().then(initAnalytics, () => {});
+	}, []);
 	// Before the next page renders, so replay never sees a public page.
 	useEffect(
 		() =>

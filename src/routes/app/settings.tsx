@@ -1,8 +1,4 @@
-import {
-	createFileRoute,
-	useLoaderData,
-	useRouter,
-} from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
@@ -59,7 +55,6 @@ function Settings() {
 	const update = useServerFn(updateSettings);
 	const checkoutFn = useServerFn(startCheckout);
 	const portal = useServerFn(openPortal);
-	const posthog = useLoaderData({ from: "__root__", select: (d) => !!d.key });
 	// Shows each change at once; the loader catches up after the save.
 	const [draft, setDraft] = useState<Partial<SettingsData>>({});
 	const s = { ...loaded, ...draft };
@@ -251,9 +246,9 @@ function Settings() {
 				)}
 			</SettingsSection>
 
-			{(posthog || !s.cloud) && (
+			{(s.posthog || !s.cloud) && (
 				<SettingsSection title="Privacy">
-					{posthog && (
+					{s.posthog && (
 						<SettingsRow
 							label="Analytics"
 							description="Sends PostHog the actions you take in the dashboard and a replay of each session, with all text and inputs hidden."
