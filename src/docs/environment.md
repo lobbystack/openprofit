@@ -58,11 +58,16 @@ These variables apply only to the hosted version at openprofit.dev. A self-hoste
 
 ## Analytics and monitoring
 
-OpenProfit sends nothing to PostHog unless you set `POSTHOG_KEY`. With it set:
+OpenProfit sends nothing to PostHog unless you set `POSTHOG_KEY`. With it set, the server and the browser each send PostHog their own data:
 
-- Visitors see a cookie banner. PostHog loads in the browser only after they accept, and they can change their choice under **Cookie settings** in the footer or **Analytics** in **Settings**.
-- Browser requests go to `/ingest` on your own domain, so ad blockers let them through. To send them to a PostHog managed reverse proxy instead, set `POSTHOG_PROXY`.
-- The server sends PostHog its own tagged log lines, such as `[sync]` and `[weekly]`, a trace span for each request and background sync named by route, and server function errors. It replaces email addresses and anything shaped like a key or token first. Provider errors go out as their status code only, and provider and validation errors stay out of error tracking. None of these include a user id.
+- **Product events**: the server records sign-ups, workspaces created, connections added, removed or failing to sync, products created and removed, product assignments and checkouts. Each event carries the user id, the workspace id as a PostHog group, and fields such as the provider or plan. Events never include names, email addresses, amounts or keys. A user who switches off **Product analytics** in **Settings** sends no events. Scheduled sync failures have no user, so they use the distinct id `workspace-events`
+- **Workspace properties**: with `APP_MODE=cloud`, the server sets each workspace group's properties when the workspace is created and once a day. They hold the plan, base currency, creation date, the member and product counts, and a connection count per provider
+- **Web analytics**: the browser loads PostHog on every page in cookieless mode. PostHog stores nothing on the device and counts visitors with a daily hash of IP address and user agent. In your PostHog project, turn on **Cookieless server hash mode** under **Project Settings** > **Web analytics**, or PostHog drops these events
+- **Cookies and session replay**: visitors see a cookie banner. Once they accept, PostHog sets its cookies, records session replays, and links the browser to the signed-in user id. They can change their choice under **Cookie settings** in the footer or **Replay and cookies** in **Settings**
+
+Browser requests go to `/ingest` on your own domain, so ad blockers let them through. To send them to a PostHog managed reverse proxy instead, set `POSTHOG_PROXY`.
+
+The server also sends PostHog its own tagged log lines, such as `[sync]` and `[weekly]`, a trace span for each request and background sync named by route, and server function errors. It replaces email addresses and anything shaped like a key or token first. Provider errors go out as their status code only, and provider and validation errors stay out of error tracking. None of these include a user id.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
