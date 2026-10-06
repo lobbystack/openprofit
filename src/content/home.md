@@ -8,7 +8,7 @@ OpenProfit is the open-source finance dashboard for developers. It brings your r
 
 ## What it does
 
-- **Connects your stack**: revenue from Stripe and Polar; costs from OpenAI, Anthropic, Vercel, Cloudflare and Railway billing APIs; anything else as a flat monthly or yearly cost
+- **Connects your stack**: revenue from Stripe, Polar, Paddle, Lemon Squeezy and RevenueCat; costs from OpenAI, Anthropic, Vercel, Cloudflare and Railway billing APIs; anything else as a flat monthly or yearly cost
 - **Shows profit per product**: each OpenAI project, Vercel project, Anthropic workspace, Railway project or Cloudflare zone maps to the product it serves
 - **Uses one currency**: every line converts to the workspace's base currency at that day's European Central Bank rate
 - **Watches for changes**: a Monday email with last week's revenue, costs and profit, and alerts when a bill doubles, a margin drops or a sync fails

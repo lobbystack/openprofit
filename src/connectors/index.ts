@@ -2,6 +2,9 @@
 // users should see providers.
 import "./stripe";
 import "./polar";
+import "./paddle";
+import "./lemonsqueezy";
+import "./revenuecat";
 import "./openai";
 import "./anthropic";
 import "./railway";

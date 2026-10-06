@@ -8,6 +8,7 @@ import {
 	siPaddle,
 	siRailway,
 	siResend,
+	siRevenuecat,
 	siStripe,
 	siSupabase,
 	siVercel,
@@ -23,12 +24,18 @@ type Provider = {
 export const PROVIDERS: Record<string, Provider> = {
 	stripe: { name: "Stripe", kind: "revenue", v1: true, path: siStripe.path },
 	polar: { name: "Polar", kind: "revenue", v1: true },
-	paddle: { name: "Paddle", kind: "revenue", v1: false, path: siPaddle.path },
+	paddle: { name: "Paddle", kind: "revenue", v1: true, path: siPaddle.path },
 	lemonsqueezy: {
 		name: "Lemon Squeezy",
 		kind: "revenue",
-		v1: false,
+		v1: true,
 		path: siLemonsqueezy.path,
+	},
+	revenuecat: {
+		name: "RevenueCat",
+		kind: "revenue",
+		v1: true,
+		path: siRevenuecat.path,
 	},
 	appstore: {
 		name: "App Store",

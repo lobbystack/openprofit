@@ -22,6 +22,9 @@ Each connector needs a key with specific permissions. The table lists what each 
 | --- | --- | --- |
 | [Stripe](/integrations/stripe) | Balance transactions, and active subscriptions for monthly recurring revenue (MRR) and customer count | Restricted key with read access to Balance, Balance transaction sources, Charges and Subscriptions |
 | [Polar](/integrations/polar) | Daily revenue and net revenue, MRR, active subscriptions | Organization access token with `organizations:read` and `metrics:read` |
+| [Paddle](/integrations/paddle) | Completed transactions without tax, Paddle’s fee, refunds, credits and chargebacks, MRR, paying subscribers | API key with `transaction.read`, `adjustment.read` and `metrics.read` |
+| [Lemon Squeezy](/integrations/lemonsqueezy) | Orders and subscription renewals without tax, refunds, MRR, active subscriptions. No fees: the API doesn’t report them | API key, which has full access |
+| [RevenueCat](/integrations/revenuecat) | Monthly revenue net of taxes and proceeds after store commission, MRR, active subscriptions | Secret API key (v2) with `project_configuration:projects:read` and `charts_metrics:overview:read` |
 | [OpenAI](/integrations/openai) | Daily cost by project and line item | Organization admin key |
 | [Anthropic](/integrations/anthropic) | Daily cost by workspace and description | Admin key, available on organization accounts only |
 | [Vercel](/integrations/vercel) | Daily charges per project | Access token scoped to the team |
