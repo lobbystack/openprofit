@@ -169,15 +169,7 @@ export function Shell({
 					))}
 				</ul>
 
-				<div className="mt-auto space-y-px">
-					<button
-						type="button"
-						onClick={toggleTheme}
-						className="flex h-8 w-full items-center gap-2.5 rounded-md px-2 text-[13px] text-text-2 hover:bg-surface-1 hover:text-ink"
-					>
-						<SunMoon size={16} />
-						Theme
-					</button>
+				<div className="mt-auto">
 					<Menu
 						className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-[13px] hover:bg-surface-2"
 						panelClassName="inset-x-0 bottom-10 origin-bottom"
@@ -193,10 +185,16 @@ export function Shell({
 						}
 					>
 						{() => (
-							<button type="button" className={item} onClick={signOut}>
-								<LogOut size={14} />
-								Sign out
-							</button>
+							<>
+								<button type="button" className={item} onClick={toggleTheme}>
+									<SunMoon size={14} />
+									Theme
+								</button>
+								<button type="button" className={item} onClick={signOut}>
+									<LogOut size={14} />
+									Sign out
+								</button>
+							</>
 						)}
 					</Menu>
 				</div>
