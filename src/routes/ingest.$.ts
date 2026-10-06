@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import "#/server/env";
 
 // Reverse proxy for PostHog, so blockers that drop requests to posthog.com
 // let the browser's events through. /ingest/static and /ingest/array go to

@@ -1,3 +1,4 @@
+import "@tanstack/react-start/server-only";
 import "#/server/env";
 import { PGlite } from "@electric-sql/pglite";
 import {

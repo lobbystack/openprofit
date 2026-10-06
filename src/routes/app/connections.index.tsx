@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { RefreshCw, X } from "lucide-react";
 import { useState } from "react";
 import { PageHeader } from "#/components/app/shell";
@@ -46,6 +47,8 @@ const ago = (ts: number | null) => {
 function Connections() {
 	const { rows, available } = Route.useLoaderData();
 	const router = useRouter();
+	const syncFn = useServerFn(syncNow);
+	const del = useServerFn(deleteConnection);
 	const [busy, setBusy] = useState<string | null>(null);
 	const connected = new Set(rows.map((r) => r.provider));
 	const implemented = new Set(available.map((c) => c.id));
@@ -56,7 +59,7 @@ function Connections() {
 	async function sync(id: string) {
 		setBusy(id);
 		try {
-			await syncNow({ data: { id } });
+			await syncFn({ data: { id } });
 		} catch {
 			// The row shows the error after invalidate.
 		} finally {
@@ -73,7 +76,7 @@ function Connections() {
 		)
 			return;
 		setBusy(id);
-		await deleteConnection({ data: { id } });
+		await del({ data: { id } });
 		setBusy(null);
 		router.invalidate();
 	}

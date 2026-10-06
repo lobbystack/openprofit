@@ -1,3 +1,4 @@
+import "@tanstack/react-start/server-only";
 import { parse } from "./content";
 
 const files = import.meta.glob("../docs/*.md", {

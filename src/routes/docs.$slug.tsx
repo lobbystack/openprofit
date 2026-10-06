@@ -1,18 +1,10 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { seo } from "#/lib/app";
-import { DOCS } from "#/lib/docs";
+import { getContentPage } from "#/server/content.functions";
 
 export const Route = createFileRoute("/docs/$slug")({
-	loader: ({ params }) => {
-		const doc = DOCS.find((d) => d.slug === params.slug);
-		if (!doc) throw notFound();
-		return {
-			slug: doc.slug,
-			title: doc.title,
-			description: doc.description,
-			html: doc.html,
-		};
-	},
+	loader: ({ params }) =>
+		getContentPage({ data: { section: "docs", slug: params.slug } }),
 	head: ({ loaderData }) =>
 		seo({
 			title: `${loaderData?.title} · OpenProfit docs`,

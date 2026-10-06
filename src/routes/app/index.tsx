@@ -6,8 +6,13 @@ import {
 	OverviewCard,
 } from "#/components/dashboard/overview";
 import { money } from "#/lib/format";
-import { type OverviewData, PERIODS, type PeriodKey } from "#/lib/overview";
-import { getOverview, periodSchema } from "#/server/overview.functions";
+import {
+	type OverviewData,
+	PERIODS,
+	type PeriodKey,
+	periodSchema,
+} from "#/lib/overview";
+import { getOverview } from "#/server/overview.functions";
 
 export const Route = createFileRoute("/app/")({
 	validateSearch: (s: Record<string, unknown>): { period?: PeriodKey } => ({

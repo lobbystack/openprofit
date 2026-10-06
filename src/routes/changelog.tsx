@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ContentPage } from "#/components/content-page";
 import { seo } from "#/lib/app";
-import { CHANGELOG } from "#/lib/content";
+import { getChangelog } from "#/server/content.functions";
 
 export const Route = createFileRoute("/changelog")({
-	head: () =>
+	loader: () => getChangelog(),
+	head: ({ loaderData }) =>
 		seo({
 			title: "Changelog · OpenProfit",
-			description: CHANGELOG.description,
+			description: loaderData?.description,
 			path: "/changelog",
 		}),
-	component: () => <ContentPage html={CHANGELOG.html} />,
+	component: () => <ContentPage html={Route.useLoaderData().html} />,
 });

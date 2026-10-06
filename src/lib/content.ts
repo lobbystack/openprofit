@@ -1,3 +1,4 @@
+import "@tanstack/react-start/server-only";
 import { marked } from "marked";
 
 // Markdown pages with a small front matter block: `key: value` lines

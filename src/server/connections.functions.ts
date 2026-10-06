@@ -1,3 +1,4 @@
+import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, gte, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -80,7 +81,11 @@ export const getConnections = createServerFn({ method: "GET" }).handler(
 
 export const getConnectorInfo = createServerFn({ method: "GET" })
 	.validator(z.object({ id: z.string() }))
-	.handler(async ({ data }) => connectorInfo(connector(data.id)));
+	.handler(async ({ data }) => {
+		const c = connectors().find((c) => c.id === data.id);
+		if (!c) throw notFound();
+		return connectorInfo(c);
+	});
 
 export const listConnectors = createServerFn({ method: "GET" }).handler(
 	async () => connectors().map(connectorInfo),

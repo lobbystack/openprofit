@@ -1,24 +1,18 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import type { QueryClient } from "@tanstack/react-query";
 import {
-	createRootRouteWithContext,
+	createRootRoute,
 	HeadContent,
 	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Consent } from "../components/consent";
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import { APP_NAME, SITE_DESCRIPTION, SITE_URL } from "../lib/app";
 import { THEME_SCRIPT } from "../lib/theme";
 import { getAnalyticsConfig } from "../server/analytics.functions";
 import appCss from "../styles.css?url";
 
-interface MyRouterContext {
-	queryClient: QueryClient;
-}
-
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+export const Route = createRootRoute({
 	head: () => ({
 		meta: [
 			{ charSet: "utf-8" },
@@ -77,7 +71,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 								name: "Tanstack Router",
 								render: <TanStackRouterDevtoolsPanel />,
 							},
-							TanStackQueryDevtools,
 						]}
 					/>
 				)}

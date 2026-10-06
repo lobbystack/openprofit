@@ -1,3 +1,4 @@
+import "@tanstack/react-start/server-only";
 import { Cron } from "croner";
 import { identifyWorkspaces } from "./analytics.server";
 import { isCloud } from "./billing.server";

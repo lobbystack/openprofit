@@ -2,12 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { authSchema, db, schema } from "#/db";
+import { CURRENCIES } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
 import { sendEmail } from "./email.server";
 import { convert } from "./fx.server";
-import { CURRENCIES } from "./onboarding.functions";
 import { syncConnection } from "./sync.server";
 import { weeklySummary } from "./weekly.server";
 import { currentWorkspace } from "./workspace.server";
@@ -53,7 +53,8 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 	},
 );
 
-export const CADENCES = [15, 60, 360, 1440] as const;
+// settings.tsx still imports it from here.
+export { CADENCES } from "#/lib/plans";
 
 export const updateSettings = createServerFn({ method: "POST" })
 	.validator(

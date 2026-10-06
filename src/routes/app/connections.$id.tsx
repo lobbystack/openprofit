@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { PageHeader } from "#/components/app/shell";
 import {
 	PROVIDERS,
@@ -39,15 +40,17 @@ const UNIT: Record<string, string> = {
 function Connection() {
 	const c = Route.useLoaderData();
 	const router = useRouter();
+	const map = useServerFn(setMapping);
+	const setProduct = useServerFn(setConnectionProduct);
 	const p = PROVIDERS[c.provider];
 
 	async function assign(subUnitId: string, productId: string | null) {
-		await setMapping({ data: { connectionId: c.id, subUnitId, productId } });
+		await map({ data: { connectionId: c.id, subUnitId, productId } });
 		router.invalidate();
 	}
 
 	async function assignConnection(productId: string | null) {
-		await setConnectionProduct({ data: { connectionId: c.id, productId } });
+		await setProduct({ data: { connectionId: c.id, productId } });
 		router.invalidate();
 	}
 

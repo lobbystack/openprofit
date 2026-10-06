@@ -1,13 +1,15 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { Footer } from "#/components/landing/footer";
 import { Nav } from "#/components/landing/nav";
-import { DOCS } from "#/lib/docs";
+import { getDocsNav } from "#/server/content.functions";
 
 export const Route = createFileRoute("/docs")({
+	loader: () => getDocsNav(),
 	component: Docs,
 });
 
 function Docs() {
+	const docs = Route.useLoaderData();
 	return (
 		<>
 			<Nav />
@@ -15,7 +17,7 @@ function Docs() {
 				<aside className="hidden w-48 shrink-0 md:block">
 					<div className="label-mono">Docs</div>
 					<ul className="mt-3 space-y-1">
-						{DOCS.map((d) => (
+						{docs.map((d) => (
 							<li key={d.slug}>
 								<Link
 									to="/docs/$slug"

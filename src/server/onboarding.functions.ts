@@ -1,11 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { CURRENCIES } from "#/lib/format";
 import { capture, identifyWorkspaces } from "./analytics.server";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
 import { createWorkspace, rememberWorkspace } from "./workspace.server";
 
-export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "CHF"] as const;
+// settings.tsx still imports it from here.
+export { CURRENCIES } from "#/lib/format";
 
 const Input = z.object({
 	name: z.string().trim().min(1).max(60),

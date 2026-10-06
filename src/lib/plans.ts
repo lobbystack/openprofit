@@ -1,5 +1,8 @@
 export type Plan = "free" | "indie" | "pro";
 
+// Sync cadences a workspace can pick, in minutes.
+export const CADENCES = [15, 60, 360, 1440] as const;
+
 // Hosted plans. Self-host ignores all of this.
 export const PLANS: Record<
 	Plan,

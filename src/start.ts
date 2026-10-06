@@ -1,12 +1,17 @@
 import { isNotFound, isRedirect } from "@tanstack/react-router";
-import { createMiddleware, createStart } from "@tanstack/react-start";
+import {
+	createCsrfMiddleware,
+	createMiddleware,
+	createStart,
+} from "@tanstack/react-start";
 
 // www goes to the bare domain; agents asking for markdown get the page's
 // markdown; HTML pages advertise it with Link headers; text responses are
-// gzipped (the host only compresses static assets). With POSTHOG_KEY set,
-// each request is a trace span.
+// gzipped (the host only compresses static assets). Signed-in pages and
+// server function results are never cached. With POSTHOG_KEY set, each
+// request is a trace span.
 const edge = createMiddleware({ type: "request" }).server(
-	async ({ request, next }) => {
+	async ({ request, next, handlerType }) => {
 		const url = new URL(request.url);
 		if (url.hostname.startsWith("www.")) {
 			url.hostname = url.hostname.slice(4);
@@ -45,8 +50,19 @@ const edge = createMiddleware({ type: "request" }).server(
 					o.SpanKind.SERVER,
 				);
 		const res = result.response;
+		const noStore =
+			handlerType === "serverFn" ||
+			/^\/(app|onboarding)(\/|$)/.test(url.pathname);
+		// Start turns a redirect thrown by a server function into its RPC
+		// response after this middleware, so the redirect object must pass
+		// through as is; a copy reaches the browser as a bare 307.
+		if (isRedirect(res)) {
+			if (noStore) res.headers.set("Cache-Control", "no-store");
+			return result;
+		}
 		const type = res.headers.get("content-type") ?? "";
 		const headers = new Headers(res.headers);
+		if (noStore) headers.set("Cache-Control", "no-store");
 
 		// RFC 8288 links: the markdown version and the docs.
 		if (type.includes("text/html")) {
@@ -93,6 +109,17 @@ const edge = createMiddleware({ type: "request" }).server(
 	},
 );
 
+// Server functions only answer same-origin browser requests. Browsers send
+// Sec-Fetch-Site, which is checked first. The Origin/Referer fallback also
+// accepts APP_URL's origin: behind the host's proxy the request URL is http
+// while the browser's origin is https.
+const csrf = createCsrfMiddleware({
+	filter: (ctx) => ctx.handlerType === "serverFn",
+	origin: (origin, ctx) =>
+		origin === new URL(ctx.request.url).origin ||
+		(!!process.env.APP_URL && origin === new URL(process.env.APP_URL).origin),
+});
+
 // Server function errors go to PostHog error tracking. Redirects and
 // not-found are control flow, not errors; reportError also skips provider
 // and validation errors.
@@ -111,6 +138,6 @@ const errors = createMiddleware({ type: "function" }).server(
 );
 
 export const startInstance = createStart(() => ({
-	requestMiddleware: [edge],
+	requestMiddleware: [edge, csrf],
 	functionMiddleware: [errors],
 }));

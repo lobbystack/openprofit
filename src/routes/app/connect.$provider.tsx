@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowUpRight, Check } from "lucide-react";
 import { useState } from "react";
 import { PageHeader } from "#/components/app/shell";
@@ -24,6 +25,8 @@ const field =
 function Connect() {
 	const info = Route.useLoaderData();
 	const navigate = useNavigate();
+	const testFn = useServerFn(testConnection);
+	const createFn = useServerFn(createConnection);
 	const [values, setValues] = useState<Record<string, string>>({});
 	const [test, setTest] = useState<
 		| { state: "idle" }
@@ -41,7 +44,7 @@ function Connect() {
 
 	async function runTest() {
 		setTest({ state: "testing" });
-		const r = await testConnection({
+		const r = await testFn({
 			data: { provider: info.id, credentials: values },
 		});
 		setTest(
@@ -55,7 +58,7 @@ function Connect() {
 		e.preventDefault();
 		setSaving(true);
 		try {
-			await createConnection({
+			await createFn({
 				data: { provider: info.id, credentials: values },
 			});
 			navigate({ to: "/app/connections" });

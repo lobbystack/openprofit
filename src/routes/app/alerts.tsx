@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { PageHeader } from "#/components/app/shell";
 import { getAlerts, setRuleEnabled } from "#/server/alerts.functions";
 
@@ -30,10 +31,11 @@ const when = (ts: number) => {
 function Alerts() {
 	const { alerts, rules } = Route.useLoaderData();
 	const router = useRouter();
+	const setEnabled = useServerFn(setRuleEnabled);
 	const open = alerts.filter((a) => !a.resolvedAt).length;
 
 	async function toggle(id: string, enabled: boolean) {
-		await setRuleEnabled({ data: { id, enabled } });
+		await setEnabled({ data: { id, enabled } });
 		router.invalidate();
 	}
 
