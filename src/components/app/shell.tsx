@@ -1,4 +1,5 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import {
 	Bell,
 	Cable,
@@ -323,6 +324,7 @@ function WorkspaceItems({
 	close: () => void;
 }) {
 	const router = useRouter();
+	const switchTo = useServerFn(switchWorkspace);
 	return (
 		<>
 			{workspace.workspaces.map((w) => (
@@ -333,7 +335,7 @@ function WorkspaceItems({
 					onClick={async () => {
 						close();
 						if (w.id === workspace.id) return;
-						await switchWorkspace({ data: { id: w.id } });
+						await switchTo({ data: { id: w.id } });
 						router.invalidate();
 					}}
 				>

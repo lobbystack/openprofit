@@ -1,4 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Button } from "#/components/landing/primitives";
 import { Logo } from "#/components/logo";
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/onboarding")({
 
 function Onboarding() {
 	const navigate = useNavigate();
+	const create = useServerFn(createWorkspaceFn);
 	const [name, setName] = useState("");
 	const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>("USD");
 	const [busy, setBusy] = useState(false);
@@ -28,7 +30,7 @@ function Onboarding() {
 	async function submit(e: React.FormEvent) {
 		e.preventDefault();
 		setBusy(true);
-		await createWorkspaceFn({ data: { name, currency } });
+		await create({ data: { name, currency } });
 		navigate({ to: "/app/connections" });
 	}
 

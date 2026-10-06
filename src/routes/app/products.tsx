@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowUpRight, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Control, PageHeader } from "#/components/app/shell";
@@ -18,6 +19,9 @@ const TH = "label-mono h-9 px-4 font-normal";
 function Products() {
 	const data = Route.useLoaderData();
 	const router = useRouter();
+	const create = useServerFn(createProduct);
+	const del = useServerFn(deleteProduct);
+	const setPage = useServerFn(setPublicPage);
 	const [adding, setAdding] = useState(false);
 	const [name, setName] = useState("");
 	const fmt = (n: number) => money(n, { currency: data.currency });
@@ -28,7 +32,7 @@ function Products() {
 	async function add(e: React.FormEvent) {
 		e.preventDefault();
 		if (!name.trim()) return;
-		await createProduct({ data: { name } });
+		await create({ data: { name } });
 		setName("");
 		setAdding(false);
 		router.invalidate();
@@ -41,7 +45,7 @@ function Products() {
 			)
 		)
 			return;
-		await deleteProduct({ data: { id } });
+		await del({ data: { id } });
 		router.invalidate();
 	}
 
@@ -107,7 +111,7 @@ function Products() {
 												<select
 													value={p.publicPage}
 													onChange={async (e) => {
-														await setPublicPage({
+														await setPage({
 															data: {
 																id: p.id,
 																mode: e.target.value as
