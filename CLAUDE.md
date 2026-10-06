@@ -26,6 +26,26 @@ PORT=3200 SYNC_SCHEDULER=off DATABASE_URL=/tmp/op-test node .output/server/index
 
 Local sign-in without email: request a link on /login (or POST /api/auth/sign-in/magic-link) and read the URL from the dev server log. Same on Railway via `railway logs | grep magic-link`.
 
+## Library docs before code
+
+Don't write framework code from memory. TanStack ships versioned agent skills inside its packages, and a project hook (`.claude/settings.json`, `.intent/hooks/`) lists them at session start and blocks edits until the guidance is checked.
+
+- TanStack Start and Router: load the matching skill first (`pnpm exec intent list`, then `pnpm exec intent load <package>#<skill>`). `package.json#intent.skills` lists the allowed skill sources; add a TanStack package there when the app starts using it.
+- Anything the skills don't cover: read the docs for the installed version, e.g. `pnpm dlx @tanstack/cli search-docs "<query>" --library start --framework react` and `pnpm dlx @tanstack/cli doc <library> <path>`. When docs and the installed source disagree, the source in `node_modules` wins.
+- Other libraries (Better Auth, Drizzle, PostHog, provider APIs): read their current docs before using an API, and cite the page in a short comment where the behaviour isn't obvious.
+
+<!-- intent-skills:start -->
+## Skill Loading
+
+Use the repository’s installed Intent. If it is unavailable, report the missing dependency instead of downloading a replacement.
+Before editing files for a substantial task:
+- Run `pnpm exec intent list` from the workspace root to see available local skills.
+- If a listed skill matches the task, run `pnpm exec intent load <package>#<skill>` before changing files.
+- Use the loaded `SKILL.md` guidance while making the change.
+- Monorepos: when working across packages, run the skill check from the workspace root and prefer the local skill for the package being changed.
+- Multiple matches: prefer the most specific local skill for the package or concern you are changing; load additional skills only when the task spans multiple packages or concerns.
+<!-- intent-skills:end -->
+
 ## Database
 
 - Postgres everywhere through Drizzle (`src/db/schema.ts`, `src/db/auth-schema.ts`). `DATABASE_URL` starting with `postgres://` uses `pg`; anything else is a directory for **PGlite** (embedded Postgres, default `./data/openprofit`). Hosted uses Railway Postgres.
