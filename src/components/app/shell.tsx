@@ -23,6 +23,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu";
+import { FieldContent, FieldDescription } from "#/components/ui/field";
+import { Label } from "#/components/ui/label";
 import { authClient } from "#/lib/auth-client";
 import { money } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
@@ -256,14 +258,10 @@ export function SettingsRow({
 }) {
 	return (
 		<div className="flex flex-col gap-2.5 px-4 py-3 sm:min-h-14 sm:flex-row sm:items-center sm:gap-8">
-			<div className="sm:w-1/2">
-				<label htmlFor={htmlFor} className="block text-[13px]">
-					{label}
-				</label>
-				{description && (
-					<p className="mt-0.5 text-[12px] text-text-2">{description}</p>
-				)}
-			</div>
+			<FieldContent className="flex-initial sm:w-1/2">
+				<Label htmlFor={htmlFor}>{label}</Label>
+				{description && <FieldDescription>{description}</FieldDescription>}
+			</FieldContent>
 			<div className="flex flex-wrap items-center gap-2 sm:w-1/2 sm:justify-end">
 				{children}
 			</div>

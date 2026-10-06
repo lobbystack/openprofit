@@ -13,6 +13,7 @@ import { BreakdownCard } from "#/components/dashboard/breakdown-card";
 import { providerLabel } from "#/components/dashboard/overview";
 import { PeriodSelect } from "#/components/dashboard/period-select";
 import { Button } from "#/components/ui/button";
+import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import {
 	NativeSelect,
@@ -265,108 +266,114 @@ function FlatCostForm({
 	return (
 		<form
 			onSubmit={submit}
-			className="grid gap-3 border-b border-line bg-surface-1 p-4 text-[13px] sm:grid-cols-6"
+			className="border-b border-line bg-surface-1 p-4 text-[13px]"
 		>
-			<label className="sm:col-span-3">
-				<span className="label-mono">Name</span>
-				<Input
-					size="sm"
-					required
-					maxLength={80}
-					value={v.name}
-					onChange={set("name")}
-					placeholder="Supabase Pro"
-					className="mt-1.5"
-				/>
-			</label>
-			<label className="sm:col-span-3">
-				<span className="label-mono">Product</span>
-				<NativeSelect
-					size="sm"
-					value={v.productId}
-					onChange={set("productId")}
-					className="mt-1.5"
-				>
-					<NativeSelectOption value="">Shared</NativeSelectOption>
-					{products.map((p) => (
-						<NativeSelectOption key={p.id} value={p.id}>
-							{p.name}
+			<FieldGroup className="grid gap-3 sm:grid-cols-6">
+				<Field className="gap-1.5 sm:col-span-3">
+					<FieldLabel htmlFor="flat-1">Name</FieldLabel>
+					<Input
+						id="flat-1"
+						size="sm"
+						required
+						maxLength={80}
+						value={v.name}
+						onChange={set("name")}
+						placeholder="Supabase Pro"
+					/>
+				</Field>
+				<Field className="gap-1.5 sm:col-span-3">
+					<FieldLabel htmlFor="flat-2">Product</FieldLabel>
+					<NativeSelect
+						id="flat-2"
+						size="sm"
+						value={v.productId}
+						onChange={set("productId")}
+					>
+						<NativeSelectOption value="">Shared</NativeSelectOption>
+						{products.map((p) => (
+							<NativeSelectOption key={p.id} value={p.id}>
+								{p.name}
+							</NativeSelectOption>
+						))}
+					</NativeSelect>
+				</Field>
+				<Field className="gap-1.5 sm:col-span-2">
+					<FieldLabel htmlFor="flat-3">Amount</FieldLabel>
+					<Input
+						id="flat-3"
+						size="sm"
+						required
+						inputMode="decimal"
+						value={v.amount}
+						onChange={set("amount")}
+						placeholder="25.00"
+						className="num"
+					/>
+				</Field>
+				<Field className="gap-1.5 sm:col-span-2">
+					<FieldLabel htmlFor="flat-4">Currency</FieldLabel>
+					<NativeSelect
+						id="flat-4"
+						size="sm"
+						value={v.currency}
+						onChange={set("currency")}
+						className="num"
+					>
+						{CURRENCIES.map((c) => (
+							<NativeSelectOption key={c} value={c}>
+								{c}
+							</NativeSelectOption>
+						))}
+					</NativeSelect>
+				</Field>
+				<Field className="gap-1.5 sm:col-span-2">
+					<FieldLabel htmlFor="flat-5">Billed</FieldLabel>
+					<NativeSelect
+						id="flat-5"
+						size="sm"
+						value={v.interval}
+						onChange={set("interval")}
+					>
+						<NativeSelectOption value="month">Monthly</NativeSelectOption>
+						<NativeSelectOption value="year">
+							Yearly, spread over 12 months
 						</NativeSelectOption>
-					))}
-				</NativeSelect>
-			</label>
-			<label className="sm:col-span-2">
-				<span className="label-mono">Amount</span>
-				<Input
-					size="sm"
-					required
-					inputMode="decimal"
-					value={v.amount}
-					onChange={set("amount")}
-					placeholder="25.00"
-					className="mt-1.5 num"
-				/>
-			</label>
-			<label className="sm:col-span-2">
-				<span className="label-mono">Currency</span>
-				<NativeSelect
-					size="sm"
-					value={v.currency}
-					onChange={set("currency")}
-					className="mt-1.5 num"
-				>
-					{CURRENCIES.map((c) => (
-						<NativeSelectOption key={c} value={c}>
-							{c}
-						</NativeSelectOption>
-					))}
-				</NativeSelect>
-			</label>
-			<label className="sm:col-span-2">
-				<span className="label-mono">Billed</span>
-				<NativeSelect
-					size="sm"
-					className="mt-1.5"
-					value={v.interval}
-					onChange={set("interval")}
-				>
-					<NativeSelectOption value="month">Monthly</NativeSelectOption>
-					<NativeSelectOption value="year">
-						Yearly, spread over 12 months
-					</NativeSelectOption>
-				</NativeSelect>
-			</label>
-			<label className="sm:col-span-3">
-				<span className="label-mono">Starts</span>
-				<Input
-					size="sm"
-					type="date"
-					required
-					value={v.startsOn}
-					onChange={set("startsOn")}
-					className="mt-1.5 num"
-				/>
-			</label>
-			<label className="sm:col-span-3">
-				<span className="label-mono">Ends (optional)</span>
-				<Input
-					size="sm"
-					type="date"
-					value={v.endsOn}
-					min={v.startsOn}
-					onChange={set("endsOn")}
-					className="mt-1.5 num"
-				/>
-			</label>
-			<div className="flex flex-wrap items-center gap-2 sm:col-span-6">
-				<Button type="submit" disabled={busy}>
-					{busy ? "Saving…" : cost ? "Save" : "Add cost"}
-				</Button>
-				<Button type="button" variant="ghost" onClick={onDone}>
-					Cancel
-				</Button>
-				{error && <span className="text-[12px] text-negative">{error}</span>}
-			</div>
+					</NativeSelect>
+				</Field>
+				<Field className="gap-1.5 sm:col-span-3">
+					<FieldLabel htmlFor="flat-6">Starts</FieldLabel>
+					<Input
+						id="flat-6"
+						size="sm"
+						type="date"
+						required
+						value={v.startsOn}
+						onChange={set("startsOn")}
+						className="num"
+					/>
+				</Field>
+				<Field className="gap-1.5 sm:col-span-3">
+					<FieldLabel htmlFor="flat-7">Ends (optional)</FieldLabel>
+					<Input
+						id="flat-7"
+						size="sm"
+						type="date"
+						value={v.endsOn}
+						min={v.startsOn}
+						onChange={set("endsOn")}
+						className="num"
+					/>
+				</Field>
+				<div className="flex flex-wrap items-center gap-2 sm:col-span-6">
+					<Button type="submit" disabled={busy}>
+						{busy ? "Saving…" : cost ? "Save" : "Add cost"}
+					</Button>
+					<Button type="button" variant="ghost" onClick={onDone}>
+						Cancel
+					</Button>
+					{error && <span className="text-[12px] text-negative">{error}</span>}
+				</div>
+			</FieldGroup>
 		</form>
 	);
 }

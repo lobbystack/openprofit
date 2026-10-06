@@ -1,10 +1,10 @@
-"use client";
+// Tuned to the design system: 8px between a label and its control, 16px
+// between fields, labels in the muted label style.
 
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import { useMemo } from "react";
 
-import { Label } from "#/components/ui/label.tsx";
 import { Separator } from "#/components/ui/separator.tsx";
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
@@ -43,7 +43,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 		<div
 			data-slot="field-group"
 			className={cn(
-				"group/field-group @container/field-group flex w-full flex-col gap-5 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
+				"group/field-group @container/field-group flex w-full flex-col gap-4 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
 				className,
 			)}
 			{...props}
@@ -52,7 +52,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const fieldVariants = cva(
-	"group/field flex w-full gap-2 data-[invalid=true]:text-destructive",
+	"group/field flex w-full gap-2 data-[invalid=true]:text-negative",
 	{
 		variants: {
 			orientation: {
@@ -90,7 +90,7 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
 		<div
 			data-slot="field-content"
 			className={cn(
-				"group/field-content flex flex-1 flex-col gap-0.5 leading-snug",
+				"group/field-content flex flex-1 flex-col gap-0.5",
 				className,
 			)}
 			{...props}
@@ -98,16 +98,13 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
 	);
 }
 
-function FieldLabel({
-	className,
-	...props
-}: React.ComponentProps<typeof Label>) {
+function FieldLabel({ className, ...props }: React.ComponentProps<"label">) {
 	return (
-		<Label
+		// The small muted label above a form field. Settings rows use Label.
+		<label
 			data-slot="field-label"
 			className={cn(
-				"group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:hover:bg-muted/50 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-2.5 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10",
-				"has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
+				"group/field-label peer/field-label flex w-fit gap-2 text-[12px] leading-[1.75] text-text-3 select-none group-data-[disabled=true]/field:opacity-50",
 				className,
 			)}
 			{...props}
@@ -133,9 +130,8 @@ function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
 		<p
 			data-slot="field-description"
 			className={cn(
-				"text-left text-sm leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-1.5",
-				"last:mt-0 nth-last-2:-mt-1",
-				"[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
+				"text-left text-[12px] font-normal text-text-2",
+				"[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-ink",
 				className,
 			)}
 			{...props}

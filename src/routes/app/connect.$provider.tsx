@@ -9,6 +9,7 @@ import {
 	ProviderLogo,
 } from "#/components/provider-logo";
 import { Button } from "#/components/ui/button";
+import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import {
 	NativeSelect,
@@ -91,7 +92,7 @@ function Connect() {
 						{logo}
 						{info.name}
 					</div>
-					<div className="mt-5 space-y-4">
+					<FieldGroup className="mt-5">
 						{info.fields.map((f) => {
 							const props = {
 								id: `field-${f.name}`,
@@ -103,11 +104,11 @@ function Connect() {
 									setValues({ ...values, [f.name]: e.target.value });
 									setTest({ state: "idle" });
 								},
-								className: "num mt-2",
+								className: "num",
 							};
 							return (
-								<label key={f.name} htmlFor={props.id} className="block">
-									<span className="label-mono">{f.label}</span>
+								<Field key={f.name}>
+									<FieldLabel htmlFor={props.id}>{f.label}</FieldLabel>
 									{f.options ? (
 										<NativeSelect {...props}>
 											{f.options.map((o) => (
@@ -125,10 +126,10 @@ function Connect() {
 											placeholder={f.placeholder}
 										/>
 									)}
-								</label>
+								</Field>
 							);
 						})}
-					</div>
+					</FieldGroup>
 					<div className="mt-5 flex items-center gap-2">
 						<Button
 							type="button"
