@@ -1,5 +1,4 @@
 @import '@fontsource-variable/geist';
-@import '@fontsource-variable/geist-mono';
 
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
@@ -91,7 +90,9 @@
 
 @theme inline {
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* One family everywhere. Numbers line up through tabular figures, not a
+     monospaced face. */
+  --font-mono: var(--font-sans);
 
   --color-paper: var(--paper);
   --color-ink: var(--ink);
@@ -207,14 +208,12 @@
 @utility num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
 }
 
 @utility label-mono {
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1;
-  letter-spacing: 0.02em;
   color: var(--text-3);
 }
 
