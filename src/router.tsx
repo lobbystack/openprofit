@@ -3,18 +3,21 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 import { getContext } from "./integrations/tanstack-query/root-provider";
 import { routeTree } from "./routeTree.gen";
 
-// After a deploy, a tab opened before it asks for code chunks that no longer
-// exist. Reload once to load the new build instead of showing an error.
+// TanStack reloads once when a tab opened before a deploy asks for a route
+// chunk the deploy removed. Its guard key is the error message, which Safari
+// leaves without the URL, so a tab only recovers from its first deploy
+// (TanStack/router#8331). Clearing the key once the page has run for a while
+// lets the next deploy recover too; clearing it at startup could loop if a
+// chunk is missing for good.
+// ponytail: drop this once that issue is fixed upstream.
 if (typeof window !== "undefined")
-	window.addEventListener("vite:preloadError", (e) => {
+	setTimeout(() => {
 		try {
-			const last = Number(sessionStorage.getItem("op_reload") ?? 0);
-			if (Date.now() - last < 10_000) return;
-			sessionStorage.setItem("op_reload", String(Date.now()));
+			for (const k of Object.keys(sessionStorage))
+				if (k.startsWith("tanstack_router_reload:"))
+					sessionStorage.removeItem(k);
 		} catch {}
-		e.preventDefault();
-		location.reload();
-	});
+	}, 10_000);
 
 export function getRouter() {
 	const context = getContext();
