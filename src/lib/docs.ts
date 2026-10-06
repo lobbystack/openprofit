@@ -25,5 +25,6 @@ export const DOCS = ORDER.map((slug) => {
 		navLabel: page.meta.navLabel ?? h1,
 		description: page.description,
 		html: page.html,
+		body: page.body,
 	};
 });

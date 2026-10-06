@@ -7,6 +7,8 @@ export type Page = {
 	title: string;
 	description: string;
 	html: string;
+	// Markdown body without the front matter, served to agents.
+	body: string;
 	meta: Record<string, string>;
 };
 
@@ -22,6 +24,7 @@ export function parse(slug: string, raw: string): Page {
 		title: meta.title ?? slug,
 		description: meta.description ?? "",
 		html: marked.parse(m?.[2] ?? raw, { async: false }) as string,
+		body: (m?.[2] ?? raw).trim(),
 		meta,
 	};
 }

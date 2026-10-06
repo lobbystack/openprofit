@@ -2,6 +2,8 @@ import { marked } from "marked";
 import privacy from "../legal/privacy.md?raw";
 import terms from "../legal/terms.md?raw";
 
+export const LEGAL_MD = { privacy, terms };
+
 export const LEGAL = {
 	privacy: {
 		title: "Privacy Policy",

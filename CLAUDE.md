@@ -44,7 +44,7 @@ Local sign-in without email: request a link on /login (or POST /api/auth/sign-in
 - **Product mapping.** Cost lines carry a provider sub-unit (OpenAI project, Vercel project, Anthropic workspace, Railway project, Cloudflare zone). `product_mappings` maps sub-units to products; `connections.product_id` catches lines with no sub-unit and all revenue from that connection. Unmapped lines fall into a "Shared" bucket.
 - **Overview** (`src/server/overview.server.ts`): grouped monthly sums over 24 months; tiles compare the selected period with the equal period before, the chart's dotted line is the same months a year earlier. Period comes from the `?period=` search param.
 - **Cloud mode** (`APP_MODE=cloud`): plans and limits in `src/lib/plans.ts`, Polar checkout/portal and webhook in `src/server/billing.server.ts` and `src/routes/api/polar/webhook.ts` (Standard Webhooks signature, `whsec_` secrets are base64). Inert in self-host.
-- **Request middleware** in `src/start.ts` (`createMiddleware({ type: "request" })`): www to apex redirect and gzip of HTML/XML/JSON. It does not run under `pnpm dev`; test it on a production build.
+- **Request middleware** in `src/start.ts` (`createMiddleware({ type: "request" })`): www to apex redirect, markdown responses for `Accept: text/markdown` (sources mapped in `src/server/markdown.server.ts`; add new public pages there), RFC 8288 `Link` headers, and gzip of HTML/XML/JSON. It does not run under `pnpm dev`; test it on a production build.
 - **Auth:** Better Auth with magic link plus GitHub/Google when their env vars are set (`src/lib/auth.ts`). Emails go through Resend when `RESEND_API_KEY` is set, otherwise they print to the server log.
 
 ## Content and SEO
