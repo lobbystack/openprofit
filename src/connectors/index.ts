@@ -7,6 +7,9 @@ import "./anthropic";
 import "./railway";
 import "./vercel";
 import "./cloudflare";
+import "./xai";
+import "./neon";
+import "./mongodb";
 
 export type { ConnectorInfo } from "./registry";
 export { connector, connectorInfo, connectors } from "./registry";

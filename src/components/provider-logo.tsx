@@ -5,6 +5,8 @@ import {
 	siGithub,
 	siGoogleplay,
 	siLemonsqueezy,
+	siMongodb,
+	siNeon,
 	siPaddle,
 	siRailway,
 	siResend,
@@ -60,6 +62,14 @@ export const PROVIDERS: Record<string, Provider> = {
 	supabase: { name: "Supabase", kind: "cost", v1: true, path: siSupabase.path },
 	resend: { name: "Resend", kind: "cost", v1: true, path: siResend.path },
 	github: { name: "GitHub", kind: "cost", v1: false, path: siGithub.path },
+	xai: { name: "xAI", kind: "cost", v1: true },
+	neon: { name: "Neon", kind: "cost", v1: true, path: siNeon.path },
+	mongodb: {
+		name: "MongoDB Atlas",
+		kind: "cost",
+		v1: true,
+		path: siMongodb.path,
+	},
 };
 
 export type ProviderId = keyof typeof PROVIDERS;

@@ -9,6 +9,7 @@ Every release, newest first. The full history is in the [commit log on GitHub](h
 
 ## October 6, 2026
 
+- **xAI, Neon and MongoDB Atlas connectors.** Daily Grok API spend by model from xAI, each Neon project's monthly usage at Neon's published rates, and daily MongoDB Atlas invoice lines per project, the current month included.
 - **Optional fields no longer block connecting.** Connectors with an optional field, like Railway's workspace id or Vercel's team id, submitted nothing if you left it empty. They connect now.
 - **Self-hosting with the built-in database works from the Docker image.** The production build dropped files the embedded Postgres needs, so the container failed on its first start. Fixed.
 - **Pages load faster.** HTML is compressed; the homepage went from 74 KB to 15 KB.

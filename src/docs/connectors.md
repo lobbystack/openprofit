@@ -27,6 +27,9 @@ Each connector needs a key with specific permissions. The table lists what each 
 | [Vercel](/integrations/vercel) | Daily charges per project | Access token scoped to the team |
 | [Cloudflare](/integrations/cloudflare) | Billable usage, or invoices when usage isn’t available | API token with Account · Billing · Read and Account · Account Settings · Read |
 | [Railway](/integrations/railway) | Monthly CPU, memory, egress, disk and backup usage per project, priced at Railway’s published rates | Account token, or a workspace token with its workspace id |
+| [xAI](/integrations/xai) | Daily cost by billing description, such as a model | Management key |
+| [Neon](/integrations/neon) | Monthly compute, storage, transfer and branch usage per project, priced at Neon’s published rates | Organization API key |
+| [MongoDB Atlas](/integrations/mongodb) | Daily invoice line items per project and stock keeping unit (SKU), including the current month’s pending invoice | Service account with the Organization Billing Viewer role |
 
 ## Assign costs to products
 
@@ -37,6 +40,8 @@ OpenProfit assigns a cost to a product through the provider’s own grouping. Th
 - **Vercel**: projects
 - **Railway**: projects
 - **Cloudflare**: zones
+- **Neon**: projects
+- **MongoDB Atlas**: projects
 
 Open a connection from **Connections** to see each grouping with this month’s spend, then pick the product it serves. Past lines move to that product too.
 
