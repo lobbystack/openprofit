@@ -39,6 +39,8 @@ We use PostHog to count visits, see which features people use, replay sessions a
 | `ph_<token>_posthog`, `ph_<token>_window_id`, `ph_<token>_primary_window_exists`, `ph_<token>_session_registered_properties` | Session storage | Tie events and replays to the current tab | When you close the tab |
 | `__ph_opt_in_out_<token>` | Local storage | Records your choice for PostHog. It stays after you decline so PostHog keeps respecting it | Until you clear it |
 
+When we send analytics through PostHog's managed reverse proxy, the requests pass through Cloudflare, Inc., which PostHog lists as its subprocessor for that service.
+
 When you decline after accepting, we delete the PostHog cookie and local storage entry and stop sending data from that page on.
 
 Session replays never show what you type. Inside the dashboard they hide all text, so names, emails and amounts stay out of the recording. On the public site they hide every digit.

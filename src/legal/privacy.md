@@ -48,6 +48,8 @@ We do not sell personal information and we do not share it with advertisers. We 
 | Google, GitHub | Sign-in, if you choose them | United States |
 | Frankfurter (European Central Bank data) | Exchange rates; receives no personal data | EU |
 
+When we send browser analytics through PostHog's managed reverse proxy, the requests pass through Cloudflare, Inc., which PostHog lists as its subprocessor for that service.
+
 Each provider you connect receives API calls from us using your credential. Those calls contain nothing about you beyond the credential itself.
 
 We may also disclose information when the law requires it, to enforce our terms, or to protect the rights and safety of users or the public. If we sell or transfer the business, your information may transfer with it under this policy.
@@ -66,7 +68,7 @@ A self-hosted copy of the open-source software sends us nothing by default. If i
 - Backups: cycle out within 90 days.
 - Server logs: 30 days.
 - Session replays: 30 days.
-- Analytics events and error reports: up to 7 years, the period PostHog keeps events. We delete yours on request.
+- Analytics events and error reports: as long as PostHog keeps events on our plan, which is 1 year on its free plan and 7 years on paid plans. We delete yours on request.
 - Billing records: as long as tax law requires, through Polar.
 - Support emails: up to two years.
 
