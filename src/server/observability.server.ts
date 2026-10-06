@@ -127,8 +127,9 @@ function setup() {
 	const posthog = new PostHog(key, {
 		host,
 		enableExceptionAutocapture: true,
-		flushAt: 1,
-		flushInterval: 0,
+		// Events go in batches; reportError flushes exceptions at once.
+		flushAt: 20,
+		flushInterval: 5000,
 	});
 	return { tracer, posthog };
 }
@@ -178,6 +179,7 @@ export function reportError(err: unknown, props?: Record<string, unknown>) {
 	safe.name = name || "Error";
 	if (err instanceof Error && err.stack) safe.stack = scrub(err.stack);
 	o.posthog.captureException(safe, undefined, props);
+	void o.posthog.flush();
 }
 
 export { SpanKind };

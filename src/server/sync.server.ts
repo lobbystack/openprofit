@@ -247,6 +247,8 @@ export async function syncConnection(
 					: "scheduled",
 			status: err instanceof ConnectorError ? err.status : undefined,
 			auth_error: err instanceof ConnectorError && err.auth,
+			// False on backoff retries of a connection already failing.
+			first_failure: conn.status !== "error",
 		});
 		throw err;
 	}

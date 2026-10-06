@@ -31,9 +31,12 @@ const mask = (text: string) =>
 		? text.replace(/\S/g, "*")
 		: text.replace(/\d/g, "*");
 
+// PostHog may store 1 or 0 in the same cookie; read them as yes and no.
+export const parseConsent = (v?: string | null): Consent =>
+	v === "yes" || v === "1" ? "yes" : v === "no" || v === "0" ? "no" : null;
+
 export function readConsent(): Consent {
-	const m = document.cookie.match(/(?:^|; )op_consent=(yes|no)/);
-	return (m?.[1] as Consent) ?? null;
+	return parseConsent(document.cookie.match(/(?:^|; )op_consent=([^;]*)/)?.[1]);
 }
 
 function remember(yes: boolean) {
@@ -102,6 +105,8 @@ export function setConsent(yes: boolean) {
 		remember(yes);
 		window.dispatchEvent(new CustomEvent("op:consent", { detail: yes }));
 	};
+	// Saved before PostHog loads, so closing the tab can't lose the choice.
+	remember(yes);
 	if (!ph) return done();
 	void ph.then((p) => {
 		// Accepting switches to cookies and starts replay; declining stops

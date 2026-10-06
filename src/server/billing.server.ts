@@ -89,6 +89,7 @@ export function verifyWebhook(body: string, h: Headers) {
 }
 
 type Subscription = {
+	id?: string;
 	status: string;
 	product_id: string;
 	metadata?: { workspaceId?: string; userId?: string };
@@ -118,5 +119,11 @@ export async function applyWebhook(event: {
 		.where(eq(schema.workspaces.id, wsId));
 	// Polar creates the subscription once the checkout is paid.
 	if (event.type === "subscription.created" && s.metadata?.userId)
-		await capture(s.metadata.userId, wsId, "checkout_completed", { plan });
+		await capture(
+			s.metadata.userId,
+			wsId,
+			"checkout_completed",
+			{ plan },
+			s.id,
+		);
 }

@@ -1,4 +1,4 @@
-import { type Column, count, eq } from "drizzle-orm";
+import { type Column, count, eq, sql } from "drizzle-orm";
 import { connectors } from "#/connectors";
 import { authSchema, db, schema } from "#/db";
 import { posthog } from "./observability.server";
@@ -21,6 +21,8 @@ export async function capture(
 	workspaceId: string | null,
 	event: string,
 	properties?: Props,
+	// Same uuid twice is one event in PostHog, for retried webhooks.
+	uuid?: string,
 ) {
 	if (!posthog) return;
 	try {
@@ -34,6 +36,7 @@ export async function capture(
 			event,
 			properties,
 			groups: workspaceId ? { workspace: workspaceId } : undefined,
+			uuid,
 		});
 	} catch (err) {
 		console.error("[analytics]", err);
@@ -56,8 +59,19 @@ export function captureForWorkspace(
 
 // Workspace group properties: counts and settings, no names. Runs daily
 // for every workspace and once when a workspace is created, on the hosted
-// version only (callers check isCloud).
+// version only (callers check isCloud). Skips workspaces where every member
+// switched product analytics off. Never throws.
 export async function identifyWorkspaces(workspaceId?: string) {
+	if (!posthog) return;
+	try {
+		await sendWorkspaces(workspaceId);
+		await posthog.flush();
+	} catch (err) {
+		console.error("[analytics] workspace groups", err);
+	}
+}
+
+async function sendWorkspaces(workspaceId?: string) {
 	if (!posthog) return;
 	const only = (column: Column) =>
 		workspaceId ? eq(column, workspaceId) : undefined;
@@ -83,14 +97,26 @@ export async function identifyWorkspaces(workspaceId?: string) {
 			.where(only(schema.products.workspaceId))
 			.groupBy(schema.products.workspaceId),
 		db
-			.select({ ws: schema.workspaceMembers.workspaceId, n: count() })
+			.select({
+				ws: schema.workspaceMembers.workspaceId,
+				n: count(),
+				on: sql<number>`count(*) filter (where ${authSchema.user.analytics})`,
+			})
 			.from(schema.workspaceMembers)
+			.innerJoin(
+				authSchema.user,
+				eq(authSchema.user.id, schema.workspaceMembers.userId),
+			)
 			.where(only(schema.workspaceMembers.workspaceId))
 			.groupBy(schema.workspaceMembers.workspaceId),
 	]);
 	const productCount = new Map(products.map((r) => [r.ws, r.n]));
 	const memberCount = new Map(members.map((r) => [r.ws, r.n]));
+	const optedIn = new Set(
+		members.filter((r) => Number(r.on) > 0).map((r) => r.ws),
+	);
 	for (const ws of workspaces) {
+		if (!optedIn.has(ws.id)) continue;
 		const mine = conns.filter((c) => c.ws === ws.id);
 		// One number per provider, 0 included, so a removed connection
 		// overwrites the old count and insights can filter and average it.

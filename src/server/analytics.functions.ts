@@ -1,6 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
-import { type AnalyticsConfig, CONSENT_COOKIE } from "#/lib/analytics";
+import {
+	type AnalyticsConfig,
+	CONSENT_COOKIE,
+	parseConsent,
+} from "#/lib/analytics";
 import "./env";
 
 // What the browser needs to start PostHog, and the visitor's saved choice.
@@ -16,7 +20,7 @@ export const getAnalyticsConfig = createServerFn({ method: "GET" }).handler(
 				".i.posthog.com",
 				".posthog.com",
 			),
-			consent: consent === "yes" || consent === "no" ? consent : null,
+			consent: parseConsent(consent),
 		};
 	},
 );
