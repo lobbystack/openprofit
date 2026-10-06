@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { seo } from "#/lib/app";
-import { DOCS, renderDoc } from "#/lib/docs";
+import { DOCS } from "#/lib/docs";
 
 export const Route = createFileRoute("/docs/$slug")({
 	loader: ({ params }) => {
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/docs/$slug")({
 			slug: doc.slug,
 			title: doc.title,
 			description: doc.description,
-			html: renderDoc(doc.markdown),
+			html: doc.html,
 		};
 	},
 	head: ({ loaderData }) =>

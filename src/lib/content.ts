@@ -10,7 +10,7 @@ export type Page = {
 	meta: Record<string, string>;
 };
 
-function parse(slug: string, raw: string): Page {
+export function parse(slug: string, raw: string): Page {
 	const m = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
 	const meta: Record<string, string> = {};
 	for (const line of (m?.[1] ?? "").split("\n")) {

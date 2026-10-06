@@ -23,7 +23,7 @@ function Docs() {
 									className="block rounded-md px-2 py-1 text-[13px] text-text-2 hover:text-ink"
 									activeProps={{ className: "bg-surface-1 text-ink" }}
 								>
-									{d.title}
+									{d.navLabel}
 								</Link>
 							</li>
 						))}

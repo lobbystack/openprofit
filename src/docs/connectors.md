@@ -1,27 +1,51 @@
-# Connectors
+---
+navLabel: Connecting Providers
+contentType: How-to
+description: Connect the services that pay you and the services you pay, assign their costs to your products, and add costs that have no API.
+---
 
-Each connector takes a read-only key you create in the provider's dashboard. The connect page links to the right settings page, lists the permissions to tick and tests the key before saving. Keys are stored encrypted with `SECRET_KEY`.
+# Connect your revenue and cost providers
 
-The first sync pulls two years of history (one on the free hosted plan). Later syncs pull the last three days and overwrite what changed.
+This page explains how connectors pull your revenue and costs and how to assign costs to products. It also covers costs from services with no API. Each provider has its own setup page under [Integrations](/integrations).
 
-| Provider | Data | Key |
+## How a connection works
+
+A connector reads data from a provider with a read-only key that you create in the provider’s dashboard. In OpenProfit, open **Connections**, pick a provider, paste the key and click **Test**. The test calls the provider and shows the account name it found. Click **Connect** to save the key, encrypted with `SECRET_KEY`.
+
+The first sync pulls two years of history, or one year on the free hosted plan. Later syncs reread the last three days and replace what changed, so a provider’s late corrections update the earlier figure instead of adding a second one.
+
+## What each connector reads
+
+Each connector needs a key with specific permissions. The table lists what each one reads and the key it needs:
+
+| Provider | What it reads | Key |
 | --- | --- | --- |
-| Stripe | Balance transactions, active subscriptions (MRR, customers) | Restricted key with read access to balance, balance transaction sources, charges and subscriptions |
-| Polar | Daily revenue and net revenue, MRR, active subscriptions | Organization access token with `organizations:read` and `metrics:read` |
-| OpenAI | Daily cost by project and line item | Organization admin key |
-| Anthropic | Daily cost by workspace and description | Admin key (organization accounts) |
-| Vercel | Daily charges per project | Access token scoped to the team |
-| Cloudflare | Billable usage, or invoices where usage is unavailable | API token with Billing: Read and Account Settings: Read |
-| Railway | Monthly CPU, memory, egress, disk and backup usage per project, priced at Railway's published rates | Account or workspace token |
+| [Stripe](/integrations/stripe) | Balance transactions, and active subscriptions for monthly recurring revenue (MRR) and customer count | Restricted key with read access to Balance, Balance transaction sources, Charges and Subscriptions |
+| [Polar](/integrations/polar) | Daily revenue and net revenue, MRR, active subscriptions | Organization access token with `organizations:read` and `metrics:read` |
+| [OpenAI](/integrations/openai) | Daily cost by project and line item | Organization admin key |
+| [Anthropic](/integrations/anthropic) | Daily cost by workspace and description | Admin key, available on organization accounts only |
+| [Vercel](/integrations/vercel) | Daily charges per project | Access token scoped to the team |
+| [Cloudflare](/integrations/cloudflare) | Billable usage, or invoices when usage isn’t available | API token with Account · Billing · Read and Account · Account Settings · Read |
+| [Railway](/integrations/railway) | Monthly CPU, memory, egress, disk and backup usage per project, priced at Railway’s published rates | Account token, or a workspace token with its workspace id |
 
-## Products
+## Assign costs to products
 
-Costs reach a product through the provider's own grouping: an OpenAI project, a Vercel project, an Anthropic workspace, a Railway project, a Cloudflare zone. Open a connection to assign each one. Lines with no grouping, and all revenue from a connection, go to the product set at the top of that page. A workspace with one product gets everything by default.
+OpenProfit assigns a cost to a product through the provider’s own grouping. These groupings are:
 
-## Flat costs
+- **OpenAI**: projects
+- **Anthropic**: workspaces
+- **Vercel**: projects
+- **Railway**: projects
+- **Cloudflare**: zones
 
-Services without an API (Supabase, Resend, domains) go in as monthly or yearly amounts on the Costs page. They count from their start date and spread yearly amounts over twelve months.
+Open a connection from **Connections** to see each grouping with this month’s spend, then pick the product it serves. Past lines move to that product too.
 
-## Currency
+Lines with no grouping, and all revenue from the connection, go to the product you pick at the top of the same page. If your workspace has one product, everything goes to it by default. Anything left unassigned appears as **Shared** on the overview.
 
-Each workspace has one base currency. Lines in other currencies convert at the European Central Bank rate for their date.
+## Add costs that have no API
+
+Services like Supabase, Resend or a domain registrar don’t expose billing data. Add them on the **Costs** page as a fixed amount per month or per year, with a start date. OpenProfit counts them from that date and spreads a yearly amount evenly over 12 months.
+
+## Currency conversion
+
+Each workspace has one base currency, set during onboarding and editable in **Settings**. OpenProfit converts every line in another currency at the European Central Bank (ECB) rate for that line’s date. When you change the base currency, every stored line converts again at its own date’s rate.

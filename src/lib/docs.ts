@@ -1,4 +1,4 @@
-import { marked } from "marked";
+import { parse } from "./content";
 
 const files = import.meta.glob("../docs/*.md", {
 	query: "?raw",
@@ -14,15 +14,16 @@ const ORDER = [
 	"billing",
 ];
 
+// Title comes from the page's H1; the sidebar uses `navLabel`.
 export const DOCS = ORDER.map((slug) => {
-	const markdown = files[`../docs/${slug}.md`] ?? "";
-	const title = markdown.match(/^# (.+)$/m)?.[1] ?? slug;
-	// First paragraph after the title, plain text, for the meta description.
-	const description = (markdown.split(/\n\n/)[1] ?? "")
-		.replace(/[`*_[\]]|\(.*?\)/g, "")
-		.slice(0, 160);
-	return { slug, title, description, markdown };
+	const raw = files[`../docs/${slug}.md`] ?? "";
+	const page = parse(slug, raw);
+	const h1 = raw.match(/^# (.+)$/m)?.[1] ?? slug;
+	return {
+		slug,
+		title: h1,
+		navLabel: page.meta.navLabel ?? h1,
+		description: page.description,
+		html: page.html,
+	};
 });
-
-export const renderDoc = (markdown: string) =>
-	marked.parse(markdown, { async: false }) as string;

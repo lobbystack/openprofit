@@ -1,19 +1,67 @@
+---
+navLabel: Environment Variables
+contentType: Reference
+description: Every environment variable a self-hosted OpenProfit instance reads, with defaults, and what the optional usage ping sends.
+---
+
 # Environment variables
 
-| Variable | Required | Default | Purpose |
-| --- | --- | --- | --- |
-| `SECRET_KEY` | Yes | | 32 random bytes, base64. Encrypts provider credentials and signs sessions |
-| `APP_URL` | Yes | `http://localhost:3000` | Public URL of this instance, used in sign-in links |
-| `DATABASE_URL` | No | `./data/openprofit` | A `postgres://` URL, or a directory for the embedded Postgres |
-| `RESEND_API_KEY` | No | | Sends sign-in links and the weekly email through Resend |
-| `EMAIL_FROM` | No | | Sender address, for example `OpenProfit <mail@your_domain>` |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | No | | Adds "Sign in with GitHub" |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | No | | Adds "Sign in with Google" |
-| `SYNC_SCHEDULER` | No | `on` | `off` disables the in-process sync, weekly-email and telemetry jobs |
-| `APP_MODE` | No | `selfhost` | `cloud` turns on plans, Polar billing and the cadence caps |
-| `POLAR_ACCESS_TOKEN`, `POLAR_PRODUCT_INDIE`, `POLAR_PRODUCT_PRO`, `POLAR_WEBHOOK_SECRET` | Cloud only | | Polar organization token, product ids for the two paid plans, webhook secret for `/api/polar/webhook` |
-| `TELEMETRY_URL` | No | `https://openprofit.dev/api/telemetry` | Where the optional usage ping goes |
+This reference lists every environment variable OpenProfit reads, with its default and purpose, and describes the optional usage ping. Set them on the container, for example with `-e` flags on `docker run`.
 
-## Telemetry
+## Required variables
 
-Off by default. Switch it on in Settings and the instance sends one ping a day: a hash of the secret key as an id, the version, and counts of workspaces, products and connections per provider. No names, no amounts, no emails.
+An instance doesn’t start correctly without these two:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `SECRET_KEY` | None | 32 random bytes encoded as base64. Encrypts provider keys and signs sessions. Changing it makes stored provider keys unreadable |
+| `APP_URL` | `http://localhost:3000` | Public address of the instance. Sign-in links point here |
+
+## Database
+
+OpenProfit uses an embedded Postgres database unless you give it a server:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | `./data/openprofit` | A `postgres://` connection string, or a directory path for the embedded database |
+
+## Email and sign-in
+
+Without these, sign-in links print to the server log and only email sign-in is offered:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `RESEND_API_KEY` | None | Sends sign-in links, alerts and the weekly email through Resend |
+| `EMAIL_FROM` | None | Sender address, for example `OpenProfit <mail@your_domain_here>` |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | None | Adds sign-in with GitHub. Use `your_app_url/api/auth/callback/github` as the callback URL |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | None | Adds sign-in with Google. Use `your_app_url/api/auth/callback/google` as the redirect URI |
+
+## Background jobs
+
+OpenProfit runs its scheduled jobs inside the server process:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `SYNC_SCHEDULER` | `on` | Set to `off` to stop the sync, weekly email and usage ping jobs, for example on a second instance that shares the database |
+
+## Hosted mode
+
+These variables apply only to the hosted version at openprofit.dev. A self-hosted instance leaves them unset:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `APP_MODE` | `selfhost` | `cloud` turns on plans, billing and the sync cadence limits |
+| `POLAR_ACCESS_TOKEN` | None | Polar organization token used to create checkouts and open the billing portal |
+| `POLAR_PRODUCT_INDIE`, `POLAR_PRODUCT_PRO` | None | Polar product ids for the two paid plans |
+| `POLAR_WEBHOOK_SECRET` | None | Secret that verifies subscription events sent to `/api/polar/webhook` |
+
+## Usage ping
+
+The usage ping is off until you switch it on in **Settings**. Once on, the instance sends one request a day to `TELEMETRY_URL` (default `https://openprofit.dev/api/telemetry`) containing:
+
+- an instance id: a one-way hash of `SECRET_KEY`
+- the OpenProfit version
+- the number of workspaces and products
+- the number of connections per provider
+
+It sends no names, amounts, email addresses or keys.
