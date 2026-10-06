@@ -88,7 +88,7 @@ function Connect() {
 									type={f.secret ? "password" : "text"}
 									autoComplete="off"
 									spellCheck={false}
-									required
+									required={!f.optional}
 									value={values[f.name] ?? ""}
 									onChange={(e) => {
 										setValues({ ...values, [f.name]: e.target.value });
