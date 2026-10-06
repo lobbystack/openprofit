@@ -9,7 +9,6 @@ import {
 	Package,
 	Plus,
 	Receipt,
-	Search,
 	Settings,
 	SunMoon,
 } from "lucide-react";
@@ -24,6 +23,7 @@ import {
 	switchWorkspace,
 	type WorkspaceSummary,
 } from "#/server/workspace.functions";
+import { Search } from "./search";
 
 const NAV = [
 	{ to: "/app", label: "Overview", icon: LayoutGrid, exact: true },
@@ -122,14 +122,11 @@ export function Shell({
 					{(close) => <WorkspaceItems workspace={workspace} close={close} />}
 				</Menu>
 
-				<button
-					type="button"
+				<Search
+					pages={NAV}
+					products={workspace.products}
 					className="mt-2 flex h-8 w-full items-center gap-2 rounded-md border border-line px-2 text-[13px] text-text-3 hover:border-line-strong"
-				>
-					<Search size={14} />
-					<span className="flex-1 text-left">Search</span>
-					<span className="label-mono">⌘K</span>
-				</button>
+				/>
 
 				<nav className="mt-5">
 					<ul className="space-y-px">
