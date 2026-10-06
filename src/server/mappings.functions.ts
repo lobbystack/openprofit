@@ -1,3 +1,4 @@
+import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import {
 	and,
@@ -46,7 +47,7 @@ export const getConnection = createServerFn({ method: "GET" })
 				eq(schema.connections.workspaceId, ws.id),
 			),
 		});
-		if (!conn) throw new Error("Not found");
+		if (!conn) throw notFound();
 		const from = `${lastMonths(1)[0]}-01`;
 		const table = conn.kind === "cost" ? schema.costLines : schema.revenueLines;
 		const amountCol =
