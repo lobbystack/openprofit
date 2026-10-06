@@ -6,11 +6,17 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import { Pencil, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { Control, PageHeader } from "#/components/app/shell";
+import { PageHeader } from "#/components/app/shell";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { BreakdownCard } from "#/components/dashboard/breakdown-card";
 import { providerLabel } from "#/components/dashboard/overview";
 import { PeriodSelect } from "#/components/dashboard/period-select";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import {
+	NativeSelect,
+	NativeSelectOption,
+} from "#/components/ui/native-select";
 import { CURRENCIES, money, monthLabel } from "#/lib/format";
 import { type PeriodKey, periodSchema } from "#/lib/overview";
 import {
@@ -71,10 +77,10 @@ function Costs() {
 						navigate({ to: "/app/costs", search: { period } })
 					}
 				/>
-				<Control onClick={() => setEditing("new")}>
+				<Button variant="outline" onClick={() => setEditing("new")}>
 					<Plus size={13} />
 					Add flat cost
-				</Control>
+				</Button>
 			</PageHeader>
 
 			<div className="mt-4 rounded-xl border border-line bg-card px-3 pt-4 pb-2">
@@ -155,24 +161,24 @@ function Costs() {
 										/ {f.interval === "year" ? "yr" : "mo"}
 									</span>
 									<span className="flex shrink-0 items-center gap-1">
-										<button
-											type="button"
+										<Button
+											variant="quiet"
+											size="icon-sm"
 											title="Edit"
 											aria-label={`Edit ${f.name}`}
 											onClick={() => setEditing(f.id)}
-											className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-ink"
 										>
 											<Pencil size={13} />
-										</button>
-										<button
-											type="button"
+										</Button>
+										<Button
+											variant="quiet-destructive"
+											size="icon-sm"
 											title="Remove"
 											aria-label={`Remove ${f.name}`}
 											onClick={() => remove(f)}
-											className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-negative"
 										>
 											<X size={13} />
-										</button>
+										</Button>
 									</span>
 								</li>
 							),
@@ -191,9 +197,6 @@ const span = (f: FlatCostRow) =>
 	f.endsOn
 		? `${monthYear(f.startsOn)} to ${monthYear(f.endsOn)}`
 		: `Since ${monthYear(f.startsOn)}`;
-
-const field =
-	"mt-1.5 h-8 w-full rounded-md border border-line bg-paper px-2.5 text-[13px] outline-none focus:border-line-strong";
 
 function FlatCostForm({
 	cost,
@@ -262,97 +265,102 @@ function FlatCostForm({
 		>
 			<label className="sm:col-span-3">
 				<span className="label-mono">Name</span>
-				<input
+				<Input
+					size="sm"
 					required
 					maxLength={80}
 					value={v.name}
 					onChange={set("name")}
 					placeholder="Supabase Pro"
-					className={field}
+					className="mt-1.5"
 				/>
 			</label>
 			<label className="sm:col-span-3">
 				<span className="label-mono">Product</span>
-				<select
+				<NativeSelect
+					size="sm"
 					value={v.productId}
 					onChange={set("productId")}
-					className={field}
+					className="mt-1.5"
 				>
-					<option value="">Shared</option>
+					<NativeSelectOption value="">Shared</NativeSelectOption>
 					{products.map((p) => (
-						<option key={p.id} value={p.id}>
+						<NativeSelectOption key={p.id} value={p.id}>
 							{p.name}
-						</option>
+						</NativeSelectOption>
 					))}
-				</select>
+				</NativeSelect>
 			</label>
 			<label className="sm:col-span-2">
 				<span className="label-mono">Amount</span>
-				<input
+				<Input
+					size="sm"
 					required
 					inputMode="decimal"
 					value={v.amount}
 					onChange={set("amount")}
 					placeholder="25.00"
-					className={`${field} num`}
+					className="mt-1.5 num"
 				/>
 			</label>
 			<label className="sm:col-span-2">
 				<span className="label-mono">Currency</span>
-				<select
+				<NativeSelect
+					size="sm"
 					value={v.currency}
 					onChange={set("currency")}
-					className={`${field} num`}
+					className="mt-1.5 num"
 				>
 					{CURRENCIES.map((c) => (
-						<option key={c} value={c}>
+						<NativeSelectOption key={c} value={c}>
 							{c}
-						</option>
+						</NativeSelectOption>
 					))}
-				</select>
+				</NativeSelect>
 			</label>
 			<label className="sm:col-span-2">
 				<span className="label-mono">Billed</span>
-				<select value={v.interval} onChange={set("interval")} className={field}>
-					<option value="month">Monthly</option>
-					<option value="year">Yearly, spread over 12 months</option>
-				</select>
+				<NativeSelect
+					size="sm"
+					className="mt-1.5"
+					value={v.interval}
+					onChange={set("interval")}
+				>
+					<NativeSelectOption value="month">Monthly</NativeSelectOption>
+					<NativeSelectOption value="year">
+						Yearly, spread over 12 months
+					</NativeSelectOption>
+				</NativeSelect>
 			</label>
 			<label className="sm:col-span-3">
 				<span className="label-mono">Starts</span>
-				<input
+				<Input
+					size="sm"
 					type="date"
 					required
 					value={v.startsOn}
 					onChange={set("startsOn")}
-					className={`${field} num`}
+					className="mt-1.5 num"
 				/>
 			</label>
 			<label className="sm:col-span-3">
 				<span className="label-mono">Ends (optional)</span>
-				<input
+				<Input
+					size="sm"
 					type="date"
 					value={v.endsOn}
 					min={v.startsOn}
 					onChange={set("endsOn")}
-					className={`${field} num`}
+					className="mt-1.5 num"
 				/>
 			</label>
 			<div className="flex flex-wrap items-center gap-2 sm:col-span-6">
-				<button
-					type="submit"
-					disabled={busy}
-					className="h-8 rounded-md bg-ink px-3 text-[13px] text-paper hover:bg-ink-2 disabled:opacity-50"
-				>
+				<Button type="submit" disabled={busy}>
 					{busy ? "Saving…" : cost ? "Save" : "Add cost"}
-				</button>
-				<button
-					type="button"
-					onClick={onDone}
-					className="h-8 px-2 text-[13px] text-text-2 hover:text-ink"
-				>
+				</Button>
+				<Button type="button" variant="ghost" onClick={onDone}>
 					Cancel
-				</button>
+				</Button>
 				{error && <span className="text-[12px] text-negative">{error}</span>}
 			</div>
 		</form>

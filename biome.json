@@ -26,12 +26,35 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"a11y": {
+				"noLabelWithoutControl": {
+					"level": "error",
+					"options": {
+						"inputComponents": ["Input", "NativeSelect", "Switch"],
+						"labelComponents": ["FieldLabel", "Label"]
+					}
+				}
+			}
 		}
 	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["**/src/components/ui/**"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"useSemanticElements": "off",
+						"noLabelWithoutControl": "off"
+					},
+					"suspicious": { "noDoubleEquals": "off", "noArrayIndexKey": "off" }
+				}
+			}
+		}
+	]
 }

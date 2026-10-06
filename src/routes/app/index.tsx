@@ -5,6 +5,7 @@ import {
 	OverviewCard,
 } from "#/components/dashboard/overview";
 import { PeriodSelect } from "#/components/dashboard/period-select";
+import { Button } from "#/components/ui/button";
 import { money } from "#/lib/format";
 import {
 	type OverviewData,
@@ -37,12 +38,9 @@ function Overview() {
 						Connect Stripe, Paddle or another revenue source. Profit shows here
 						after the first sync.
 					</p>
-					<Link
-						to="/app/connections"
-						className="inline-flex h-8 items-center rounded-md bg-ink px-3 text-[13px] text-paper hover:bg-ink-2"
-					>
+					<Button nativeButton={false} render={<Link to="/app/connections" />}>
 						Add a connection
-					</Link>
+					</Button>
 				</div>
 			</>
 		);

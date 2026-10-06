@@ -4,11 +4,7 @@ import {
 	useLocation,
 	useRouter,
 } from "@tanstack/react-router";
-
-const button =
-	"pressable inline-flex h-8 items-center justify-center rounded-md px-3 text-[13px] font-medium";
-const primary = `${button} bg-ink text-paper hover:bg-ink-2`;
-const secondary = `${button} border border-line bg-paper text-ink hover:border-line-strong`;
+import { Button } from "#/components/ui/button";
 
 function Status({
 	title,
@@ -48,9 +44,13 @@ export function NotFound() {
 					: "Check the address or start from the home page."
 			}
 		>
-			<Link to={inApp ? "/app" : "/"} className={primary}>
+			<Button
+				weight="medium"
+				nativeButton={false}
+				render={<Link to={inApp ? "/app" : "/"} />}
+			>
 				{inApp ? "Go to overview" : "Go to the home page"}
-			</Link>
+			</Button>
 		</Status>
 	);
 }
@@ -70,20 +70,16 @@ export function ErrorPage({ error }: ErrorComponentProps) {
 					: undefined
 			}
 		>
-			<button
-				type="button"
-				className={primary}
-				onClick={() => window.location.reload()}
-			>
+			<Button weight="medium" onClick={() => window.location.reload()}>
 				Reload
-			</button>
-			<button
-				type="button"
-				className={secondary}
+			</Button>
+			<Button
+				variant="outline"
+				weight="medium"
 				onClick={() => router.invalidate()}
 			>
 				Retry without reloading
-			</button>
+			</Button>
 		</Status>
 	);
 }

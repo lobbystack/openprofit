@@ -5,8 +5,14 @@ import {
 	PageHeader,
 	SettingsRow,
 	SettingsSection,
-	Switch,
 } from "#/components/app/shell";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import {
+	NativeSelect,
+	NativeSelectOption,
+} from "#/components/ui/native-select";
+import { Switch } from "#/components/ui/switch";
 import { CURRENCIES, cadenceLabel } from "#/lib/format";
 import { CADENCES, PLANS, type Plan } from "#/lib/plans";
 import { openPortal, startCheckout } from "#/server/billing.functions";
@@ -43,9 +49,6 @@ const DAYS: [number, string][] = [
 ];
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 const browserZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-const field =
-	"h-8 w-full rounded-md border border-line bg-paper px-2.5 text-[13px] outline-none focus:border-line-strong";
 
 type Patch = Parameters<typeof updateSettings>[0]["data"];
 
@@ -86,14 +89,14 @@ function Settings() {
 
 			<SettingsSection title="Workspace">
 				<SettingsRow label="Name" htmlFor="ws-name">
-					<input
+					<Input
+						size="sm"
 						id="ws-name"
 						value={name}
 						maxLength={60}
 						onChange={(e) => setName(e.target.value)}
 						onBlur={saveName}
 						onKeyDown={(e) => e.key === "Enter" && saveName()}
-						className={field}
 					/>
 				</SettingsRow>
 				<SettingsRow
@@ -101,7 +104,8 @@ function Settings() {
 					description="Every amount converts at the European Central Bank rate for its day. Changing the currency converts past amounts again."
 					htmlFor="ws-currency"
 				>
-					<select
+					<NativeSelect
+						size="sm"
 						id="ws-currency"
 						value={s.currency}
 						onChange={(e) =>
@@ -109,21 +113,22 @@ function Settings() {
 								currency: e.target.value as (typeof CURRENCIES)[number],
 							})
 						}
-						className={`${field} num`}
+						className="num"
 					>
 						{CURRENCIES.map((c) => (
-							<option key={c} value={c}>
+							<NativeSelectOption key={c} value={c}>
 								{c}
-							</option>
+							</NativeSelectOption>
 						))}
-					</select>
+					</NativeSelect>
 				</SettingsRow>
 				<SettingsRow
 					label="Sync"
 					description="How often OpenProfit reads new data from your connections."
 					htmlFor="ws-sync"
 				>
-					<select
+					<NativeSelect
+						size="sm"
 						id="ws-sync"
 						value={
 							s.cloud
@@ -137,7 +142,6 @@ function Settings() {
 								) as (typeof CADENCES)[number],
 							})
 						}
-						className={field}
 					>
 						{CADENCES.map((c) => {
 							const locked = s.cloud && c < PLANS[s.plan].cadenceMinutes;
@@ -147,13 +151,13 @@ function Settings() {
 									: "Indie"
 								: null;
 							return (
-								<option key={c} value={c} disabled={locked}>
+								<NativeSelectOption key={c} value={c} disabled={locked}>
 									{cadenceLabel(c)}
 									{needs ? ` (${needs})` : ""}
-								</option>
+								</NativeSelectOption>
 							);
 						})}
-					</select>
+					</NativeSelect>
 				</SettingsRow>
 			</SettingsSection>
 
@@ -201,46 +205,47 @@ function Settings() {
 					<Switch
 						id="weekly"
 						checked={s.weeklyEmail}
-						onChange={(weeklyEmail) => saveWeekly({ weeklyEmail })}
+						onCheckedChange={(weeklyEmail) => saveWeekly({ weeklyEmail })}
 					/>
 				</SettingsRow>
 				{s.weeklyEmail && (
 					<>
 						<SettingsRow label="Day" htmlFor="weekly-day">
-							<select
+							<NativeSelect
+								size="sm"
 								id="weekly-day"
 								value={s.weeklyDay}
 								onChange={(e) =>
 									saveWeekly({ weeklyDay: Number(e.target.value) })
 								}
-								className={field}
 							>
 								{DAYS.map(([d, label]) => (
-									<option key={d} value={d}>
+									<NativeSelectOption key={d} value={d}>
 										{label}
-									</option>
+									</NativeSelectOption>
 								))}
-							</select>
+							</NativeSelect>
 						</SettingsRow>
 						<SettingsRow
 							label="Time"
 							description={`Your time zone: ${s.timezone}`}
 							htmlFor="weekly-hour"
 						>
-							<select
+							<NativeSelect
+								size="sm"
 								id="weekly-hour"
 								value={s.weeklyHour}
 								onChange={(e) =>
 									saveWeekly({ weeklyHour: Number(e.target.value) })
 								}
-								className={`${field} num`}
+								className="num"
 							>
 								{HOURS.map((h) => (
-									<option key={h} value={h}>
+									<NativeSelectOption key={h} value={h}>
 										{`${String(h).padStart(2, "0")}:00`}
-									</option>
+									</NativeSelectOption>
 								))}
-							</select>
+							</NativeSelect>
 						</SettingsRow>
 					</>
 				)}
@@ -257,7 +262,7 @@ function Settings() {
 							<Switch
 								id="analytics"
 								checked={s.analytics}
-								onChange={(analytics) => save({ analytics })}
+								onCheckedChange={(analytics) => save({ analytics })}
 							/>
 						</SettingsRow>
 					)}
@@ -270,7 +275,7 @@ function Settings() {
 							<Switch
 								id="telemetry"
 								checked={s.telemetry}
-								onChange={(telemetry) => save({ telemetry })}
+								onCheckedChange={(telemetry) => save({ telemetry })}
 							/>
 						</SettingsRow>
 					)}
@@ -291,8 +296,8 @@ function Go({
 	children: React.ReactNode;
 }) {
 	return (
-		<button
-			type="button"
+		<Button
+			variant="outline"
 			onClick={async () => {
 				try {
 					const { url } = await onClick();
@@ -301,9 +306,8 @@ function Go({
 					onError?.(err instanceof Error ? err.message : String(err));
 				}
 			}}
-			className="h-8 rounded-md border border-line bg-paper px-2.5 text-[13px] hover:border-line-strong"
 		>
 			{children}
-		</button>
+		</Button>
 	);
 }

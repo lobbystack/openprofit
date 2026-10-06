@@ -1,8 +1,13 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Button } from "#/components/landing/primitives";
 import { Logo } from "#/components/logo";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import {
+	NativeSelect,
+	NativeSelectOption,
+} from "#/components/ui/native-select";
 import { identify } from "#/lib/analytics";
 import { NOINDEX } from "#/lib/app";
 import { CURRENCIES } from "#/lib/format";
@@ -39,9 +44,6 @@ function Onboarding() {
 		navigate({ to: "/app/connections" });
 	}
 
-	const field =
-		"h-9 w-full rounded-md border border-line bg-paper px-3 text-[13px] outline-none placeholder:text-text-3 focus:border-line-strong";
-
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center px-4">
 			<Logo size={20} />
@@ -52,35 +54,35 @@ function Onboarding() {
 			>
 				<label className="block">
 					<span className="label-mono">Workspace name</span>
-					<input
+					<Input
 						required
 						value={name}
 						onChange={(e) => setName(e.target.value)}
 						placeholder="Acme Labs"
-						className={`${field} mt-2`}
+						className="mt-2"
 					/>
 				</label>
 				<label className="block">
 					<span className="label-mono">Base currency</span>
-					<select
+					<NativeSelect
 						value={currency}
 						onChange={(e) =>
 							setCurrency(e.target.value as (typeof CURRENCIES)[number])
 						}
-						className={`${field} mt-2`}
+						className="mt-2"
 					>
 						{CURRENCIES.map((c) => (
-							<option key={c} value={c}>
+							<NativeSelectOption key={c} value={c}>
 								{c}
-							</option>
+							</NativeSelectOption>
 						))}
-					</select>
+					</NativeSelect>
 					<span className="mt-2 block text-[12px] text-text-2">
 						Every amount converts to this currency at the European Central Bank
 						rate for its day. You can change it in Settings.
 					</span>
 				</label>
-				<Button className="h-9 w-full" size="sm">
+				<Button type="submit" size="default" weight="medium" className="w-full">
 					{busy ? "Creating…" : "Create workspace"}
 				</Button>
 			</form>

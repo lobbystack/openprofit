@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { PageHeader, Switch } from "#/components/app/shell";
+import { PageHeader } from "#/components/app/shell";
+import { Switch } from "#/components/ui/switch";
 import { RULE_NAMES, ruleScope } from "#/lib/alerts";
 import { getAlerts, setRuleEnabled } from "#/server/alerts.functions";
 
@@ -106,7 +107,7 @@ function Alerts() {
 							<Switch
 								id={`rule-${r.id}`}
 								checked={r.enabled}
-								onChange={(on) => toggle(r.id, on)}
+								onCheckedChange={(on) => toggle(r.id, on)}
 							/>
 						</li>
 					))}

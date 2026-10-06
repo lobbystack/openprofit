@@ -8,6 +8,12 @@ import {
 	type ProviderId,
 	ProviderLogo,
 } from "#/components/provider-logo";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import {
+	NativeSelect,
+	NativeSelectOption,
+} from "#/components/ui/native-select";
 import { describeError } from "#/lib/errors";
 import {
 	createConnection,
@@ -20,9 +26,6 @@ export const Route = createFileRoute("/app/connect/$provider")({
 	loader: ({ params }) => getConnectorInfo({ data: { id: params.provider } }),
 	component: Connect,
 });
-
-const field =
-	"num h-9 w-full rounded-md border border-line bg-paper px-3 text-[13px] outline-none placeholder:text-text-3 focus:border-line-strong";
 
 function Connect() {
 	const info = Route.useLoaderData();
@@ -100,21 +103,21 @@ function Connect() {
 									setValues({ ...values, [f.name]: e.target.value });
 									setTest({ state: "idle" });
 								},
-								className: `${field} mt-2`,
+								className: "num mt-2",
 							};
 							return (
 								<label key={f.name} htmlFor={props.id} className="block">
 									<span className="label-mono">{f.label}</span>
 									{f.options ? (
-										<select {...props}>
+										<NativeSelect {...props}>
 											{f.options.map((o) => (
-												<option key={o.value} value={o.value}>
+												<NativeSelectOption key={o.value} value={o.value}>
 													{o.label}
-												</option>
+												</NativeSelectOption>
 											))}
-										</select>
+										</NativeSelect>
 									) : (
-										<input
+										<Input
 											{...props}
 											type={f.secret ? "password" : "text"}
 											autoComplete="off"
@@ -127,21 +130,17 @@ function Connect() {
 						})}
 					</div>
 					<div className="mt-5 flex items-center gap-2">
-						<button
+						<Button
 							type="button"
+							variant="outline"
 							disabled={!complete || test.state === "testing"}
 							onClick={runTest}
-							className="h-8 rounded-md border border-line bg-paper px-3 text-[13px] hover:border-line-strong disabled:opacity-50"
 						>
 							{test.state === "testing" ? "Testing…" : "Test"}
-						</button>
-						<button
-							type="submit"
-							disabled={test.state !== "ok" || saving}
-							className="h-8 rounded-md bg-ink px-3 text-[13px] text-paper hover:bg-ink-2 disabled:opacity-50"
-						>
+						</Button>
+						<Button type="submit" disabled={test.state !== "ok" || saving}>
 							{saving ? "Connecting…" : "Connect"}
-						</button>
+						</Button>
 						{test.state === "ok" && (
 							<span className="flex items-center gap-1.5 text-[12px] text-positive">
 								<Check size={14} />

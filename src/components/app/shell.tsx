@@ -281,7 +281,8 @@ export function PageHeader({
 	children?: React.ReactNode;
 }) {
 	return (
-		<div className="flex h-10 items-center justify-between">
+		// Actions drop under the title when they don't fit beside it.
+		<div className="flex min-h-10 flex-wrap items-center justify-between gap-y-2">
 			<div className="flex items-baseline gap-3">
 				<h1 className="text-[20px]">{title}</h1>
 				{meta && <span className="text-[12px] text-text-3">{meta}</span>}
@@ -337,57 +338,6 @@ export function SettingsRow({
 				{children}
 			</div>
 		</div>
-	);
-}
-
-export function Switch({
-	checked,
-	onChange,
-	id,
-}: {
-	checked: boolean;
-	onChange: (checked: boolean) => void;
-	id?: string;
-}) {
-	return (
-		<button
-			type="button"
-			role="switch"
-			id={id}
-			aria-checked={checked}
-			onClick={() => onChange(!checked)}
-			className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 ${
-				checked ? "bg-ink" : "bg-line-strong"
-			}`}
-		>
-			<span
-				className={`h-4 w-4 rounded-full bg-paper transition-transform duration-150 ease-(--ease-out) ${
-					checked ? "translate-x-4" : ""
-				}`}
-			/>
-		</button>
-	);
-}
-
-export function Control({
-	children,
-	muted = false,
-	onClick,
-}: {
-	children: React.ReactNode;
-	muted?: boolean;
-	onClick?: () => void;
-}) {
-	return (
-		<button
-			type="button"
-			onClick={onClick}
-			className={`flex h-8 items-center gap-1.5 rounded-md border border-line bg-paper px-2.5 text-[12px] hover:border-line-strong ${
-				muted ? "text-text-2" : ""
-			}`}
-		>
-			{children}
-		</button>
 	);
 }
 

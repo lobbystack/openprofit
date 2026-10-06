@@ -8,6 +8,7 @@ import {
 	type ProviderId,
 	ProviderLogo,
 } from "#/components/provider-logo";
+import { Button } from "#/components/ui/button";
 import { describeError } from "#/lib/errors";
 import { cadenceLabel, money } from "#/lib/format";
 import {
@@ -160,12 +161,12 @@ function Connections() {
 										{money(Math.abs(r.amount))}
 									</span>
 									<span className="flex shrink-0 items-center gap-1">
-										<button
-											type="button"
+										<Button
+											variant="quiet"
+											size="icon-sm"
 											title="Sync now"
 											disabled={busy === r.id}
 											onClick={() => sync(r.id)}
-											className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-ink disabled:opacity-50"
 										>
 											<RefreshCw
 												size={13}
@@ -175,18 +176,18 @@ function Connections() {
 														: ""
 												}
 											/>
-										</button>
-										<button
-											type="button"
+										</Button>
+										<Button
+											variant="quiet-destructive"
+											size="icon-sm"
 											title="Remove"
 											disabled={busy === r.id}
 											onClick={() =>
 												remove(r.id, PROVIDERS[r.provider]?.name ?? r.provider)
 											}
-											className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-negative disabled:opacity-50"
 										>
 											<X size={13} />
-										</button>
+										</Button>
 									</span>
 								</li>
 							);

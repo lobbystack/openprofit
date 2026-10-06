@@ -2,8 +2,22 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowUpRight, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { Control, PageHeader } from "#/components/app/shell";
+import { PageHeader } from "#/components/app/shell";
 import { AreaChart } from "#/components/dashboard/area-chart";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
+import {
+	NativeSelect,
+	NativeSelectOption,
+} from "#/components/ui/native-select";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "#/components/ui/table";
 import { money } from "#/lib/format";
 import { getOverview } from "#/server/overview.functions";
 import { createProduct, deleteProduct } from "#/server/products.functions";
@@ -14,8 +28,6 @@ export const Route = createFileRoute("/app/products")({
 	loader: () => getOverview(),
 	component: Products,
 });
-
-const TH = "label-mono h-9 px-4 font-normal";
 
 function Products() {
 	const data = Route.useLoaderData();
@@ -52,46 +64,50 @@ function Products() {
 	return (
 		<>
 			<PageHeader title="Products" meta={`${products.length}`}>
-				<Control onClick={() => setAdding(true)}>
+				<Button variant="outline" onClick={() => setAdding(true)}>
 					<Plus size={13} />
 					Add product
-				</Control>
+				</Button>
 			</PageHeader>
 			<div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
-				<table className="w-full text-[13px]">
-					<thead>
-						<tr className="border-b border-line text-left">
-							<th className={TH}>Product</th>
-							<th className={`${TH} text-right`}>Revenue</th>
-							<th className={`${TH} text-right`}>Costs</th>
-							<th className={`${TH} text-right`}>Profit</th>
-							<th className={`${TH} text-right`}>Margin</th>
-							<th className="h-9 w-40 px-4" />
-							<th className={`${TH} w-36`}>Public</th>
-							<th className="h-9 w-10 px-2" />
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-line">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead>Product</TableHead>
+							<TableHead className="text-right">Revenue</TableHead>
+							<TableHead className="text-right">Costs</TableHead>
+							<TableHead className="text-right">Profit</TableHead>
+							<TableHead className="text-right">Margin</TableHead>
+							<TableHead className="w-40" />
+							<TableHead className="w-36">Public</TableHead>
+							<TableHead className="w-10 px-2" />
+						</TableRow>
+					</TableHeader>
+					<TableBody>
 						{[...products, ...(shared ? [shared] : [])].map((p) => {
 							const profit = p.revenue - p.costs;
 							const isShared = p.id === "shared";
 							return (
-								<tr
+								<TableRow
 									key={p.id}
-									className={isShared ? "text-text-2" : "hover:bg-surface-1"}
+									className={isShared ? "text-text-2" : undefined}
 								>
-									<td className="h-12 px-4">{p.name}</td>
-									<td className="num px-4 text-right">{fmt(p.revenue)}</td>
-									<td className="num px-4 text-right text-negative">
+									<TableCell className="h-12">{p.name}</TableCell>
+									<TableCell className="num text-right">
+										{fmt(p.revenue)}
+									</TableCell>
+									<TableCell className="num text-right text-negative">
 										{fmt(p.costs)}
-									</td>
-									<td className="num px-4 text-right">{fmt(profit)}</td>
-									<td className="num px-4 text-right text-text-2">
+									</TableCell>
+									<TableCell className="num text-right">
+										{fmt(profit)}
+									</TableCell>
+									<TableCell className="num text-right text-text-2">
 										{p.revenue
 											? `${Math.round((profit / p.revenue) * 100)}%`
 											: ""}
-									</td>
-									<td className="px-4 py-2">
+									</TableCell>
+									<TableCell className="py-2">
 										{p.profit.some((v) => v !== 0) && (
 											<AreaChart
 												data={p.profit}
@@ -100,11 +116,13 @@ function Products() {
 												compact
 											/>
 										)}
-									</td>
-									<td className="px-4">
+									</TableCell>
+									<TableCell>
 										{!isShared && (
 											<span className="flex items-center gap-1">
-												<select
+												<NativeSelect
+													size="xs"
+													className="w-auto"
 													value={p.publicPage}
 													onChange={async (e) => {
 														await setPage({
@@ -119,79 +137,89 @@ function Products() {
 														});
 														router.invalidate();
 													}}
-													className="h-7 rounded-md border border-line bg-paper px-1.5 text-[12px] outline-none focus:border-line-strong"
 												>
-													<option value="off">Off</option>
-													<option value="full">Full</option>
-													<option value="revenue">Revenue</option>
-													<option value="percent">Growth and margin</option>
-												</select>
+													<NativeSelectOption value="off">
+														Off
+													</NativeSelectOption>
+													<NativeSelectOption value="full">
+														Full
+													</NativeSelectOption>
+													<NativeSelectOption value="revenue">
+														Revenue
+													</NativeSelectOption>
+													<NativeSelectOption value="percent">
+														Growth and margin
+													</NativeSelectOption>
+												</NativeSelect>
 												{p.publicPage !== "off" && (
-													<a
-														href={`/p/${data.workspaceSlug}/${p.slug}`}
-														target="_blank"
-														rel="noreferrer"
-														title="Open page"
-														className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-ink"
+													<Button
+														variant="quiet"
+														size="icon-sm"
+														nativeButton={false}
+														render={
+															// biome-ignore lint/a11y/useAnchorContent: Button puts the icon inside
+															<a
+																href={`/p/${data.workspaceSlug}/${p.slug}`}
+																target="_blank"
+																rel="noreferrer"
+																title="Open page"
+															/>
+														}
 													>
 														<ArrowUpRight size={13} />
-													</a>
+													</Button>
 												)}
 											</span>
 										)}
-									</td>
-									<td className="px-2">
+									</TableCell>
+									<TableCell className="px-2">
 										{!isShared && (
-											<button
-												type="button"
+											<Button
+												variant="quiet-destructive"
+												size="icon-sm"
 												title="Remove"
 												onClick={() => remove(p.id, p.name)}
-												className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-negative"
 											>
 												<X size={13} />
-											</button>
+											</Button>
 										)}
-									</td>
-								</tr>
+									</TableCell>
+								</TableRow>
 							);
 						})}
 						{products.length === 0 && !adding && (
-							<tr>
-								<td colSpan={8} className="px-4 py-4 text-text-2">
+							<TableRow>
+								<TableCell colSpan={8} className="py-4 text-text-2">
 									No products yet. Add one for each app or site you sell, then
 									assign its costs and revenue on each connection's page.
-								</td>
-							</tr>
+								</TableCell>
+							</TableRow>
 						)}
 						{adding && (
-							<tr>
-								<td colSpan={8} className="px-4 py-2">
+							<TableRow>
+								<TableCell colSpan={8} className="py-2">
 									<form onSubmit={add} className="flex items-center gap-2">
-										<input
+										<Input
+											size="sm"
+											className="w-64"
 											value={name}
 											onChange={(e) => setName(e.target.value)}
 											placeholder="Product name"
-											className="h-8 w-64 rounded-md border border-line bg-paper px-2.5 text-[13px] outline-none placeholder:text-text-3 focus:border-line-strong"
 										/>
-										<button
-											type="submit"
-											className="h-8 rounded-md bg-ink px-3 text-[13px] text-paper hover:bg-ink-2"
-										>
-											Add
-										</button>
-										<button
+										<Button type="submit">Add</Button>
+										<Button
 											type="button"
+											variant="ghost"
 											onClick={() => setAdding(false)}
-											className="h-8 px-2 text-[13px] text-text-2 hover:text-ink"
 										>
 											Cancel
-										</button>
+										</Button>
 									</form>
-								</td>
-							</tr>
+								</TableCell>
+							</TableRow>
 						)}
-					</tbody>
-				</table>
+					</TableBody>
+				</Table>
 			</div>
 		</>
 	);

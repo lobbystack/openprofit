@@ -6,6 +6,10 @@ import {
 	type ProviderId,
 	ProviderLogo,
 } from "#/components/provider-logo";
+import {
+	NativeSelect,
+	NativeSelectOption,
+} from "#/components/ui/native-select";
 import { money } from "#/lib/format";
 import {
 	getConnection,
@@ -63,18 +67,19 @@ function Connection() {
 		onChange: (v: string | null) => void,
 		empty = "Shared",
 	) => (
-		<select
+		<NativeSelect
+			size="xs"
+			className="w-40"
 			value={value ?? ""}
 			onChange={(e) => onChange(e.target.value || null)}
-			className="h-7 w-40 rounded-md border border-line bg-paper px-1.5 text-[12px] outline-none focus:border-line-strong"
 		>
-			<option value="">{empty}</option>
+			<NativeSelectOption value="">{empty}</NativeSelectOption>
 			{c.products.map((pr) => (
-				<option key={pr.id} value={pr.id}>
+				<NativeSelectOption key={pr.id} value={pr.id}>
 					{pr.name}
-				</option>
+				</NativeSelectOption>
 			))}
-		</select>
+		</NativeSelect>
 	);
 
 	return (

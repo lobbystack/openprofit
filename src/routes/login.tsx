@@ -1,8 +1,9 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { siGithub } from "simple-icons";
-import { Button } from "#/components/landing/primitives";
 import { Logo } from "#/components/logo";
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
 import { NOINDEX } from "#/lib/app";
 import { authClient } from "#/lib/auth-client";
 import { getAuthOptions, getSession } from "#/server/auth.functions";
@@ -62,9 +63,11 @@ function Login() {
 						{social.length > 0 && (
 							<>
 								{social.map((p) => (
-									<button
+									<Button
 										key={p}
-										type="button"
+										variant="outline"
+										size="default"
+										className="w-full"
 										onClick={() =>
 											authClient.signIn.social({
 												provider: p as "github" | "google",
@@ -72,7 +75,6 @@ function Login() {
 												newUserCallbackURL: "/onboarding",
 											})
 										}
-										className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-line bg-paper text-[13px] hover:border-line-strong"
 									>
 										{p === "github" && (
 											<svg
@@ -89,20 +91,24 @@ function Login() {
 										{p === "github"
 											? "Continue with GitHub"
 											: "Continue with Google"}
-									</button>
+									</Button>
 								))}
 								<div className="label-mono py-1 text-center">or</div>
 							</>
 						)}
-						<input
+						<Input
 							type="email"
 							required
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							placeholder="you@company.com"
-							className="h-9 w-full rounded-md border border-line bg-paper px-3 text-[13px] outline-none placeholder:text-text-3 focus:border-line-strong"
 						/>
-						<Button className="h-9 w-full" size="sm">
+						<Button
+							type="submit"
+							size="default"
+							weight="medium"
+							className="w-full"
+						>
 							{state === "sending" ? "Sending…" : "Email me a link"}
 						</Button>
 						{state === "error" && (
