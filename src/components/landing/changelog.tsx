@@ -22,7 +22,7 @@ export function Changelog() {
 					title="We ship in the open"
 					size={36}
 					cta="Full changelog"
-					href="https://github.com/lobbystack/openprofit/commits/main"
+					href="/changelog"
 				>
 					Every release ships with a note, and the code is on GitHub from the
 					first commit.
@@ -31,7 +31,7 @@ export function Changelog() {
 					{ENTRIES.map((e) => (
 						<a
 							key={e.title}
-							href="https://github.com/lobbystack/openprofit/commits/main"
+							href="/changelog"
 							className="rounded-xl border border-line bg-card p-6 transition-colors duration-150 hover:border-line-strong"
 						>
 							<div className="label-mono">{e.date}</div>

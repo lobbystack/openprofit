@@ -6,9 +6,10 @@ const COLUMNS: [string, [string, string][]][] = [
 	[
 		"Product",
 		[
-			["Connectors", "/docs/connectors"],
+			["Integrations", "/integrations"],
 			["Public pages", "/docs/public-pages"],
 			["Pricing", "/#pricing"],
+			["Changelog", "/changelog"],
 		],
 	],
 	[
@@ -17,6 +18,14 @@ const COLUMNS: [string, [string, string][]][] = [
 			["Docs", "/docs"],
 			["Self-host", "/docs/self-host"],
 			["GitHub", GITHUB_URL],
+		],
+	],
+	[
+		"Compare",
+		[
+			["vs ProfitWell", "/compare/profitwell"],
+			["vs Baremetrics", "/compare/baremetrics"],
+			["vs a spreadsheet", "/compare/spreadsheet"],
 		],
 	],
 	[
@@ -33,7 +42,7 @@ export function Footer() {
 	return (
 		<footer className="border-t border-line">
 			<Container width={1024} className="py-16">
-				<div className="grid gap-10 md:grid-cols-[1fr_repeat(3,160px)]">
+				<div className="grid gap-10 md:grid-cols-[1fr_repeat(4,150px)]">
 					<div>
 						<Logo />
 						<p className="mt-3 max-w-[240px] text-[13px] text-text-2">

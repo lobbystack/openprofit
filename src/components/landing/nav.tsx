@@ -5,9 +5,9 @@ import { GITHUB_URL } from "#/lib/app";
 import { Button, Container } from "./primitives";
 
 const LINKS = [
-	["Product", "#product"],
-	["Connectors", "#connectors"],
-	["Pricing", "#pricing"],
+	["Product", "/#product"],
+	["Integrations", "/integrations"],
+	["Pricing", "/#pricing"],
 	["Docs", "/docs"],
 ];
 

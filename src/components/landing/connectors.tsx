@@ -27,7 +27,7 @@ export function Connectors() {
 						title="Connect your whole stack"
 						size={40}
 						cta="All connectors"
-						href="/docs/connectors"
+						href="/integrations"
 					>
 						Revenue from your payment processor. Costs from your AI providers,
 						hosting and infrastructure. Paste a read-only key and two years of
