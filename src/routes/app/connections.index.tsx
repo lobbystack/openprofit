@@ -154,7 +154,11 @@ function Connections() {
 										>
 											<RefreshCw
 												size={13}
-												className={busy === r.id ? "animate-spin" : ""}
+												className={
+													busy === r.id
+														? "animate-spin [animation-duration:700ms]"
+														: ""
+												}
 											/>
 										</button>
 										<button

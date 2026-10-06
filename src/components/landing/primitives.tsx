@@ -38,7 +38,7 @@ export function Button({
 	type?: "submit" | "button";
 }) {
 	const base =
-		"inline-flex items-center justify-center gap-1.5 rounded-md whitespace-nowrap font-medium transition-colors duration-150";
+		"pressable inline-flex items-center justify-center gap-1.5 rounded-md whitespace-nowrap font-medium";
 	const sizes =
 		size === "sm" ? "h-8 px-3 text-[13px]" : "h-[38px] px-5 text-[14px]";
 	const variants = {

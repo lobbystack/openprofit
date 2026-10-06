@@ -12,6 +12,10 @@
   neutral is ink mixed into paper at a percentage.
 */
 :root {
+  /* Motion curves. Built-in CSS easings are too soft. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
   --paper: #f7f7f4;
   --ink: #26251e;
   --ink-2: #3b3a33;
@@ -248,14 +252,13 @@
 /* Interaction and accessibility, applied system-wide. */
 @layer base {
   /* Feedback on press, not on release. */
-  :where(button):not(:disabled) {
+  :where(button, .pressable):not(:disabled) {
     transition-property: color, background-color, border-color, transform;
     transition-duration: 150ms;
-    transition-timing-function: ease-out;
+    transition-timing-function: var(--ease-out);
   }
-  :where(button):not(:disabled):active {
+  :where(button, .pressable):not(:disabled):active {
     transform: scale(0.97);
-    transition-duration: 80ms;
   }
 
   /* Keyboard focus is always visible. */
@@ -273,7 +276,9 @@
 
 /* Menus open from their trigger: scale and fade in, on the compositor. */
 @utility menu-panel {
-  transition: opacity 160ms ease-out, transform 160ms ease-out;
+  transition:
+    opacity 150ms var(--ease-out),
+    transform 150ms var(--ease-out);
   @starting-style {
     opacity: 0;
     transform: scale(0.96);
@@ -295,8 +300,11 @@
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
   }
-  :where(button):active {
+  :where(button, .pressable):active {
     transform: none !important;
+  }
+  .rise {
+    animation: none !important;
   }
 }
 
@@ -315,4 +323,17 @@
     --text-2: color-mix(in oklab, var(--ink) 80%, transparent);
     --text-3: color-mix(in oklab, var(--ink) 65%, transparent);
   }
+}
+
+/* First-visit entrance on the landing hero: fade up, staggered with
+   --rise-delay. Seen once per visit, so it can afford to be noticed. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@utility rise {
+  animation: rise 400ms var(--ease-out) both;
+  animation-delay: var(--rise-delay, 0ms);
 }

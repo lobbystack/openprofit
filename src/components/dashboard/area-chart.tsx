@@ -3,7 +3,7 @@ import { monthLabel } from "#/lib/format";
 
 // Values glide from what's on screen to the new target. A new target
 // mid-animation starts from the current frame, so it never jumps.
-function useGlide(target: number[], ms = 420) {
+function useGlide(target: number[], ms = 280) {
 	const [shown, setShown] = useState(target);
 	const current = useRef(target);
 	const key = target.join(",");
@@ -20,7 +20,8 @@ function useGlide(target: number[], ms = 420) {
 		let frame = 0;
 		const tick = (now: number) => {
 			const k = Math.min(1, (now - start) / ms);
-			const e = 1 - (1 - k) ** 3;
+			// Ease-in-out: the line is moving on screen, not entering.
+			const e = k < 0.5 ? 8 * k ** 4 : 1 - (-2 * k + 2) ** 4 / 2;
 			const next = target.map((v, i) => from[i] + (v - from[i]) * e);
 			current.current = next;
 			setShown(next);

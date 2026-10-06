@@ -18,7 +18,7 @@ export function Hero() {
 				<Container className="flex flex-col items-center pt-16 pb-12 text-center">
 					<a
 						href={GITHUB_URL}
-						className="flex h-[30px] items-center gap-2 rounded-full border border-line-strong bg-paper pr-1 pl-3 text-[12px] font-medium"
+						className="rise flex h-[30px] items-center gap-2 rounded-full border border-line-strong bg-paper pr-1 pl-3 text-[12px] font-medium"
 					>
 						Open source, MIT licensed
 						<span className="flex h-[22px] items-center gap-1 rounded-full bg-surface-2 px-2 text-text-2">
@@ -26,15 +26,24 @@ export function Hero() {
 							<ArrowRight size={12} />
 						</span>
 					</a>
-					<h1 className="display mt-6 max-w-[760px] text-[40px] md:text-[56px]">
+					<h1
+						className="rise display mt-6 max-w-[760px] text-[40px] md:text-[56px]"
+						style={{ "--rise-delay": "60ms" } as React.CSSProperties}
+					>
 						Finance for developers
 					</h1>
-					<p className="prose-landing mt-5 max-w-[640px]">
+					<p
+						className="rise prose-landing mt-5 max-w-[640px]"
+						style={{ "--rise-delay": "120ms" } as React.CSSProperties}
+					>
 						OpenProfit is the open-source finance dashboard for developers. It
 						brings your revenue and every bill you pay into one place, so you
 						know what each product earns after costs.
 					</p>
-					<div className="mt-8 flex gap-3">
+					<div
+						className="rise mt-8 flex gap-3"
+						style={{ "--rise-delay": "180ms" } as React.CSSProperties}
+					>
 						<Button href="/login">Start for free</Button>
 						<Button variant="secondary" href="/docs/self-host">
 							Self-host
