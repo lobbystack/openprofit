@@ -42,7 +42,7 @@ OpenProfit runs its scheduled jobs inside the server process:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `SYNC_SCHEDULER` | `on` | Set to `off` to stop the sync, weekly email and usage ping jobs, for example on a second instance that shares the database |
+| `SYNC_SCHEDULER` | `on` | Set to `off` to stop the sync, weekly email and usage ping jobs, for example on a second instance that shares the database. The weekly email job runs hourly and sends to each workspace at the day and hour picked in **Settings**, in that workspace’s time zone |
 
 ## Hosted mode
 
@@ -60,10 +60,10 @@ These variables apply only to the hosted version at openprofit.dev. A self-hoste
 
 OpenProfit sends nothing to PostHog unless you set `POSTHOG_KEY`. With it set, the server and the browser each send PostHog their own data:
 
-- **Product events**: the server records sign-ups, workspaces created, connections added, removed or failing to sync, products created and removed, product assignments and checkouts. Each event carries the user id, the workspace id as a PostHog group, and fields such as the provider or plan. Events never include names, email addresses, amounts or keys. A user who switches off **Product analytics** in **Settings** sends no events. Scheduled sync failures have no user, so they use the distinct id `workspace-events`
+- **Product events**: the server records sign-ups, workspaces created, connections added, removed or failing to sync, products created and removed, product assignments and checkouts. Each event carries the user id, the workspace id as a PostHog group, and fields such as the provider or plan. Events never include names, email addresses, amounts or keys. A user who switches off **Analytics** in **Settings** sends no events. Scheduled sync failures have no user, so they use the distinct id `workspace-events`
 - **Workspace properties**: with `APP_MODE=cloud`, the server sets each workspace group's properties when the workspace is created and once a day. They hold the plan, base currency, creation date, the member and product counts, and a connection count per provider
 - **Web analytics**: the browser loads PostHog on every page in cookieless mode. PostHog stores nothing on the device and counts visitors with a daily hash of IP address and user agent. In your PostHog project, turn on **Cookieless server hash mode** under **Project Settings** > **Web analytics**, or PostHog drops these events
-- **Cookies and session replay**: visitors see a cookie banner. Once they accept, PostHog sets its cookies, records session replays, and links the browser to the signed-in user id. They can change their choice under **Cookie settings** in the footer or **Replay and cookies** in **Settings**
+- **Session replay**: each user has an **Analytics** switch in **Settings**, on by default, that also controls product events. While it's on, the browser opts PostHog in on app pages, which lets PostHog set its cookies, link the browser to the user id and workspace, and record replays of `/app` and `/onboarding` only, with all text and inputs masked. Switching it off or signing out deletes PostHog's cookies and storage and returns the browser to cookieless mode. Replays also need session replay turned on in your PostHog project. The site shows no cookie banner
 
 Browser requests go to `/ingest` on your own domain, so ad blockers let them through. To send them to a PostHog managed reverse proxy instead, set `POSTHOG_PROXY`.
 

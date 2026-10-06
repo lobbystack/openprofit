@@ -7,9 +7,21 @@ import { createWorkspace, rememberWorkspace } from "./workspace.server";
 
 export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "CHF"] as const;
 
+// An IANA time zone name the server's Intl knows, such as "Europe/Paris".
+export const TimeZone = z.string().refine((timeZone) => {
+	try {
+		new Intl.DateTimeFormat("en-US", { timeZone });
+		return true;
+	} catch {
+		return false;
+	}
+});
+
 const Input = z.object({
 	name: z.string().trim().min(1).max(60),
 	currency: z.enum(CURRENCIES),
+	// The browser's, so the weekly email defaults to Monday 09:00 local time.
+	timezone: TimeZone.optional(),
 });
 
 export const createWorkspaceFn = createServerFn({ method: "POST" })

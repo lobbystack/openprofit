@@ -64,7 +64,7 @@ const slugify = (s: string) =>
 
 export async function createWorkspace(
 	userId: string,
-	input: { name: string; currency: string },
+	input: { name: string; currency: string; timezone?: string },
 ) {
 	const base = slugify(input.name);
 	let slug = base;
@@ -77,7 +77,12 @@ export async function createWorkspace(
 	}
 	const [ws] = await db
 		.insert(schema.workspaces)
-		.values({ name: input.name, slug, baseCurrency: input.currency })
+		.values({
+			name: input.name,
+			slug,
+			baseCurrency: input.currency,
+			timezone: input.timezone,
+		})
 		.returning();
 	await db
 		.insert(schema.workspaceMembers)

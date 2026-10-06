@@ -3,16 +3,21 @@ import {
 	useLoaderData,
 	useRouter,
 } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { PageHeader } from "#/components/app/shell";
-import { readConsent, setConsent } from "#/lib/analytics";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import {
+	PageHeader,
+	SettingsRow,
+	SettingsSection,
+	Switch,
+} from "#/components/app/shell";
 import { PLANS, type Plan } from "#/lib/plans";
 import { openPortal, startCheckout } from "#/server/billing.functions";
 import { CURRENCIES } from "#/server/onboarding.functions";
 import {
 	CADENCES,
 	getSettings,
-	sendWeeklyNow,
+	type Settings as SettingsData,
 	updateSettings,
 } from "#/server/settings.functions";
 
@@ -35,225 +40,253 @@ const planLabel = (p: Plan) =>
 		? `${PLANS[p].name} · $${PLANS[p].priceCents / 100} / mo`
 		: PLANS[p].name;
 
-const input =
-	"h-8 rounded-md border border-line bg-paper px-2.5 text-[13px] outline-none focus:border-line-strong";
+// Monday first; values are JavaScript's getDay() numbers.
+const DAYS: [number, string][] = [
+	[1, "Monday"],
+	[2, "Tuesday"],
+	[3, "Wednesday"],
+	[4, "Thursday"],
+	[5, "Friday"],
+	[6, "Saturday"],
+	[0, "Sunday"],
+];
+const HOURS = Array.from({ length: 24 }, (_, h) => h);
+const browserZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+const field =
+	"h-8 w-full rounded-md border border-line bg-paper px-2.5 text-[13px] outline-none focus:border-line-strong";
+
+type Patch = Parameters<typeof updateSettings>[0]["data"];
 
 function Settings() {
-	const s = Route.useLoaderData();
+	const loaded = Route.useLoaderData();
 	const router = useRouter();
+	const update = useServerFn(updateSettings);
+	const checkoutFn = useServerFn(startCheckout);
+	const portal = useServerFn(openPortal);
+	const posthog = useLoaderData({ from: "__root__", select: (d) => !!d.key });
+	// Shows each change at once; the loader catches up after the save.
+	const [draft, setDraft] = useState<Partial<SettingsData>>({});
+	const s = { ...loaded, ...draft };
 	const [name, setName] = useState(s.name);
-	const [sent, setSent] = useState(false);
 	const [billingError, setBillingError] = useState<string | null>(null);
-	const analytics = useLoaderData({ from: "__root__" });
-	const [tracking, setTracking] = useState(analytics.consent === "yes");
-	// The root loader is cached for the session; the cookie is current, and
-	// follows the banner too.
-	useEffect(() => {
-		const sync = () => setTracking(readConsent() === "yes");
-		sync();
-		window.addEventListener("op:consent", sync);
-		return () => window.removeEventListener("op:consent", sync);
-	}, []);
 
-	const checkout = (plan: "indie" | "pro") => startCheckout({ data: { plan } });
+	const checkout = (plan: "indie" | "pro") => checkoutFn({ data: { plan } });
 
-	async function save(patch: Parameters<typeof updateSettings>[0]["data"]) {
-		await updateSettings({ data: patch });
-		router.invalidate();
+	async function save(patch: Patch) {
+		setDraft((d) => ({ ...d, ...patch }));
+		try {
+			await update({ data: patch });
+		} finally {
+			await router.invalidate({ sync: true });
+			setDraft({});
+		}
 	}
+	// The weekly schedule follows the time zone of whoever last saved it.
+	const saveWeekly = (patch: Patch) =>
+		save({ ...patch, timezone: browserZone() });
+	const saveName = () => {
+		const next = name.trim();
+		if (next && next !== s.name) void save({ name: next });
+	};
 
 	return (
 		<>
 			<PageHeader title="Settings" />
-			<div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
-				<ul className="divide-y divide-line">
-					<Row label="Workspace">
-						<input
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							onBlur={() => name.trim() && name !== s.name && save({ name })}
-							className={`${input} w-64`}
-						/>
-					</Row>
-					<Row label="Base currency">
-						<select
-							value={s.currency}
-							onChange={(e) =>
-								save({
-									currency: e.target.value as (typeof CURRENCIES)[number],
-								})
-							}
-							className={`${input} num`}
-						>
-							{CURRENCIES.map((c) => (
-								<option key={c} value={c}>
-									{c}
+
+			<SettingsSection title="Workspace">
+				<SettingsRow label="Name" htmlFor="ws-name">
+					<input
+						id="ws-name"
+						value={name}
+						maxLength={60}
+						onChange={(e) => setName(e.target.value)}
+						onBlur={saveName}
+						onKeyDown={(e) => e.key === "Enter" && saveName()}
+						className={field}
+					/>
+				</SettingsRow>
+				<SettingsRow
+					label="Base currency"
+					description="We convert every amount to this currency."
+					htmlFor="ws-currency"
+				>
+					<select
+						id="ws-currency"
+						value={s.currency}
+						onChange={(e) =>
+							save({
+								currency: e.target.value as (typeof CURRENCIES)[number],
+							})
+						}
+						className={`${field} num`}
+					>
+						{CURRENCIES.map((c) => (
+							<option key={c} value={c}>
+								{c}
+							</option>
+						))}
+					</select>
+				</SettingsRow>
+				<SettingsRow
+					label="Sync"
+					description="We pull new data from your connections on this schedule."
+					htmlFor="ws-sync"
+				>
+					<select
+						id="ws-sync"
+						value={
+							s.cloud
+								? Math.max(s.cadenceMinutes, PLANS[s.plan].cadenceMinutes)
+								: s.cadenceMinutes
+						}
+						onChange={(e) =>
+							save({
+								cadenceMinutes: Number(
+									e.target.value,
+								) as (typeof CADENCES)[number],
+							})
+						}
+						className={field}
+					>
+						{CADENCES.map((c) => {
+							const locked = s.cloud && c < PLANS[s.plan].cadenceMinutes;
+							const needs = locked
+								? c <= PLANS.pro.cadenceMinutes
+									? "Pro"
+									: "Indie"
+								: null;
+							return (
+								<option key={c} value={c} disabled={locked}>
+									{cadenceLabel(c)}
+									{needs ? ` (${needs})` : ""}
 								</option>
-							))}
-						</select>
-					</Row>
-					<Row label="Sync">
-						<select
-							value={
-								s.cloud
-									? Math.max(s.cadenceMinutes, PLANS[s.plan].cadenceMinutes)
-									: s.cadenceMinutes
-							}
-							onChange={(e) =>
-								save({
-									cadenceMinutes: Number(
-										e.target.value,
-									) as (typeof CADENCES)[number],
-								})
-							}
-							className={input}
-						>
-							{CADENCES.map((c) => {
-								const locked = s.cloud && c < PLANS[s.plan].cadenceMinutes;
-								const needs = locked
-									? c <= PLANS.pro.cadenceMinutes
-										? "Pro"
-										: "Indie"
-									: null;
-								return (
-									<option key={c} value={c} disabled={locked}>
-										{cadenceLabel(c)}
-										{needs ? ` (${needs})` : ""}
+							);
+						})}
+					</select>
+				</SettingsRow>
+			</SettingsSection>
+
+			<SettingsSection title="Plan">
+				{s.cloud ? (
+					<SettingsRow
+						label="Plan"
+						description={
+							billingError ? (
+								<span className="text-negative">{billingError}</span>
+							) : (
+								planLabel(s.plan)
+							)
+						}
+					>
+						{s.plan === "free" && (
+							<Go onError={setBillingError} onClick={() => checkout("indie")}>
+								Indie, $19
+							</Go>
+						)}
+						{s.plan !== "pro" && (
+							<Go onError={setBillingError} onClick={() => checkout("pro")}>
+								Pro, $49
+							</Go>
+						)}
+						{s.plan !== "free" && (
+							<Go onError={setBillingError} onClick={() => portal()}>
+								Manage billing
+							</Go>
+						)}
+					</SettingsRow>
+				) : (
+					<SettingsRow label="Plan">
+						<span className="text-[13px] text-text-2">Self-hosted</span>
+					</SettingsRow>
+				)}
+			</SettingsSection>
+
+			<SettingsSection title="Email">
+				<SettingsRow
+					label="Weekly email"
+					description="We email every member last week's revenue, costs and profit."
+					htmlFor="weekly"
+				>
+					<Switch
+						id="weekly"
+						checked={s.weeklyEmail}
+						onChange={(weeklyEmail) => saveWeekly({ weeklyEmail })}
+					/>
+				</SettingsRow>
+				{s.weeklyEmail && (
+					<>
+						<SettingsRow label="Day" htmlFor="weekly-day">
+							<select
+								id="weekly-day"
+								value={s.weeklyDay}
+								onChange={(e) =>
+									saveWeekly({ weeklyDay: Number(e.target.value) })
+								}
+								className={field}
+							>
+								{DAYS.map(([d, label]) => (
+									<option key={d} value={d}>
+										{label}
 									</option>
-								);
-							})}
-						</select>
-					</Row>
-					{s.cloud ? (
-						<Row label="Plan">
-							{planLabel(s.plan)}
-							{s.plan === "free" && (
-								<>
-									<Go
-										onError={setBillingError}
-										onClick={() => checkout("indie")}
-									>
-										Indie, $19
-									</Go>
-									<Go onError={setBillingError} onClick={() => checkout("pro")}>
-										Pro, $49
-									</Go>
-								</>
-							)}
-							{s.plan === "indie" && (
-								<Go onError={setBillingError} onClick={() => checkout("pro")}>
-									Pro, $49
-								</Go>
-							)}
-							{s.plan !== "free" && (
-								<Go
-									onError={setBillingError}
-									onClick={() => openPortal()}
-									className="ml-auto"
-								>
-									Manage billing
-								</Go>
-							)}
-							{billingError && (
-								<span className="text-[12px] text-negative">
-									{billingError}
-								</span>
-							)}
-						</Row>
-					) : (
-						<Row label="Plan">Self-hosted</Row>
-					)}
-					{analytics.key && (
-						<Row label="Product analytics">
-							<button
-								type="button"
-								onClick={() => save({ analytics: !s.analytics })}
-								className="flex items-center gap-1.5 text-[13px] hover:text-ink"
+								))}
+							</select>
+						</SettingsRow>
+						<SettingsRow
+							label="Time"
+							description={`In ${s.timezone}`}
+							htmlFor="weekly-hour"
+						>
+							<select
+								id="weekly-hour"
+								value={s.weeklyHour}
+								onChange={(e) =>
+									saveWeekly({ weeklyHour: Number(e.target.value) })
+								}
+								className={`${field} num`}
 							>
-								<span
-									className={`h-1.5 w-1.5 rounded-full ${s.analytics ? "bg-positive" : "bg-surface-4"}`}
-								/>
-								{s.analytics
-									? "On: actions you take here, linked to your user id"
-									: "Off"}
-							</button>
-						</Row>
-					)}
-					{analytics.key && (
-						<Row label="Replay and cookies">
-							<button
-								type="button"
-								onClick={() => {
-									setConsent(!tracking);
-									setTracking(!tracking);
-								}}
-								className="flex items-center gap-1.5 text-[13px] hover:text-ink"
-							>
-								<span
-									className={`h-1.5 w-1.5 rounded-full ${tracking ? "bg-positive" : "bg-surface-4"}`}
-								/>
-								{tracking
-									? "On in this browser, amounts hidden"
-									: "Off in this browser"}
-							</button>
-						</Row>
+								{HOURS.map((h) => (
+									<option key={h} value={h}>
+										{`${String(h).padStart(2, "0")}:00`}
+									</option>
+								))}
+							</select>
+						</SettingsRow>
+					</>
+				)}
+			</SettingsSection>
+
+			{(posthog || !s.cloud) && (
+				<SettingsSection title="Privacy">
+					{posthog && (
+						<SettingsRow
+							label="Analytics"
+							description="We log your actions in the app and record your sessions there, with all text hidden."
+							htmlFor="analytics"
+						>
+							<Switch
+								id="analytics"
+								checked={s.analytics}
+								onChange={(analytics) => save({ analytics })}
+							/>
+						</SettingsRow>
 					)}
 					{!s.cloud && (
-						<Row label="Usage ping">
-							<button
-								type="button"
-								onClick={() => save({ telemetry: !s.telemetry })}
-								className="flex items-center gap-1.5 text-[13px] hover:text-ink"
-							>
-								<span
-									className={`h-1.5 w-1.5 rounded-full ${s.telemetry ? "bg-positive" : "bg-surface-4"}`}
-								/>
-								{s.telemetry
-									? "Daily: version and counts, nothing else"
-									: "Off"}
-							</button>
-						</Row>
-					)}
-					<Row label="Weekly email">
-						<button
-							type="button"
-							onClick={() => save({ weeklyEmail: !s.weeklyEmail })}
-							className="flex items-center gap-1.5 text-[13px] hover:text-ink"
+						<SettingsRow
+							label="Usage ping"
+							description="Once a day we send the version and counts, nothing else."
+							htmlFor="telemetry"
 						>
-							<span
-								className={`h-1.5 w-1.5 rounded-full ${s.weeklyEmail ? "bg-positive" : "bg-surface-4"}`}
+							<Switch
+								id="telemetry"
+								checked={s.telemetry}
+								onChange={(telemetry) => save({ telemetry })}
 							/>
-							{s.weeklyEmail ? `Monday 09:00, ${s.email}` : "Off"}
-						</button>
-						<button
-							type="button"
-							onClick={async () => {
-								await sendWeeklyNow();
-								setSent(true);
-							}}
-							className="ml-auto text-[12px] text-text-3 hover:text-ink"
-						>
-							{sent ? "Sent" : "Send now"}
-						</button>
-					</Row>
-				</ul>
-			</div>
+						</SettingsRow>
+					)}
+				</SettingsSection>
+			)}
 		</>
-	);
-}
-
-function Row({
-	label,
-	children,
-}: {
-	label: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<li className="flex h-12 items-center px-4 text-[13px]">
-			<span className="w-40 text-text-2">{label}</span>
-			<span className="flex flex-1 items-center gap-3">{children}</span>
-		</li>
 	);
 }
 
@@ -261,12 +294,10 @@ function Row({
 function Go({
 	onClick,
 	onError,
-	className = "",
 	children,
 }: {
 	onClick: () => Promise<{ url: string }>;
 	onError?: (message: string) => void;
-	className?: string;
 	children: React.ReactNode;
 }) {
 	return (
@@ -280,7 +311,7 @@ function Go({
 					onError?.(err instanceof Error ? err.message : String(err));
 				}
 			}}
-			className={`h-7 rounded-md border border-line bg-paper px-2.5 text-[12px] hover:border-line-strong ${className}`}
+			className="h-8 rounded-md border border-line bg-paper px-2.5 text-[13px] hover:border-line-strong"
 		>
 			{children}
 		</button>

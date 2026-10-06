@@ -3,78 +3,89 @@ import type { PostHog } from "posthog-js";
 // PostHog in the browser: web analytics and session replay. Product events
 // are captured on the server (src/server/analytics.server.ts).
 //
-// PostHog loads on every page. Until the visitor accepts in the cookie
-// banner, and after they decline, it runs in cookieless mode: it stores
-// nothing on the device, PostHog counts visitors with a daily hash on its
-// servers, and replay is off. Accepting turns on its cookies and replay.
-//
-// The choice lives in the op_consent cookie. The server reads it to render
-// the banner without a flash, and PostHog reads it as its consent record.
+// PostHog loads on every page in cookieless mode: it stores nothing on the
+// device and counts visitors with a daily hash on its servers. The one way
+// out is a signed-in user's Analytics switch in Settings (user.analytics,
+// on by default). While it is on, the app opts PostHog in, which lets it use
+// its cookies and storage, links the browser to the user and workspace, and
+// records replays on app pages only. Off, or signed out, goes back to
+// cookieless and deletes what PostHog stored.
 
-export const CONSENT_COOKIE = "op_consent";
-export type Consent = "yes" | "no" | null;
 export type AnalyticsConfig = {
 	// Project token, or null when POSTHOG_KEY is unset (self-host default).
 	key: string | null;
 	apiHost: string;
 	uiHost: string;
-	consent: Consent;
 };
 
+type Who = { user: string; workspace?: string; plan?: string; on: boolean };
+
 let ph: Promise<PostHog> | null = null;
-let who: { user: string; workspace?: string; plan?: string } | null = null;
+let who: Who | null = null;
+
+const inApp = (path = location.pathname) =>
+	/^\/(app|onboarding)(\/|$)/.test(path);
 
 // Replay never shows digits, and inside the app it shows no text at all:
 // amounts, names and emails are all masked.
 const mask = (text: string) =>
-	/^\/(app|onboarding)(\/|$)/.test(location.pathname)
-		? text.replace(/\S/g, "*")
-		: text.replace(/\d/g, "*");
+	inApp() ? text.replace(/\S/g, "*") : text.replace(/\d/g, "*");
 
-// PostHog may store 1 or 0 in the same cookie; read them as yes and no.
-export const parseConsent = (v?: string | null): Consent =>
-	v === "yes" || v === "1" ? "yes" : v === "no" || v === "0" ? "no" : null;
-
-export function readConsent(): Consent {
-	return parseConsent(document.cookie.match(/(?:^|; )op_consent=([^;]*)/)?.[1]);
+// Back to cookieless: stops replay, deletes PostHog's cookies and local
+// storage, then its consent record. Tab ids stay in session storage, so
+// clear those too.
+function forget(p: PostHog) {
+	p.opt_out_capturing();
+	p.clear_opt_in_out_capturing();
+	for (const k of Object.keys(sessionStorage))
+		if (k.startsWith("ph_")) sessionStorage.removeItem(k);
 }
 
-function remember(yes: boolean) {
-	const secure = location.protocol === "https:" ? "; Secure" : "";
-	// biome-ignore lint/suspicious/noDocumentCookie: the Cookie Store API is missing in some browsers
-	document.cookie = `${CONSENT_COOKIE}=${yes ? "yes" : "no"}; Path=/; Max-Age=${60 * 60 * 24 * 180}; SameSite=Lax${secure}`;
-}
+const record = (p: PostHog, path?: string) =>
+	who?.on && inApp(path) ? p.startSessionRecording() : p.stopSessionRecording();
 
-const consented = (p: PostHog) => p.get_explicit_consent_status() === "granted";
-
-// Links this browser to the user id and workspace, only after consent.
+// Follows the user's switch, then the current page.
 function apply(p: PostHog) {
-	if (!who || !consented(p)) return;
-	p.identify(who.user);
-	if (who.workspace)
-		p.group("workspace", who.workspace, who.plan ? { plan: who.plan } : {});
+	const granted = p.get_explicit_consent_status() === "granted";
+	if (who?.on) {
+		if (!granted) p.opt_in_capturing({ captureEventName: false });
+		p.identify(who.user);
+		if (who.workspace)
+			p.group("workspace", who.workspace, who.plan ? { plan: who.plan } : {});
+	} else if (who && granted) forget(p);
+	record(p);
+}
+
+// ponytail: deletes what the cookie banner (October 2026) left in browsers
+// that accepted it. Drop it in 2027.
+function clearBanner() {
+	if (!/(?:^|; )op_consent=/.test(document.cookie)) return;
+	for (const c of document.cookie.split("; ")) {
+		const name = c.split("=")[0];
+		if (name === "op_consent" || name.startsWith("ph_"))
+			// biome-ignore lint/suspicious/noDocumentCookie: deleting cookies by name
+			document.cookie = `${name}=; Path=/; Max-Age=0`;
+	}
+	for (const k of Object.keys(localStorage))
+		if (k.startsWith("ph_")) localStorage.removeItem(k);
 }
 
 // Once per page load, from the root route.
 export function initAnalytics(cfg: AnalyticsConfig) {
 	if (!cfg.key || ph) return;
 	const key = cfg.key;
+	clearBanner();
 	ph = import("posthog-js").then(({ default: posthog }) => {
 		posthog.init(key, {
 			api_host: cfg.apiHost,
 			ui_host: cfg.uiHost,
 			defaults: "2026-08-30",
 			person_profiles: "identified_only",
-			// Cookieless until the visitor accepts. With no choice yet the
-			// default is opted out, which on_reject turns into cookieless.
+			// Cookieless unless a signed-in user's Analytics switch opts in.
 			cookieless_mode: "on_reject",
 			opt_out_capturing_by_default: true,
-			// PostHog reads yes and no from the banner's cookie instead of
-			// keeping its own record. Host-only, like op_consent, so PostHog's
-			// writes replace that cookie instead of adding a second one.
-			consent_persistence_name: CONSENT_COOKIE,
-			opt_out_capturing_persistence_type: "cookie",
-			cross_subdomain_cookie: false,
+			// Replay runs only on app pages; record() starts and stops it.
+			disable_session_recording: true,
 			capture_exceptions: true,
 			// Autocapture records which element was clicked, not its text.
 			mask_all_text: true,
@@ -99,50 +110,27 @@ export function initAnalytics(cfg: AnalyticsConfig) {
 	});
 }
 
-// The banner and the Settings row both land here; takes effect at once.
-export function setConsent(yes: boolean) {
-	const done = () => {
-		remember(yes);
-		window.dispatchEvent(new CustomEvent("op:consent", { detail: yes }));
-	};
-	// Saved before PostHog loads, so closing the tab can't lose the choice.
-	remember(yes);
-	if (!ph) return done();
-	void ph.then((p) => {
-		// Accepting switches to cookies and starts replay; declining stops
-		// replay, deletes PostHog's cookies and local storage and goes back to
-		// cookieless. Its tab ids stay in session storage, so clear those too.
-		if (yes) p.opt_in_capturing({ captureEventName: false });
-		else {
-			p.opt_out_capturing();
-			for (const k of Object.keys(sessionStorage))
-				if (k.startsWith("ph_")) sessionStorage.removeItem(k);
-		}
-		// Both store 1 or 0 in op_consent for a year; keep our value and expiry.
-		done();
-		apply(p);
-	});
+// From the root route, before each navigation renders the next page.
+export function onNavigate(path: string) {
+	void ph?.then((p) => record(p, path));
 }
 
-// Reopens the cookie banner, for the footer link.
-export function openCookieSettings() {
-	window.dispatchEvent(new CustomEvent("op:consent", { detail: null }));
-}
-
-// User id only, no email. The workspace is a PostHog group.
-export function identify(user: string, workspace?: string, plan?: string) {
-	who = { user, workspace, plan };
+// From the app and onboarding: user id only, no email. The workspace is a
+// PostHog group. `on` is the user's Analytics switch.
+export function identify(
+	user: string,
+	on: boolean,
+	workspace?: string,
+	plan?: string,
+) {
+	who = { user, on, workspace, plan };
 	void ph?.then(apply);
 }
 
-// On sign-out. reset() also deletes the consent cookie, so opt back in
-// after it, as PostHog advises, and restore the cookie.
+// On sign-out: back to cookieless.
 export function resetAnalytics() {
 	who = null;
 	void ph?.then((p) => {
-		if (!consented(p)) return;
-		p.reset();
-		p.opt_in_capturing({ captureEventName: false });
-		remember(true);
+		if (p.get_explicit_consent_status() === "granted") forget(p);
 	});
 }

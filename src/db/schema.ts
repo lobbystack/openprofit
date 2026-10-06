@@ -36,6 +36,13 @@ export const workspaces = pgTable("workspaces", {
 		.notNull()
 		.default("free"),
 	weeklyEmail: boolean("weekly_email").notNull().default(true),
+	// When the weekly email goes out: day (0 = Sunday) and hour in `timezone`,
+	// an IANA name the browser reports when the schedule is saved.
+	weeklyDay: integer("weekly_day").notNull().default(1),
+	weeklyHour: integer("weekly_hour").notNull().default(9),
+	timezone: text("timezone").notNull().default("UTC"),
+	// Set when a weekly email is claimed, so one week never gets two.
+	weeklySentAt: ms("weekly_sent_at"),
 	// Self-host: send a daily anonymous usage ping. Off until switched on.
 	telemetry: boolean("telemetry").notNull().default(false),
 	createdAt: createdAt(),

@@ -5,10 +5,12 @@ import {
 	HeadContent,
 	Outlet,
 	Scripts,
+	useRouter,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { Consent } from "../components/consent";
+import { useEffect } from "react";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import { initAnalytics, onNavigate } from "../lib/analytics";
 import { APP_NAME, SITE_DESCRIPTION, SITE_URL } from "../lib/app";
 import { THEME_SCRIPT } from "../lib/theme";
 import { getAnalyticsConfig } from "../server/analytics.functions";
@@ -44,8 +46,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		],
 		scripts: [{ children: THEME_SCRIPT }],
 	}),
-	// PostHog settings and the saved cookie choice, read during SSR so the
-	// banner renders without a flash.
+	// PostHog settings for the browser.
 	loader: () => getAnalyticsConfig(),
 	staleTime: Number.POSITIVE_INFINITY,
 	component: Root,
@@ -53,12 +54,18 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function Root() {
-	return (
-		<>
-			<Outlet />
-			<Consent />
-		</>
+	const cfg = Route.useLoaderData();
+	const router = useRouter();
+	useEffect(() => initAnalytics(cfg), [cfg]);
+	// Before the next page renders, so replay never sees a public page.
+	useEffect(
+		() =>
+			router.subscribe("onBeforeNavigate", (e) =>
+				onNavigate(e.toLocation.pathname),
+			),
+		[router],
 	);
+	return <Outlet />;
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {

@@ -29,6 +29,13 @@
       "when": 1791310959475,
       "tag": "0003_user_analytics",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791316666190,
+      "tag": "0004_weekly_schedule",
+      "breakpoints": true
     }
   ]
 }

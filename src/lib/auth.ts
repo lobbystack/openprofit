@@ -33,7 +33,8 @@ export const auth = betterAuth({
 	database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
 	socialProviders: social,
 	user: {
-		// Product analytics, on until the user switches it off in Settings.
+		// Product analytics and in-app session replay, on until the user
+		// switches Analytics off in Settings.
 		additionalFields: {
 			analytics: { type: "boolean", defaultValue: true, input: false },
 		},
