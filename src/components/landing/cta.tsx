@@ -6,7 +6,7 @@ export function Cta() {
 		<section className="bg-ink text-paper dark:bg-surface-2 dark:text-ink">
 			<Container className="flex flex-col items-center py-32 text-center">
 				<h2 className="max-w-[512px] text-[48px] leading-[1]">
-					Know if your software makes money.
+					Know how much your software makes, after costs.
 				</h2>
 				<p className="mt-5 max-w-[560px] text-[18px] leading-[28px] text-paper/60 dark:text-text-2">
 					Two minutes to connect, one number to watch. Free under $2,500 a

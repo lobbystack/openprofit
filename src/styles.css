@@ -1,6 +1,5 @@
 @import '@fontsource-variable/geist';
-@import '@fontsource/commit-mono/400.css';
-@import '@fontsource/commit-mono/500.css';
+@import '@fontsource-variable/geist-mono';
 
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
@@ -92,7 +91,7 @@
 
 @theme inline {
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Commit Mono', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --color-paper: var(--paper);
   --color-ink: var(--ink);

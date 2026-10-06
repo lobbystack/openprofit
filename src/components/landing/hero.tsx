@@ -26,14 +26,13 @@ export function Hero() {
 							<ArrowRight size={12} />
 						</span>
 					</a>
-					<div className="label-mono mt-8">Finance for developers</div>
-					<h1 className="mt-4 max-w-[760px] text-[40px] leading-[1.05] md:text-[56px]">
-						Every product you run, its revenue, its costs, what is left.
+					<h1 className="mt-6 max-w-[760px] text-[40px] leading-[1.05] md:text-[56px]">
+						Finance for developers.
 					</h1>
 					<p className="prose-landing mt-5 max-w-[640px]">
-						Revenue and costs pulled from the services you already use and
-						assigned to your products. See what each one makes, what it costs to
-						run, and which way it is going.
+						Every product you run, its revenue, its costs, what is left. Pulled
+						from the services you already use, assigned to your products,
+						updated every hour.
 					</p>
 					<div className="mt-8 flex gap-3">
 						<Button href="/login">Start for free</Button>
