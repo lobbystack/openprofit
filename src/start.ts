@@ -50,13 +50,19 @@ const edge = createMiddleware({ type: "request" }).server(
 					o.SpanKind.SERVER,
 				);
 		const res = result.response;
+		const noStore =
+			handlerType === "serverFn" ||
+			/^\/(app|onboarding)(\/|$)/.test(url.pathname);
+		// Start turns a redirect thrown by a server function into its RPC
+		// response after this middleware, so the redirect object must pass
+		// through as is; a copy reaches the browser as a bare 307.
+		if (isRedirect(res)) {
+			if (noStore) res.headers.set("Cache-Control", "no-store");
+			return result;
+		}
 		const type = res.headers.get("content-type") ?? "";
 		const headers = new Headers(res.headers);
-		if (
-			handlerType === "serverFn" ||
-			/^\/(app|onboarding)(\/|$)/.test(url.pathname)
-		)
-			headers.set("Cache-Control", "no-store");
+		if (noStore) headers.set("Cache-Control", "no-store");
 
 		// RFC 8288 links: the markdown version and the docs.
 		if (type.includes("text/html")) {
