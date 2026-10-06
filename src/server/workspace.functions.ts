@@ -4,6 +4,7 @@ import { PLANS } from "#/lib/plans";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
 import { boot } from "./boot.server";
+import { convert } from "./fx.server";
 import { overview } from "./overview.server";
 import {
 	currentWorkspace,
@@ -29,7 +30,16 @@ export const getWorkspace = createServerFn({ method: "GET" }).handler(
 		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
 		const data = await overview(ws);
 		const cap = PLANS[ws.plan].mrrCapCents;
-		const mrr = (data.series.mrr.at(-1) ?? 0) * 100;
+		// Plan limits are in US dollars; MRR is in the workspace's currency.
+		const mrr =
+			isCloud && cap !== null
+				? await convert(
+						Math.round((data.series.mrr.at(-1) ?? 0) * 100),
+						ws.baseCurrency,
+						"USD",
+						new Date().toISOString().slice(0, 10),
+					).catch(() => 0)
+				: 0;
 		return {
 			id: ws.id,
 			name: ws.name,

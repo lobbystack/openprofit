@@ -27,7 +27,7 @@ The limits use monthly recurring revenue (MRR): the monthly value of your active
 - **Stripe**: active subscriptions, with yearly and weekly prices converted to a monthly amount. Usage-based prices aren’t counted
 - **Polar**: the MRR Polar reports for your organization
 
-One-time payments don’t count toward MRR.
+One-time payments don’t count toward MRR. If your workspace uses another currency, OpenProfit converts its MRR to US dollars at the day’s European Central Bank rate before comparing it with the limits.
 
 ## When you pass a plan’s limit
 
