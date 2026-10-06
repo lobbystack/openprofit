@@ -4,6 +4,7 @@ import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins";
 import { db } from "#/db";
 import * as authSchema from "#/db/auth-schema";
+import { capture } from "#/server/analytics.server";
 import { sendEmail } from "#/server/email.server";
 import { APP_NAME } from "./app";
 
@@ -31,6 +32,25 @@ export const auth = betterAuth({
 	secret: process.env.SECRET_KEY,
 	database: drizzleAdapter(db, { provider: "pg", schema: authSchema }),
 	socialProviders: social,
+	user: {
+		// Product analytics, on until the user switches it off in Settings.
+		additionalFields: {
+			analytics: { type: "boolean", defaultValue: true, input: false },
+		},
+	},
+	databaseHooks: {
+		user: {
+			create: {
+				after: async (user, ctx) => {
+					// Social sign-in returns through /callback/:provider.
+					const social = ctx?.path?.startsWith("/callback/");
+					await capture(user.id, null, "user_signed_up", {
+						method: social ? ctx?.params?.id : "email",
+					});
+				},
+			},
+		},
+	},
 	plugins: [
 		magicLink({
 			sendMagicLink: async ({ email, url }) =>

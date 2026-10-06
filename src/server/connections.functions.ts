@@ -5,6 +5,8 @@ import { connector, connectorInfo, connectors } from "#/connectors";
 import { db, schema } from "#/db";
 import { encrypt } from "#/lib/crypto";
 import { PLANS } from "#/lib/plans";
+import { capture } from "./analytics.server";
+import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
 import { lastMonths } from "./overview.server";
 import { syncConnection } from "./sync.server";
@@ -104,7 +106,7 @@ export const testConnection = createServerFn({ method: "POST" })
 export const createConnection = createServerFn({ method: "POST" })
 	.validator(z.object({ provider: z.string(), credentials: Creds }))
 	.handler(async ({ data }) => {
-		const ws = await currentWorkspace();
+		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
 		const c = connector(data.provider);
 		const { label } = await c.verify(data.credentials);
 		// One product: lines land there. More: the user assigns them.
@@ -124,6 +126,10 @@ export const createConnection = createServerFn({ method: "POST" })
 				cadenceMinutes: isCloud ? PLANS[ws.plan].cadenceMinutes : 60,
 			})
 			.returning();
+		await capture(user.id, ws.id, "connection_added", {
+			provider: c.id,
+			kind: c.kind,
+		});
 		// First sync runs now so the overview has a number right away.
 		try {
 			await syncConnection(conn);
@@ -152,14 +158,19 @@ export const syncNow = createServerFn({ method: "POST" })
 export const deleteConnection = createServerFn({ method: "POST" })
 	.validator(z.object({ id: z.string() }))
 	.handler(async ({ data }) => {
-		const ws = await currentWorkspace();
-		await db
+		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
+		const [removed] = await db
 			.delete(schema.connections)
 			.where(
 				and(
 					eq(schema.connections.id, data.id),
 					eq(schema.connections.workspaceId, ws.id),
 				),
-			);
+			)
+			.returning({
+				provider: schema.connections.provider,
+				kind: schema.connections.kind,
+			});
+		if (removed) await capture(user.id, ws.id, "connection_removed", removed);
 		return { ok: true };
 	});

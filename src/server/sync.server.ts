@@ -9,6 +9,7 @@ import {
 import { db, schema } from "#/db";
 import { decrypt } from "#/lib/crypto";
 import { evaluateAlerts } from "./alerts.server";
+import { captureForWorkspace } from "./analytics.server";
 import { isCloud } from "./billing.server";
 import { convert } from "./fx.server";
 import { traced } from "./observability.server";
@@ -236,6 +237,17 @@ export async function syncConnection(
 				linesWritten: written,
 			})
 			.where(eq(schema.syncRuns.id, run.id));
+		captureForWorkspace(ws.id, "connection_sync_failed", {
+			provider: conn.provider,
+			kind: conn.kind,
+			trigger: !conn.lastSyncedAt
+				? "first"
+				: opts.full
+					? "manual"
+					: "scheduled",
+			status: err instanceof ConnectorError ? err.status : undefined,
+			auth_error: err instanceof ConnectorError && err.auth,
+		});
 		throw err;
 	}
 }

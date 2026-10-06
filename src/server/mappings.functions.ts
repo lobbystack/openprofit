@@ -11,6 +11,8 @@ import {
 } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "#/db";
+import { capture } from "./analytics.server";
+import { requireUser } from "./auth.server";
 import { lastMonths } from "./overview.server";
 import { currentWorkspace } from "./workspace.server";
 
@@ -108,7 +110,7 @@ export const setMapping = createServerFn({ method: "POST" })
 		}),
 	)
 	.handler(async ({ data }) => {
-		const ws = await currentWorkspace();
+		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
 		const conn = await db.query.connections.findFirst({
 			where: and(
 				eq(schema.connections.id, data.connectionId),
@@ -151,6 +153,11 @@ export const setMapping = createServerFn({ method: "POST" })
 				.where(
 					and(eq(t.connectionId, conn.id), eq(t.subUnitId, data.subUnitId)),
 				);
+		await capture(user.id, ws.id, "mapping_changed", {
+			provider: conn.provider,
+			scope: "sub_unit",
+			assigned: data.productId !== null,
+		});
 		return { ok: true };
 	});
 
@@ -160,7 +167,7 @@ export const setConnectionProduct = createServerFn({ method: "POST" })
 		z.object({ connectionId: z.string(), productId: z.string().nullable() }),
 	)
 	.handler(async ({ data }) => {
-		const ws = await currentWorkspace();
+		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
 		const conn = await db.query.connections.findFirst({
 			where: and(
 				eq(schema.connections.id, data.connectionId),
@@ -187,5 +194,10 @@ export const setConnectionProduct = createServerFn({ method: "POST" })
 						or(isNull(t.subUnitId), notInArray(t.subUnitId, mapped)),
 					),
 				);
+		await capture(user.id, ws.id, "mapping_changed", {
+			provider: conn.provider,
+			scope: "connection",
+			assigned: data.productId !== null,
+		});
 		return { ok: true };
 	});

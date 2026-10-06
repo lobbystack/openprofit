@@ -24,7 +24,8 @@ import "./env";
 
 // Server logs and traces go to PostHog over OTLP; exceptions go through
 // posthog-node for error tracking. All of it is off without POSTHOG_KEY.
-// Nothing here carries a user id.
+// Nothing here carries a user id; product events (analytics.server.ts)
+// share the posthog-node client.
 
 const key = process.env.POSTHOG_KEY;
 const host = process.env.POSTHOG_HOST ?? "https://us.i.posthog.com";
@@ -138,6 +139,7 @@ declare global {
 }
 globalThis.__openprofitObservability ??= setup();
 const o = globalThis.__openprofitObservability;
+export const posthog = o?.posthog ?? null;
 
 // Runs fn inside a span; records the error and rethrows on failure.
 export async function traced<T>(

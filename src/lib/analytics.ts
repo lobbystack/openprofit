@@ -1,8 +1,15 @@
 import type { PostHog } from "posthog-js";
 
-// PostHog in the browser. Nothing loads until the visitor accepts in the
-// cookie banner or in Settings; the choice lives in the op_consent cookie so
-// the server renders the banner (or not) without a flash.
+// PostHog in the browser: web analytics and session replay. Product events
+// are captured on the server (src/server/analytics.server.ts).
+//
+// PostHog loads on every page. Until the visitor accepts in the cookie
+// banner, and after they decline, it runs in cookieless mode: it stores
+// nothing on the device, PostHog counts visitors with a daily hash on its
+// servers, and replay is off. Accepting turns on its cookies and replay.
+//
+// The choice lives in the op_consent cookie. The server reads it to render
+// the banner without a flash, and PostHog reads it as its consent record.
 
 export const CONSENT_COOKIE = "op_consent";
 export type Consent = "yes" | "no" | null;
@@ -15,9 +22,6 @@ export type AnalyticsConfig = {
 };
 
 let ph: Promise<PostHog> | null = null;
-// Calls made before we know whether PostHog runs on this page. Null once
-// we know it does not.
-let pending: ((p: PostHog) => void)[] | null = [];
 let who: { user: string; workspace?: string; plan?: string } | null = null;
 
 // Replay never shows digits, and inside the app it shows no text at all:
@@ -32,24 +36,42 @@ export function readConsent(): Consent {
 	return (m?.[1] as Consent) ?? null;
 }
 
+function remember(yes: boolean) {
+	const secure = location.protocol === "https:" ? "; Secure" : "";
+	// biome-ignore lint/suspicious/noDocumentCookie: the Cookie Store API is missing in some browsers
+	document.cookie = `${CONSENT_COOKIE}=${yes ? "yes" : "no"}; Path=/; Max-Age=${60 * 60 * 24 * 180}; SameSite=Lax${secure}`;
+}
+
+const consented = (p: PostHog) => p.get_explicit_consent_status() === "granted";
+
+// Links this browser to the user id and workspace, only after consent.
 function apply(p: PostHog) {
-	if (!who) return;
+	if (!who || !consented(p)) return;
 	p.identify(who.user);
 	if (who.workspace)
 		p.group("workspace", who.workspace, who.plan ? { plan: who.plan } : {});
 }
 
-function start(cfg: AnalyticsConfig) {
-	if (!cfg.key) return;
+// Once per page load, from the root route.
+export function initAnalytics(cfg: AnalyticsConfig) {
+	if (!cfg.key || ph) return;
 	const key = cfg.key;
-	ph ??= import("posthog-js").then(({ default: posthog }) => {
+	ph = import("posthog-js").then(({ default: posthog }) => {
 		posthog.init(key, {
 			api_host: cfg.apiHost,
 			ui_host: cfg.uiHost,
 			defaults: "2026-08-30",
 			person_profiles: "identified_only",
-			// Declining later also deletes PostHog's cookies and storage.
-			opt_out_persistence_by_default: true,
+			// Cookieless until the visitor accepts. With no choice yet the
+			// default is opted out, which on_reject turns into cookieless.
+			cookieless_mode: "on_reject",
+			opt_out_capturing_by_default: true,
+			// PostHog reads yes and no from the banner's cookie instead of
+			// keeping its own record. Host-only, like op_consent, so PostHog's
+			// writes replace that cookie instead of adding a second one.
+			consent_persistence_name: CONSENT_COOKIE,
+			opt_out_capturing_persistence_type: "cookie",
+			cross_subdomain_cookie: false,
 			capture_exceptions: true,
 			// Autocapture records which element was clicked, not its text.
 			mask_all_text: true,
@@ -70,45 +92,36 @@ function start(cfg: AnalyticsConfig) {
 			},
 		});
 		apply(posthog);
-		for (const fn of pending ?? []) fn(posthog);
-		pending = null;
 		return posthog;
 	});
-	void ph.then(
-		(p) =>
-			p.has_opted_out_capturing() &&
-			p.opt_in_capturing({ captureEventName: false }),
-	);
-}
-
-function run(fn: (p: PostHog) => void) {
-	if (ph) void ph.then(fn);
-	else pending?.push(fn);
-}
-
-// Once per page load, from the root route.
-export function initAnalytics(cfg: AnalyticsConfig) {
-	if (cfg.key && readConsent() === "yes") start(cfg);
-	else if (!ph) pending = null;
 }
 
 // The banner and the Settings row both land here; takes effect at once.
-export function setConsent(cfg: AnalyticsConfig, yes: boolean) {
-	const secure = location.protocol === "https:" ? "; Secure" : "";
-	// biome-ignore lint/suspicious/noDocumentCookie: the Cookie Store API is missing in some browsers
-	document.cookie = `${CONSENT_COOKIE}=${yes ? "yes" : "no"}; Path=/; Max-Age=${60 * 60 * 24 * 180}; SameSite=Lax${secure}`;
-	window.dispatchEvent(new CustomEvent("op:consent", { detail: yes }));
-	if (yes) start(cfg);
-	else void ph?.then((p) => p.opt_out_capturing());
+export function setConsent(yes: boolean) {
+	const done = () => {
+		remember(yes);
+		window.dispatchEvent(new CustomEvent("op:consent", { detail: yes }));
+	};
+	if (!ph) return done();
+	void ph.then((p) => {
+		// Accepting switches to cookies and starts replay; declining stops
+		// replay, deletes PostHog's cookies and local storage and goes back to
+		// cookieless. Its tab ids stay in session storage, so clear those too.
+		if (yes) p.opt_in_capturing({ captureEventName: false });
+		else {
+			p.opt_out_capturing();
+			for (const k of Object.keys(sessionStorage))
+				if (k.startsWith("ph_")) sessionStorage.removeItem(k);
+		}
+		// Both store 1 or 0 in op_consent for a year; keep our value and expiry.
+		done();
+		apply(p);
+	});
 }
 
 // Reopens the cookie banner, for the footer link.
 export function openCookieSettings() {
 	window.dispatchEvent(new CustomEvent("op:consent", { detail: null }));
-}
-
-export function track(event: string, props?: Record<string, unknown>) {
-	run((p) => p.capture(event, props));
 }
 
 // User id only, no email. The workspace is a PostHog group.
@@ -117,7 +130,14 @@ export function identify(user: string, workspace?: string, plan?: string) {
 	void ph?.then(apply);
 }
 
+// On sign-out. reset() also deletes the consent cookie, so opt back in
+// after it, as PostHog advises, and restore the cookie.
 export function resetAnalytics() {
 	who = null;
-	void ph?.then((p) => p.reset());
+	void ph?.then((p) => {
+		if (!consented(p)) return;
+		p.reset();
+		p.opt_in_capturing({ captureEventName: false });
+		remember(true);
+	});
 }
