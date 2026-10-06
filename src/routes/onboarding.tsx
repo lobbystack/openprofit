@@ -3,6 +3,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
+import {
+	Field,
+	FieldDescription,
+	FieldGroup,
+	FieldLabel,
+} from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import {
 	NativeSelect,
@@ -50,41 +56,48 @@ function Onboarding() {
 			<h1 className="mt-6 text-[20px]">Create your workspace</h1>
 			<form
 				onSubmit={submit}
-				className="mt-6 w-full max-w-[360px] space-y-4 rounded-xl border border-line bg-card p-6"
+				className="mt-6 w-full max-w-[360px] rounded-xl border border-line bg-card p-6"
 			>
-				<label className="block">
-					<span className="label-mono">Workspace name</span>
-					<Input
-						required
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-						placeholder="Acme Labs"
-						className="mt-2"
-					/>
-				</label>
-				<label className="block">
-					<span className="label-mono">Base currency</span>
-					<NativeSelect
-						value={currency}
-						onChange={(e) =>
-							setCurrency(e.target.value as (typeof CURRENCIES)[number])
-						}
-						className="mt-2"
+				<FieldGroup>
+					<Field>
+						<FieldLabel htmlFor="ws-name">Workspace name</FieldLabel>
+						<Input
+							id="ws-name"
+							required
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							placeholder="Acme Labs"
+						/>
+					</Field>
+					<Field>
+						<FieldLabel htmlFor="ws-currency">Base currency</FieldLabel>
+						<NativeSelect
+							id="ws-currency"
+							value={currency}
+							onChange={(e) =>
+								setCurrency(e.target.value as (typeof CURRENCIES)[number])
+							}
+						>
+							{CURRENCIES.map((c) => (
+								<NativeSelectOption key={c} value={c}>
+									{c}
+								</NativeSelectOption>
+							))}
+						</NativeSelect>
+						<FieldDescription>
+							Every amount converts to this currency at the European Central
+							Bank rate for its day. You can change it in Settings.
+						</FieldDescription>
+					</Field>
+					<Button
+						type="submit"
+						size="default"
+						weight="medium"
+						className="w-full"
 					>
-						{CURRENCIES.map((c) => (
-							<NativeSelectOption key={c} value={c}>
-								{c}
-							</NativeSelectOption>
-						))}
-					</NativeSelect>
-					<span className="mt-2 block text-[12px] text-text-2">
-						Every amount converts to this currency at the European Central Bank
-						rate for its day. You can change it in Settings.
-					</span>
-				</label>
-				<Button type="submit" size="default" weight="medium" className="w-full">
-					{busy ? "Creating…" : "Create workspace"}
-				</Button>
+						{busy ? "Creating…" : "Create workspace"}
+					</Button>
+				</FieldGroup>
 			</form>
 		</main>
 	);

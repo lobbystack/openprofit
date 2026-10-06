@@ -3,6 +3,8 @@ import { useState } from "react";
 import { siGithub } from "simple-icons";
 import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
+import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { NOINDEX } from "#/lib/app";
 import { authClient } from "#/lib/auth-client";
@@ -45,7 +47,7 @@ function Login() {
 				<Logo size={20} />
 			</Link>
 			<h1 className="mt-6 text-[20px]">Sign in or create an account</h1>
-			<div className="mt-6 w-full max-w-[360px] rounded-xl border border-line bg-card p-6">
+			<Card className="mt-6 w-full max-w-[360px] p-6">
 				{state === "sent" ? (
 					mailer ? (
 						<p className="text-[14px]">
@@ -59,66 +61,74 @@ function Login() {
 						</p>
 					)
 				) : (
-					<form onSubmit={submit} className="space-y-3">
-						{social.length > 0 && (
-							<>
-								{social.map((p) => (
-									<Button
-										key={p}
-										variant="outline"
-										size="default"
-										className="w-full"
-										onClick={() =>
-											authClient.signIn.social({
-												provider: p as "github" | "google",
-												callbackURL: "/app",
-												newUserCallbackURL: "/onboarding",
-											})
-										}
-									>
-										{p === "github" && (
-											<svg
-												viewBox="0 0 24 24"
-												width="14"
-												height="14"
-												fill="currentColor"
-												role="img"
-												aria-label="GitHub"
-											>
-												<path d={siGithub.path} />
-											</svg>
-										)}
-										{p === "github"
-											? "Continue with GitHub"
-											: "Continue with Google"}
-									</Button>
-								))}
-								<div className="label-mono py-1 text-center">or</div>
-							</>
-						)}
-						<Input
-							type="email"
-							required
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="you@company.com"
-						/>
-						<Button
-							type="submit"
-							size="default"
-							weight="medium"
-							className="w-full"
-						>
-							{state === "sending" ? "Sending…" : "Email me a link"}
-						</Button>
-						{state === "error" && (
-							<p className="text-[12px] text-negative">
-								Could not send the link. Try again.
-							</p>
-						)}
+					<form onSubmit={submit}>
+						<FieldGroup className="gap-3">
+							{social.length > 0 && (
+								<>
+									{social.map((p) => (
+										<Button
+											key={p}
+											variant="outline"
+											size="default"
+											className="w-full"
+											onClick={() =>
+												authClient.signIn.social({
+													provider: p as "github" | "google",
+													callbackURL: "/app",
+													newUserCallbackURL: "/onboarding",
+												})
+											}
+										>
+											{p === "github" && (
+												<svg
+													viewBox="0 0 24 24"
+													width="14"
+													height="14"
+													fill="currentColor"
+													role="img"
+													aria-label="GitHub"
+												>
+													<path d={siGithub.path} />
+												</svg>
+											)}
+											{p === "github"
+												? "Continue with GitHub"
+												: "Continue with Google"}
+										</Button>
+									))}
+									<div className="label-mono py-1 text-center">or</div>
+								</>
+							)}
+							<Field>
+								<FieldLabel htmlFor="email" className="sr-only">
+									Email
+								</FieldLabel>
+								<Input
+									id="email"
+									type="email"
+									required
+									value={email}
+									onChange={(e) => setEmail(e.target.value)}
+									placeholder="you@company.com"
+								/>
+							</Field>
+							<Button
+								type="submit"
+								size="default"
+								weight="medium"
+								className="w-full"
+							>
+								{state === "sending" ? "Sending…" : "Email me a link"}
+							</Button>
+							{state === "error" && (
+								<p className="text-[12px] text-negative">
+									Could not send the link. Try again.
+								</p>
+							)}
+						</FieldGroup>
 					</form>
 				)}
-			</div>
+			</Card>
 		</main>
 	);
 }
