@@ -82,7 +82,7 @@ Before editing files for a substantial task:
 - Interaction rules live in `src/styles.css`, not components: press feedback on every button, visible keyboard focus, `display` utility for type 36px and up (tighter tracking), `menu-panel` for menus that open from their trigger, `chrome` for translucent sticky bars, `pressable` for links styled as buttons, `rise` for the one-time landing entrance, and `--ease-out` / `--ease-in-out` curves (UI motion stays under 300 ms; frequent actions like switching metric tiles don't animate beyond the chart), and reduced-motion, reduced-transparency and high-contrast overrides.
 - Destructive actions (removing a connection or product) confirm first and say what happens to the data.
 - No all-caps text anywhere. Headings weight 400. No shadows or gradients on the marketing pages, no emoji.
-- The logo is the wordmark only (`src/components/logo.tsx`); don't add a mark next to it.
+- The logo is the wordmark (`src/components/logo.tsx`). The mark sits before it only in the landing nav (`<Logo mark />`); everywhere else it's the wordmark alone.
 - Provider logos are full-color SVG files in `public/logos/`, taken from SVGL (svgl.app), with a `-dark` variant when SVGL has one. No SVGL logo: use the brand's official press kit, then the Simple Icons path in its brand color. Never hand-draw a logo or show a text stand-in. Record the source in `public/logos/SOURCES.md`; the steps are in CONTRIBUTING.md.
 - Never name the sites the design was modeled on in code, comments, docs or commits.
 - UI and marketing copy: short, specific, no filler or decorative text. Every sentence must be useful.
