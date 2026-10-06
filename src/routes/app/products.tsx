@@ -27,7 +27,6 @@ function Products() {
 	const fmt = (n: number) => money(n, { currency: data.currency });
 	const products = data.byProduct.filter((p) => p.id !== "shared");
 	const shared = data.byProduct.find((p) => p.id === "shared");
-	const totalRevenue = data.byProduct.reduce((a, p) => a + p.revenue, 0) || 1;
 
 	async function add(e: React.FormEvent) {
 		e.preventDefault();
@@ -74,10 +73,6 @@ function Products() {
 					<tbody className="divide-y divide-line">
 						{[...products, ...(shared ? [shared] : [])].map((p) => {
 							const profit = p.revenue - p.costs;
-							const share = p.revenue / totalRevenue;
-							const series = data.series.profit.map((v) =>
-								Math.round(v * share),
-							);
 							const isShared = p.id === "shared";
 							return (
 								<tr
@@ -96,9 +91,9 @@ function Products() {
 											: ""}
 									</td>
 									<td className="px-4 py-2">
-										{p.revenue > 0 && (
+										{p.profit.some((v) => v !== 0) && (
 											<AreaChart
-												data={series}
+												data={p.profit}
 												height={28}
 												tone="positive"
 												compact
@@ -128,7 +123,7 @@ function Products() {
 													<option value="off">Off</option>
 													<option value="full">Full</option>
 													<option value="revenue">Revenue</option>
-													<option value="percent">Percent</option>
+													<option value="percent">Growth and margin</option>
 												</select>
 												{p.publicPage !== "off" && (
 													<a
@@ -159,6 +154,14 @@ function Products() {
 								</tr>
 							);
 						})}
+						{products.length === 0 && !adding && (
+							<tr>
+								<td colSpan={8} className="px-4 py-4 text-text-2">
+									No products yet. Add one for each app or site you sell, then
+									assign its costs and revenue on each connection's page.
+								</td>
+							</tr>
+						)}
 						{adding && (
 							<tr>
 								<td colSpan={8} className="px-4 py-2">
@@ -166,7 +169,7 @@ function Products() {
 										<input
 											value={name}
 											onChange={(e) => setName(e.target.value)}
-											placeholder="Name"
+											placeholder="Product name"
 											className="h-8 w-64 rounded-md border border-line bg-paper px-2.5 text-[13px] outline-none placeholder:text-text-3 focus:border-line-strong"
 										/>
 										<button

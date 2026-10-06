@@ -42,6 +42,7 @@ export const PRODUCTS = [
 		publicPage: "off" as const,
 		revenue: 7240,
 		costs: 1890,
+		profit: SERIES.profit.map((v) => Math.round(v * 0.571)),
 	},
 	{
 		id: "shipmail",
@@ -50,6 +51,7 @@ export const PRODUCTS = [
 		publicPage: "off" as const,
 		revenue: 3610,
 		costs: 720,
+		profit: SERIES.profit.map((v) => Math.round(v * 0.308)),
 	},
 	{
 		id: "quoteflow",
@@ -58,6 +60,7 @@ export const PRODUCTS = [
 		publicPage: "off" as const,
 		revenue: 1630,
 		costs: 502,
+		profit: SERIES.profit.map((v) => Math.round(v * 0.12)),
 	},
 ];
 

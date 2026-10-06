@@ -138,6 +138,24 @@ export const updateSettings = createServerFn({ method: "POST" })
 					})
 					.where(eq(schema.costLines.id, l.id));
 			}
+			// Flat costs have no date of their own; they convert at today's rate.
+			const today = new Date().toISOString().slice(0, 10);
+			const flats = await db.query.flatCosts.findMany({
+				where: eq(schema.flatCosts.workspaceId, ws.id),
+			});
+			for (const f of flats) {
+				await db
+					.update(schema.flatCosts)
+					.set({
+						amountBaseCents: await convert(
+							f.amountCents,
+							f.currency,
+							data.currency,
+							today,
+						),
+					})
+					.where(eq(schema.flatCosts.id, f.id));
+			}
 			// MRR snapshots are stored in base cents; a sync rewrites today's.
 			const conns = await db.query.connections.findMany({
 				where: eq(schema.connections.workspaceId, ws.id),

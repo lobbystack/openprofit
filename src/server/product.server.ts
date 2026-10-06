@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "#/db";
-import { lastMonths } from "./overview.server";
+import { flatMonthlyCents, lastMonths } from "./overview.server";
 
 export type ProductSeries = {
 	currency: string;
@@ -62,14 +62,7 @@ export async function productSeries(
 	const c = new Map(cost.map((x) => [x.m, Number(x.v)]));
 	const revenue = months.map((m) => units(r.get(m) ?? 0));
 	const costs = months.map((m) => {
-		let flat = 0;
-		for (const f of flats) {
-			const start = f.startsOn.slice(0, 7);
-			const end = f.endsOn?.slice(0, 7);
-			if (m < start || (end && m > end)) continue;
-			flat +=
-				f.interval === "year" ? Math.round(f.amountCents / 12) : f.amountCents;
-		}
+		const flat = flats.reduce((a, f) => a + flatMonthlyCents(f, m), 0);
 		return units((c.get(m) ?? 0) + flat);
 	});
 	return {

@@ -53,6 +53,8 @@ export type OverviewData = {
 		publicPage: "off" | "full" | "revenue" | "percent";
 		revenue: number;
 		costs: number;
+		// Monthly profit over `months`, for the product's own trend line.
+		profit: number[];
 	}[];
 	costsByProvider: { provider: string; amount: number }[];
 	revenueBySource: { provider: string; amount: number }[];

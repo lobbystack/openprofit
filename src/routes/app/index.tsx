@@ -1,14 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Calendar } from "lucide-react";
 import { PageHeader } from "#/components/app/shell";
 import {
 	OverviewBreakdowns,
 	OverviewCard,
 } from "#/components/dashboard/overview";
+import { PeriodSelect } from "#/components/dashboard/period-select";
 import { money } from "#/lib/format";
 import {
 	type OverviewData,
-	PERIODS,
 	type PeriodKey,
 	periodSchema,
 } from "#/lib/overview";
@@ -33,12 +32,15 @@ function Overview() {
 			<>
 				<PageHeader title="Overview" />
 				<div className="mt-4 flex flex-col items-start gap-4 rounded-xl border border-line bg-card p-6">
-					<p className="text-[14px]">Connect a revenue source to see profit.</p>
+					<p className="text-[14px]">
+						Connect Stripe, Paddle or another revenue source. Profit shows here
+						after the first sync.
+					</p>
 					<Link
 						to="/app/connections"
 						className="inline-flex h-8 items-center rounded-md bg-ink px-3 text-[13px] text-paper hover:bg-ink-2"
 					>
-						Connect
+						Add a connection
 					</Link>
 				</div>
 			</>
@@ -47,25 +49,10 @@ function Overview() {
 	return (
 		<>
 			<PageHeader title="Overview" meta="All products">
-				<label className="flex h-8 items-center gap-1.5 rounded-md border border-line bg-paper px-2.5 text-[13px] hover:border-line-strong">
-					<Calendar size={13} className="text-text-3" />
-					<select
-						value={data.period.key}
-						onChange={(e) =>
-							navigate({
-								to: "/app",
-								search: { period: e.target.value as PeriodKey },
-							})
-						}
-						className="bg-transparent outline-none"
-					>
-						{PERIODS.map((p) => (
-							<option key={p.key} value={p.key}>
-								{p.label}
-							</option>
-						))}
-					</select>
-				</label>
+				<PeriodSelect
+					value={data.period.key}
+					onChange={(period) => navigate({ to: "/app", search: { period } })}
+				/>
 			</PageHeader>
 			<div className="mt-4">
 				<OverviewCard data={data} />

@@ -48,15 +48,17 @@ const nextMonth = (m: string) => {
 	return ym(new Date(Date.UTC(y, mo, 1)));
 };
 
-// Flat costs count once per month they are active. Yearly ones spread over 12.
-function flatMonthlyCents(
+// Flat costs count once per month they are active, in base cents. Yearly
+// ones spread over 12.
+export function flatMonthlyCents(
 	f: typeof schema.flatCosts.$inferSelect,
 	month: string,
 ) {
 	const start = f.startsOn.slice(0, 7);
 	const end = f.endsOn?.slice(0, 7);
 	if (month < start || (end && month > end)) return 0;
-	return f.interval === "year" ? Math.round(f.amountCents / 12) : f.amountCents;
+	const cents = f.amountBaseCents ?? f.amountCents;
+	return f.interval === "year" ? Math.round(cents / 12) : cents;
 }
 
 export async function overview(
@@ -87,6 +89,8 @@ export async function overview(
 		costByProd,
 		revBySrc,
 		costByProv,
+		revByProdMonth,
+		costByProdMonth,
 	] = await Promise.all([
 		db
 			.select({
@@ -185,6 +189,38 @@ export async function overview(
 				),
 			)
 			.groupBy(schema.costLines.provider),
+		// Per product and month over the chart's 12 months, for each
+		// product's own trend line.
+		db
+			.select({
+				productId: schema.revenueLines.productId,
+				m: month(schema.revenueLines.date),
+				v: sql<number>`sum(${schema.revenueLines.netBaseCents})`,
+			})
+			.from(schema.revenueLines)
+			.where(
+				and(
+					eq(schema.revenueLines.workspaceId, wsId),
+					gte(schema.revenueLines.date, `${months[0]}-01`),
+					lt(schema.revenueLines.date, rangeTo),
+				),
+			)
+			.groupBy(schema.revenueLines.productId, month(schema.revenueLines.date)),
+		db
+			.select({
+				productId: schema.costLines.productId,
+				m: month(schema.costLines.date),
+				v: sql<number>`sum(${schema.costLines.amountBaseCents})`,
+			})
+			.from(schema.costLines)
+			.where(
+				and(
+					eq(schema.costLines.workspaceId, wsId),
+					gte(schema.costLines.date, `${months[0]}-01`),
+					lt(schema.costLines.date, rangeTo),
+				),
+			)
+			.groupBy(schema.costLines.productId, month(schema.costLines.date)),
 	]);
 
 	const byMonth = (rows: { m: string; v: number }[]) =>
@@ -253,6 +289,23 @@ export async function overview(
 		new Map(rows.map((r) => [r.productId, Number(r.v)]));
 	const rp = sumBy(revByProd);
 	const cp = sumBy(costByProd);
+	const cell = (productId: string | null, m: string) => `${productId}|${m}`;
+	const rpm = new Map(
+		revByProdMonth.map((r) => [cell(r.productId, r.m), Number(r.v)]),
+	);
+	const cpm = new Map(
+		costByProdMonth.map((r) => [cell(r.productId, r.m), Number(r.v)]),
+	);
+	const profitSeries = (productId: string | null) =>
+		months.map((m) =>
+			units(
+				(rpm.get(cell(productId, m)) ?? 0) -
+					(cpm.get(cell(productId, m)) ?? 0) -
+					flats
+						.filter((f) => f.productId === productId)
+						.reduce((a, f) => a + flatMonthlyCents(f, m), 0),
+			),
+		);
 	const byProduct = prods.map((p) => ({
 		id: p.id,
 		name: p.name,
@@ -260,6 +313,7 @@ export async function overview(
 		publicPage: p.publicPage,
 		revenue: units(rp.get(p.id) ?? 0),
 		costs: units((cp.get(p.id) ?? 0) + (flatByProduct.get(p.id) ?? 0)),
+		profit: profitSeries(p.id),
 	}));
 	const sharedRev = rp.get(null) ?? 0;
 	const sharedCost = (cp.get(null) ?? 0) + (flatByProduct.get(null) ?? 0);
@@ -271,6 +325,7 @@ export async function overview(
 			publicPage: "off" as const,
 			revenue: units(sharedRev),
 			costs: units(sharedCost),
+			profit: profitSeries(null),
 		});
 	}
 

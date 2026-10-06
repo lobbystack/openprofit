@@ -211,6 +211,10 @@ export const flatCosts = pgTable("flat_costs", {
 	provider: text("provider").notNull().default("manual"),
 	amountCents: integer("amount_cents").notNull(),
 	currency: text("currency").notNull(),
+	// The amount in the workspace's base currency, at the rate of the day it
+	// was saved or the base currency last changed. Null on rows from before
+	// the column; readers fall back to `amount_cents`.
+	amountBaseCents: integer("amount_base_cents"),
 	interval: text("interval", { enum: ["month", "year"] }).notNull(),
 	startsOn: text("starts_on").notNull(),
 	endsOn: text("ends_on"),
@@ -281,22 +285,34 @@ export const alertRules = pgTable("alert_rules", {
 	createdAt: createdAt(),
 });
 
-export const alerts = pgTable("alerts", {
-	id: id(),
-	workspaceId: text("workspace_id")
-		.notNull()
-		.references(() => workspaces.id, { onDelete: "cascade" }),
-	ruleId: text("rule_id").references(() => alertRules.id, {
-		onDelete: "set null",
-	}),
-	title: text("title").notNull(),
-	detail: text("detail"),
-	tone: text("tone", { enum: ["negative", "pending", "ink"] })
-		.notNull()
-		.default("ink"),
-	openedAt: ms("opened_at").notNull(),
-	resolvedAt: ms("resolved_at"),
-});
+export const alerts = pgTable(
+	"alerts",
+	{
+		id: id(),
+		workspaceId: text("workspace_id")
+			.notNull()
+			.references(() => workspaces.id, { onDelete: "cascade" }),
+		ruleId: text("rule_id").references(() => alertRules.id, {
+			onDelete: "set null",
+		}),
+		// What the alert is about, such as `spike:openai`. One open alert per
+		// key, so evaluating again never opens (or emails) a second one. Null on
+		// alerts opened before the column existed.
+		key: text("key"),
+		title: text("title").notNull(),
+		detail: text("detail"),
+		tone: text("tone", { enum: ["negative", "pending", "ink"] })
+			.notNull()
+			.default("ink"),
+		openedAt: ms("opened_at").notNull(),
+		resolvedAt: ms("resolved_at"),
+	},
+	(t) => [
+		uniqueIndex("alerts_ws_open_key")
+			.on(t.workspaceId, t.key)
+			.where(sql`${t.resolvedAt} is null`),
+	],
+);
 
 // Pings received from self-hosted instances that opted in.
 export const telemetryPings = pgTable("telemetry_pings", {

@@ -42,6 +42,8 @@ export function OverviewCard({
 }
 
 export const providerLabel = (id: string) => {
+	// Flat costs added on the Costs page.
+	if (id === "manual") return "Flat costs";
 	const p = PROVIDERS[id];
 	return (
 		<>
