@@ -27,7 +27,7 @@ export function Hero() {
 						</span>
 					</a>
 					<h1 className="mt-6 max-w-[760px] text-[40px] leading-[1.05] md:text-[56px]">
-						See where your money goes
+						Finance for developers
 					</h1>
 					<p className="prose-landing mt-5 max-w-[640px]">
 						OpenProfit is the open-source finance dashboard for developers. It

@@ -15,23 +15,45 @@
 
 ## About OpenProfit
 
-OpenProfit is the open-source finance dashboard for people who build software. It pulls your revenue and your costs from the services you already use, assigns them to the products you run, and shows you the numbers that matter: what each product brings in, what it costs to run, what is left, and which way it is going.
+OpenProfit is the open-source finance dashboard for developers. It brings your revenue and every bill you pay into one place, so you know what each product earns after costs.
 
-It exists because that view does not exist anywhere else. Revenue lives in your payment processor. Costs live in a dozen billing pages: AI providers, hosting, databases, email, domains. Each one shows its own slice, in its own currency, on its own calendar. Adding them up is a spreadsheet you update twice and abandon.
-
-## One view of your business
-
-- **Revenue, wherever it comes from.** Payment processors today, app stores and marketplaces next. Net of fees and refunds, with MRR and active customers alongside.
-- **Costs, pulled automatically.** AI providers, hosting, infrastructure, usage-based services. Read from their billing APIs down to the project or workspace that incurred them. Anything without an API goes in as a flat monthly or yearly amount.
-- **Products as the unit.** An OpenAI project, a Vercel project, a Railway service, a Cloudflare zone: each maps to one of your products. Costs land where they belong, so you see margin per product, not just a total.
-- **One currency, one calendar.** Every line converts to your base currency at that day's European Central Bank rate. Pick a period and compare it with the one before.
-- **Signals, not noise.** Alerts when a cost doubles, a margin drops under a floor, or a sync fails. A weekly email with the three numbers and the biggest mover.
-- **Build in public, if you want.** A public page per product with full numbers, revenue only, or percentages. Your call.
-- **Yours to run.** MIT licensed. One container to self-host, or the hosted version with nothing to operate.
+Revenue lives in your payment processor. Costs live in a dozen billing pages: AI providers, hosting, databases, email, domains. Each shows its own slice, in its own currency. OpenProfit pulls them together and assigns every line to the product it belongs to.
 
 <p align="center">
   <img src=".github/dashboard.png" alt="Overview: revenue, costs, profit, MRR and customers across three products, with a twelve-month chart and breakdowns by product and provider" width="900">
 </p>
+
+### Connect your whole stack
+
+Revenue from your payment processor. Costs from your AI providers, hosting and infrastructure. Paste a read-only key and two years of history fill in.
+
+### Measure what you keep
+
+Revenue minus fees, refunds, AI bills and hosting, for every product you run. The number on screen is the one you keep.
+
+- **Net of fees and refunds.** Processor fees and refunds come off before any number is shown.
+- **One currency.** Paid in euros, billed in dollars. Everything converts at that day's rate.
+- **Profit per product.** Three products on one OpenAI account, and you still see which one pays for itself.
+
+### Every bill in one place
+
+OpenAI, Anthropic, Vercel, Cloudflare and Railway report what they charged you, by day and by project. Subscriptions without an API take ten seconds to add.
+
+- **Usage billing.** Per-token and per-GB charges come from the provider's own billing data.
+- **Flat subscriptions.** Supabase, Resend, domains. Enter the price once and it counts every month.
+- **Mapped to products.** Point each OpenAI or Vercel project at the product it serves. The rest stays shared until you decide.
+
+### Know when something moves
+
+A Monday email with last week's revenue, costs and profit. An alert the day a bill doubles, a margin drops or a sync fails.
+
+- **Weekly summary.** Three numbers and the one change worth knowing. Free on every plan.
+- **Spike alerts.** An email the day a bill doubles or a margin drops. Slack and Discord next.
+- **Public pages.** Share a product's numbers on a page anyone can open. You choose what shows.
+
+### Open source, yours to run
+
+MIT licensed. One Docker image with Postgres inside, or point it at your own. Your API keys never leave your server.
 
 ## Key features
 
@@ -65,7 +87,9 @@ Paddle, Lemon Squeezy, App Store, Google Play, Supabase and Resend are next. A c
 
 ## Getting started
 
-The quickest way is the hosted version at [openprofit.dev](https://openprofit.dev). Sign in, create a workspace, connect one revenue source and one cost source, and the overview fills in. Free under $2,500 MRR; paid plans add faster syncs, and every connector is in every plan.
+The quickest way is the hosted version at [openprofit.dev](https://openprofit.dev). Sign in, create a workspace, connect one revenue source and one cost source, and the overview fills in.
+
+Free while your products make under $2,500 a month combined. After that, a flat price that never grows with your revenue. Every connector on every plan.
 
 ## Self-hosting
 
