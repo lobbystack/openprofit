@@ -25,8 +25,8 @@ Each mode reveals a different amount of detail:
 | Mode | What visitors see |
 | --- | --- |
 | Off | Nothing. The address returns a 404 error |
-| Full | Revenue, costs, profit and the monthly chart |
+| Full | Revenue, costs, profit, margin and the monthly chart |
 | Revenue | Revenue and the chart, without costs |
-| Percent | Month-over-month change only, without amounts |
+| Growth and margin | Revenue change from last month and this month’s margin, without amounts |
 
 The page reads the same data as your dashboard, so it updates after every sync. Each page ends with a “Built with OpenProfit” line.

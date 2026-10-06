@@ -84,7 +84,7 @@ Credentials are encrypted with AES-256-GCM. Traffic is encrypted in transit. Acc
 
 Depending on where you live, you may have the right to access, correct, export or delete your personal information, to object to or restrict some processing, to withdraw consent, and to complain to a supervisory authority. In Canada this includes rights under PIPEDA and Quebec's Act respecting the protection of personal information in the private sector; in the EEA and UK, rights under the GDPR; in California, rights under the CCPA.
 
-You can do most of this yourself: edit the workspace in Settings, remove connections and products, and delete the workspace. To stop product analytics and session replay, switch off **Analytics** in Settings. For anything else, email hello@openprofit.dev. We respond within 30 days and may ask you to confirm your identity first.
+You can do most of this yourself: edit the workspace in Settings, and remove connections, products and flat costs. To delete a workspace or your account, email hello@openprofit.dev. To stop product analytics and session replay, switch off **Analytics** in Settings. For anything else, email hello@openprofit.dev. We respond within 30 days and may ask you to confirm your identity first.
 
 Quebec residents: the person in charge of the protection of personal information is the operator named above, reachable at the same address.
 

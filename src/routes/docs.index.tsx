@@ -4,7 +4,7 @@ export const Route = createFileRoute("/docs/")({
 	beforeLoad: () => {
 		throw redirect({
 			to: "/docs/$slug",
-			params: { slug: "self-host" },
+			params: { slug: "connectors" },
 			statusCode: 301,
 		});
 	},

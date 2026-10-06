@@ -10,7 +10,7 @@ This page explains how connectors pull your revenue and costs and how to assign 
 
 ## How a connection works
 
-A connector reads data from a provider with a read-only key that you create in the provider’s dashboard. In OpenProfit, open **Connections**, pick a provider, paste the key and click **Test**. The test calls the provider and shows the account name it found. Click **Connect** to save the key, encrypted with `SECRET_KEY`.
+A connector reads data from a provider with an API key that you create in the provider’s dashboard. Use a read-only key where the provider offers one; the table below lists the access each connector needs, and OpenProfit only sends read requests. In OpenProfit, open **Connections**, pick a provider, paste the key and click **Test**. The test calls the provider and shows the account name it found. Click **Connect** to save the key, encrypted with `SECRET_KEY`.
 
 The first sync pulls two years of history, or one year on the free hosted plan. Later syncs reread from three days before the last successful sync and replace what changed, so a provider’s late corrections update the earlier figure instead of adding a second one. After an outage, the next sync covers every day it missed. Lines the provider no longer reports are deleted, within the history its API returns.
 
@@ -22,7 +22,7 @@ Each connector needs a key with specific permissions. The table lists what each 
 
 | Provider | What it reads | Key |
 | --- | --- | --- |
-| [Stripe](/integrations/stripe) | Balance transactions, and active subscriptions for monthly recurring revenue (MRR) and customer count | Restricted key with read access to Balance, Balance transaction sources, Charges, Checkout Sessions, Invoices and Subscriptions |
+| [Stripe](/integrations/stripe) | Balance transactions, and active subscriptions for monthly recurring revenue (MRR) and the subscription count | Restricted key with read access to Balance, Balance transaction sources, Charges, Checkout Sessions, Invoices and Subscriptions |
 | [Polar](/integrations/polar) | Daily revenue and net revenue, MRR, active subscriptions | Organization access token with `organizations:read` and `metrics:read` |
 | [Paddle](/integrations/paddle) | Completed transactions without tax, Paddle’s fee, refunds, credits and chargebacks, MRR, paying subscribers | API key with `transaction.read`, `adjustment.read` and `metrics.read` |
 | [Lemon Squeezy](/integrations/lemonsqueezy) | Orders and subscription renewals without tax, refunds, MRR, active subscriptions. No fees: the API doesn’t report them | API key, which has full access |
@@ -81,8 +81,8 @@ Lines with no grouping or an unassigned one go to the product you pick at the to
 
 ## Add costs that have no API
 
-Services like Supabase or a domain registrar don’t expose billing data, and neither do Resend’s marketing plans and add-ons. Add them on the **Costs** page as a fixed amount per month or per year, with a start date. OpenProfit counts them from that date and spreads a yearly amount evenly over 12 months.
+Services like Supabase or a domain registrar don’t expose billing data, and neither do Resend’s marketing plans and add-ons. Add them on the **Costs** page with **Add flat cost**: a name, an amount per month or per year, a start date, an optional end date and the product the cost belongs to. OpenProfit counts the cost in every month from the start date to the end date and spreads a yearly amount evenly over 12 months. To stop counting a cost from a given month, set an end date; removing it takes it out of past months too.
 
 ## Currency conversion
 
-Each workspace has one base currency, set during onboarding and editable in **Settings**. OpenProfit converts every line in another currency at the European Central Bank (ECB) rate for that line’s date. When you change the base currency, every stored line converts again at its own date’s rate.
+Each workspace has one base currency, set during onboarding and editable in **Settings**. OpenProfit converts every line in another currency at the European Central Bank (ECB) rate for that line’s date. Flat costs have no date of their own, so they convert at the rate of the day you save them. When you change the base currency, every stored line converts again at its own date’s rate, and flat costs at that day’s rate.

@@ -8,8 +8,8 @@ const files = import.meta.glob("../docs/*.md", {
 }) as Record<string, string>;
 
 const ORDER = [
-	"self-host",
 	"connectors",
+	"self-host",
 	"environment",
 	"public-pages",
 	"billing",
