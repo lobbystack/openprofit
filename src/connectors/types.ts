@@ -76,14 +76,17 @@ export class ConnectorError extends Error {
 export async function getJson<T>(
 	url: string,
 	init: RequestInit & { headers: Record<string, string> },
-	retries = 5,
 ): Promise<T> {
-	const res = await fetch(url, init);
-	// Rate limited: wait as long as Retry-After (seconds) says, then retry.
-	if (res.status === 429 && retries > 0) {
-		const wait = Number(res.headers.get("retry-after")) || 10;
-		await new Promise((r) => setTimeout(r, Math.min(wait, 60) * 1000));
-		return getJson(url, init, retries - 1);
+	let res = await fetch(url, init);
+	// Rate limited: wait as long as Retry-After (seconds) says, else 5s
+	// doubling, each wait capped at 30s, up to 4 retries. GitHub signals
+	// secondary limits as a 403 with retry-after.
+	const limited = (r: Response) =>
+		r.status === 429 || (r.status === 403 && r.headers.has("retry-after"));
+	for (let i = 0; i < 4 && limited(res); i++) {
+		const wait = Number(res.headers.get("retry-after")) || 2 ** i * 5;
+		await new Promise((r) => setTimeout(r, Math.min(wait, 30) * 1000));
+		res = await fetch(url, init);
 	}
 	if (!res.ok) {
 		const text = await res.text().catch(() => "");

@@ -27,9 +27,13 @@ Each connector needs a key with specific permissions. The table lists what each 
 | [RevenueCat](/integrations/revenuecat) | Monthly revenue net of taxes and proceeds after store commission, MRR, active subscriptions | Secret API key (v2) with `project_configuration:projects:read` and `charts_metrics:overview:read` |
 | [OpenAI](/integrations/openai) | Daily cost by project and line item | Organization admin key |
 | [Anthropic](/integrations/anthropic) | Daily cost by workspace and description | Admin key, available on organization accounts only |
+| [OpenRouter](/integrations/openrouter) | Daily cost by API key and model for the last 30 days, excluding bring-your-own-key (BYOK) usage | Management key, which can also create and delete API keys |
 | [Vercel](/integrations/vercel) | Daily charges per project | Access token scoped to the team |
 | [Cloudflare](/integrations/cloudflare) | Billable usage, or invoices when usage isn’t available | API token with Account · Billing · Read and Account · Account Settings · Read |
 | [Railway](/integrations/railway) | Monthly CPU, memory, egress, disk and backup usage per project, priced at Railway’s published rates | Account token, or a workspace token with its workspace id |
+| [DigitalOcean](/integrations/digitalocean) | Monthly cost per project and product, from invoices and the current month’s preview | Personal access token with the `billing:read` and `account:read` scopes |
+| [GitHub](/integrations/github) | Daily net usage cost per SKU and repository, for an organization or a personal account | Fine-grained token with Administration read access on the organization, or Plan read access on your account |
+| [Twilio](/integrations/twilio) | Daily total usage cost, subaccounts included | Restricted API key with `/twilio/billing/usage/read` |
 
 ## Assign costs to products
 
@@ -37,9 +41,12 @@ OpenProfit assigns a cost to a product through the provider’s own grouping. Th
 
 - **OpenAI**: projects
 - **Anthropic**: workspaces
+- **OpenRouter**: API keys
 - **Vercel**: projects
 - **Railway**: projects
 - **Cloudflare**: zones
+- **DigitalOcean**: projects
+- **GitHub**: repositories
 
 Open a connection from **Connections** to see each grouping with this month’s spend, then pick the product it serves. Past lines move to that product too.
 

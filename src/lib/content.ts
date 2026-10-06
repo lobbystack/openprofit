@@ -53,9 +53,13 @@ export const INTEGRATIONS = order(
 		"revenuecat",
 		"openai",
 		"anthropic",
+		"openrouter",
 		"vercel",
 		"cloudflare",
 		"railway",
+		"digitalocean",
+		"github",
+		"twilio",
 	],
 );
 

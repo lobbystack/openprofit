@@ -2,9 +2,11 @@ import {
 	siAnthropic,
 	siAppstore,
 	siCloudflare,
+	siDigitalocean,
 	siGithub,
 	siGoogleplay,
 	siLemonsqueezy,
+	siOpenrouter,
 	siPaddle,
 	siRailway,
 	siResend,
@@ -20,6 +22,10 @@ type Provider = {
 	v1: boolean;
 	path?: string;
 };
+
+// Not in simple-icons; drawn by hand: a ring around four dots.
+const TWILIO_PATH =
+	"M12 0a12 12 0 1 0 0 24a12 12 0 1 0 0-24zm0 3.2a8.8 8.8 0 1 1 0 17.6a8.8 8.8 0 1 1 0-17.6zM6.6 8.8a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0-4.4 0zm6.4 0a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0-4.4 0zm-6.4 6.4a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0-4.4 0zm6.4 0a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0-4.4 0z";
 
 export const PROVIDERS: Record<string, Provider> = {
 	stripe: { name: "Stripe", kind: "revenue", v1: true, path: siStripe.path },
@@ -56,6 +62,12 @@ export const PROVIDERS: Record<string, Provider> = {
 		v1: true,
 		path: siAnthropic.path,
 	},
+	openrouter: {
+		name: "OpenRouter",
+		kind: "cost",
+		v1: true,
+		path: siOpenrouter.path,
+	},
 	vercel: { name: "Vercel", kind: "cost", v1: true, path: siVercel.path },
 	cloudflare: {
 		name: "Cloudflare",
@@ -71,7 +83,14 @@ export const PROVIDERS: Record<string, Provider> = {
 		path: siSupabase.path,
 	},
 	resend: { name: "Resend", kind: "cost", v1: true, path: siResend.path },
-	github: { name: "GitHub", kind: "cost", v1: false, path: siGithub.path },
+	github: { name: "GitHub", kind: "cost", v1: true, path: siGithub.path },
+	digitalocean: {
+		name: "DigitalOcean",
+		kind: "cost",
+		v1: true,
+		path: siDigitalocean.path,
+	},
+	twilio: { name: "Twilio", kind: "cost", v1: true, path: TWILIO_PATH },
 };
 
 export type ProviderId = keyof typeof PROVIDERS;
