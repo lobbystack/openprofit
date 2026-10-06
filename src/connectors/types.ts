@@ -77,7 +77,16 @@ export async function getJson<T>(
 	url: string,
 	init: RequestInit & { headers: Record<string, string> },
 ): Promise<T> {
-	const res = await fetch(url, init);
+	let res = await fetch(url, init);
+	// Rate limited: wait as long as the provider asks (capped), up to 3 times.
+	// GitHub signals secondary limits as a 403 with retry-after.
+	const limited = (r: Response) =>
+		r.status === 429 || (r.status === 403 && r.headers.has("retry-after"));
+	for (let i = 0; i < 3 && limited(res); i++) {
+		const wait = Number(res.headers.get("retry-after")) || 2 ** i * 5;
+		await new Promise((r) => setTimeout(r, Math.min(wait, 60) * 1000));
+		res = await fetch(url, init);
+	}
 	if (!res.ok) {
 		const text = await res.text().catch(() => "");
 		throw new ConnectorError(

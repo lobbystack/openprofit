@@ -81,9 +81,12 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 | Vercel | Cost | Daily charges per project |
 | Cloudflare | Cost | Billable usage, or invoices as fallback |
 | Railway | Cost | Monthly usage per project at published rates |
+| DigitalOcean | Cost | Monthly cost per project and product |
+| GitHub | Cost | Daily usage cost per SKU and repository |
+| Twilio | Cost | Daily total usage cost |
 | Flat costs | Cost | Any monthly or yearly amount, typed in |
 
-Paddle, Lemon Squeezy, App Store, Google Play, Supabase and Resend are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.
+Paddle, Lemon Squeezy, App Store, Google Play, Supabase, Resend and OpenRouter are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.
 
 ## Getting started
 

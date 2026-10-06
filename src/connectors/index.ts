@@ -7,6 +7,9 @@ import "./anthropic";
 import "./railway";
 import "./vercel";
 import "./cloudflare";
+import "./digitalocean";
+import "./github";
+import "./twilio";
 
 export type { ConnectorInfo } from "./registry";
 export { connector, connectorInfo, connectors } from "./registry";
