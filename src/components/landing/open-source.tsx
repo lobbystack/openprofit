@@ -14,13 +14,13 @@ export function OpenSource() {
 		<Section muted>
 			<Container className="grid gap-10 py-24 md:grid-cols-[304px_1fr] md:gap-20">
 				<SectionHeader
-					title="Open source. Self-host it if you'd rather."
+					title="Open source, yours to run"
 					size={36}
 					cta="Read the source"
 					href={GITHUB_URL}
 				>
-					One Docker image with Postgres built in, or bring your own. Your API
-					keys never leave your server.
+					MIT licensed. One Docker image with Postgres inside, or point it at
+					your own. Your API keys never leave your server.
 				</SectionHeader>
 				<div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line">
 					{STATS.map(([n, l]) => (

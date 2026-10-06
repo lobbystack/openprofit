@@ -24,14 +24,14 @@ export function Connectors() {
 			<Container className="grid items-center gap-10 py-20 md:grid-cols-[384px_1fr]">
 				<div id="connectors">
 					<SectionHeader
-						title="Connect what you already use."
+						title="Connect your whole stack"
 						size={40}
 						cta="All connectors"
 						href="/docs/connectors"
 					>
-						Revenue from your payment processor. Costs from your AI, hosting and
-						infrastructure bills. Anything else, typed in once and counted every
-						month.
+						Revenue from your payment processor. Costs from your AI providers,
+						hosting and infrastructure. Paste a read-only key and two years of
+						history fill in.
 					</SectionHeader>
 				</div>
 				<div className="relative h-[300px]">

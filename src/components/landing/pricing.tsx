@@ -11,7 +11,8 @@ const PLANS = [
 			"Unlimited products",
 			"Sync every 6 hours",
 			"12 months of history",
-			"Weekly email",
+			"Weekly email and alerts",
+			"Public pages",
 		],
 		cta: "Start for free",
 		primary: false,
@@ -20,13 +21,7 @@ const PLANS = [
 		name: "Indie",
 		price: "$19",
 		note: "Up to $25,000 MRR",
-		features: [
-			"Everything in Free",
-			"Sync every hour",
-			"Spike alerts",
-			"24 months of history",
-			"Public pages",
-		],
+		features: ["Everything in Free", "Sync every hour", "24 months of history"],
 		cta: "Start for free",
 		primary: true,
 	},
@@ -37,8 +32,6 @@ const PLANS = [
 		features: [
 			"Everything in Indie",
 			"Sync every 15 minutes",
-			"Team seats",
-			"Unlimited history",
 			"Priority support",
 		],
 		cta: "Start for free",
@@ -51,10 +44,10 @@ export function Pricing() {
 		<Section>
 			<Container className="py-24">
 				<div id="pricing">
-					<SectionHeader align="center" title="Free until you make money.">
-						Every connector is free at every tier. You pay once the products in
-						your workspace pass $2,500 a month, and the price never scales with
-						your revenue.
+					<SectionHeader align="center" title="Free until you make money">
+						Free while your products make under $2,500 a month combined. After
+						that, a flat price that never grows with your revenue. Every
+						connector on every plan.
 					</SectionHeader>
 				</div>
 				<div className="mt-14 grid gap-3 md:grid-cols-3">

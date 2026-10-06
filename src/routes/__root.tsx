@@ -20,7 +20,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		meta: [
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ title: APP_NAME },
+			{ title: `${APP_NAME}: finance for developers` },
+			{
+				name: "description",
+				content:
+					"The open-source finance dashboard for developers. Revenue and every bill you pay in one place, with profit per product.",
+			},
 		],
 		links: [{ rel: "stylesheet", href: appCss }],
 		scripts: [{ children: THEME_SCRIPT }],

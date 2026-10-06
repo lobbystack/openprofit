@@ -31,13 +31,12 @@ export function FeatureProfit() {
 					<SectionHeader
 						eyebrow="Profit"
 						tone="positive"
-						title="Profit, not just revenue."
+						title="Measure what you keep"
 						cta="See the dashboard"
 						href="/login"
 					>
-						Revenue dashboards are everywhere. This one subtracts processor
-						fees, refunds, your AI bills and your hosting, so the number you see
-						is the number you keep.
+						Revenue minus fees, refunds, AI bills and hosting, for every product
+						you run. The number on screen is the one you keep.
 					</SectionHeader>
 				</div>
 				<div className="mt-14 rounded-xl border border-line bg-card">
@@ -57,17 +56,17 @@ export function FeatureProfit() {
 						{
 							icon: <Scale size={16} />,
 							title: "Net of fees and refunds",
-							text: "Processor fees, refunds and the tax a merchant of record keeps are taken out before anything is shown.",
+							text: "Processor fees and refunds come off before any number is shown.",
 						},
 						{
 							icon: <Globe size={16} />,
-							title: "One base currency",
-							text: "Polar pays in euros, AWS bills in dollars. Everything converts at the daily ECB rate into the currency you pick.",
+							title: "One currency",
+							text: "Paid in euros, billed in dollars. Everything converts at that day's rate.",
 						},
 						{
 							icon: <Layers size={16} />,
-							title: "Every product on its own",
-							text: "Run three products off one OpenAI account and still see which one makes money.",
+							title: "Profit per product",
+							text: "Three products on one OpenAI account, and you still see which one pays for itself.",
 						},
 					]}
 				/>
@@ -86,13 +85,13 @@ export function FeatureCosts() {
 				<SectionHeader
 					eyebrow="Costs"
 					tone="negative"
-					title="Every cost, pulled for you."
+					title="Every bill in one place"
 					cta="How syncing works"
 					href="/docs/connectors"
 				>
 					OpenAI, Anthropic, Vercel, Cloudflare and Railway report what they
-					billed you, by day. Flat plans like Supabase or a domain are typed in
-					once and counted every month.
+					charged you, by day and by project. Subscriptions without an API take
+					ten seconds to add.
 				</SectionHeader>
 				<div className="mt-14 grid gap-4 md:grid-cols-[1fr_320px]">
 					<div className="rounded-xl border border-line bg-card">
@@ -152,17 +151,17 @@ export function FeatureCosts() {
 						{
 							icon: <RefreshCw size={16} />,
 							title: "Usage billing",
-							text: "Per-token, per-request and per-GB costs come straight from the provider, not from an estimate.",
+							text: "Per-token and per-GB charges come from the provider's own billing data.",
 						},
 						{
 							icon: <Receipt size={16} />,
 							title: "Flat subscriptions",
-							text: "Presets for the plans developers pay for. Pick one, confirm the price, done.",
+							text: "Supabase, Resend, domains. Enter the price once and it counts every month.",
 						},
 						{
 							icon: <Tag size={16} />,
 							title: "Mapped to products",
-							text: "An OpenAI project, a Vercel project or a Railway service points at the product it serves. The rest sits in a shared bucket until you decide.",
+							text: "Point each OpenAI or Vercel project at the product it serves. The rest stays shared until you decide.",
 						},
 					]}
 				/>
@@ -178,13 +177,12 @@ export function FeatureWeekly() {
 				<SectionHeader
 					eyebrow="Weekly"
 					tone="ink"
-					title="Know every Monday."
+					title="Know when something moves"
 					cta="See an example"
 					href="/docs/connectors"
 				>
-					A short email with last week's revenue, costs and profit, and the one
-					cost that moved most. Alerts the day a bill doubles, a margin drops or
-					a sync fails.
+					A Monday email with last week's revenue, costs and profit. An alert
+					the day a bill doubles, a margin drops or a sync fails.
 				</SectionHeader>
 				<div className="mt-14 grid gap-4 md:grid-cols-2">
 					<div className="rounded-xl border border-line bg-card p-6">
@@ -247,17 +245,17 @@ export function FeatureWeekly() {
 						{
 							icon: <Mail size={16} />,
 							title: "Weekly summary",
-							text: "Free for everyone. Three numbers and the change worth knowing about, nothing else.",
+							text: "Three numbers and the one change worth knowing. Free on every plan.",
 						},
 						{
 							icon: <Bell size={16} />,
 							title: "Spike alerts",
-							text: "A bill that doubles, a margin that drops, a sync that fails. Email first, Slack and Discord next.",
+							text: "An email the day a bill doubles or a margin drops. Slack and Discord next.",
 						},
 						{
 							icon: <Coins size={16} />,
-							title: "Public page",
-							text: "Share a product’s revenue, costs and profit on a page anyone can read. You pick what shows.",
+							title: "Public pages",
+							text: "Share a product's numbers on a page anyone can open. You choose what shows.",
 						},
 					]}
 				/>

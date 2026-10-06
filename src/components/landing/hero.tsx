@@ -27,12 +27,12 @@ export function Hero() {
 						</span>
 					</a>
 					<h1 className="mt-6 max-w-[760px] text-[40px] leading-[1.05] md:text-[56px]">
-						Finance for developers.
+						See where your money goes
 					</h1>
 					<p className="prose-landing mt-5 max-w-[640px]">
-						Every product you run, its revenue, its costs, what is left. Pulled
-						from the services you already use, assigned to your products,
-						updated every hour.
+						OpenProfit is the open-source finance dashboard for developers. It
+						brings your revenue and every bill you pay into one place, so you
+						know what each product earns after costs.
 					</p>
 					<div className="mt-8 flex gap-3">
 						<Button href="/login">Start for free</Button>
