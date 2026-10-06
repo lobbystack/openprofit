@@ -247,7 +247,10 @@ export const syncRuns = pgTable("sync_runs", {
 		.references(() => connections.id, { onDelete: "cascade" }),
 	startedAt: ms("started_at").notNull(),
 	finishedAt: ms("finished_at"),
-	status: text("status", { enum: ["running", "ok", "error"] }).notNull(),
+	// auth_error: the provider rejected the key; no automatic retries.
+	status: text("status", {
+		enum: ["running", "ok", "error", "auth_error"],
+	}).notNull(),
 	linesWritten: integer("lines_written").notNull().default(0),
 	error: text("error"),
 });

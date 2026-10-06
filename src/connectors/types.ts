@@ -58,6 +58,10 @@ export type Connector = {
 		createUrl: string;
 		scopes: string[];
 	};
+	// How many days back a fetch returns complete results. Sync deletes stored
+	// lines the fetch no longer returns only within this window (and the sync
+	// range). Unset: the whole range is complete. 0: never delete.
+	historyDays?: number;
 	// Prove the credentials work. Returns a label for the connection.
 	verify(creds: Credentials): Promise<{ label: string }>;
 	fetchRevenue?(creds: Credentials, range: SyncRange): Promise<RevenueLine[]>;
@@ -69,6 +73,9 @@ export class ConnectorError extends Error {
 	constructor(
 		message: string,
 		public status?: number,
+		// The provider rejected the credentials (401, or 403 that is not a
+		// rate limit). Sync stops retrying these on its own.
+		public auth = false,
 	) {
 		super(message);
 		this.name = "ConnectorError";
@@ -95,6 +102,8 @@ export async function getJson<T>(
 		throw new ConnectorError(
 			`${res.status} ${res.statusText}${text ? `: ${text.slice(0, 200)}` : ""}`,
 			res.status,
+			res.status === 401 ||
+				(res.status === 403 && !res.headers.has("retry-after")),
 		);
 	}
 	return res.json() as Promise<T>;
@@ -119,4 +128,40 @@ export function splitCents(total: number, weights: number[]) {
 		parts[i]++;
 	}
 	return parts;
+}
+
+// Split a fee across sub-units by their usage. With no usage at all, the
+// whole fee goes to "" (the connection itself). Zero parts are left out.
+export function splitByUsage(
+	total: number,
+	usage: Map<string, number>,
+): [string, number][] {
+	const used = [...usage].filter(([, n]) => n > 0);
+	if (!used.length) return total ? [["", total]] : [];
+	const parts = splitCents(
+		total,
+		used.map(([, n]) => n),
+	);
+	return used
+		.map(([name], i): [string, number] => [name, parts[i]])
+		.filter(([, cents]) => cents !== 0);
+}
+
+// MRR snapshots, one per currency (sync converts each to base and adds
+// them up), and the customer count.
+export function mrrSnapshots(
+	date: string,
+	byCurrency: Map<string, number>,
+	customers: number,
+): Snapshot[] {
+	const out: Snapshot[] = [...byCurrency].map(([currency, mrr]) => ({
+		date,
+		metric: "mrr_base_cents",
+		value: Math.round(mrr),
+		currency,
+	}));
+	if (!out.length)
+		out.push({ date, metric: "mrr_base_cents", value: 0, currency: "USD" });
+	out.push({ date, metric: "customers", value: customers });
+	return out;
 }

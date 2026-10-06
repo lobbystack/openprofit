@@ -1,6 +1,11 @@
 import { and, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm";
 import { connector, connectors } from "#/connectors";
-import type { Credentials } from "#/connectors/types";
+import {
+	ConnectorError,
+	type Credentials,
+	type Snapshot,
+	type SyncRange,
+} from "#/connectors/types";
 import { db, schema } from "#/db";
 import { decrypt } from "#/lib/crypto";
 import { evaluateAlerts } from "./alerts.server";
@@ -11,13 +16,29 @@ import { traced } from "./observability.server";
 type Connection = typeof schema.connections.$inferSelect;
 type Workspace = typeof schema.workspaces.$inferSelect;
 
-const today = () => new Date().toISOString().slice(0, 10);
-const daysAgo = (n: number) =>
-	new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
-
 // Days a full sync reads: two years, one on the free hosted plan.
 const historyDays = (ws: Workspace) =>
 	isCloud && ws.plan === "free" ? 365 : 730;
+
+const DAY = 86_400_000;
+const isoDay = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+
+// The range a sync reads. A first or full sync reads the plan's history. A
+// regular sync rereads 3 days before the last successful one, so an outage
+// is covered once the provider is back; never more than the plan's history.
+export function syncRange(
+	lastSyncedAt: number | null,
+	days: number,
+	full = false,
+	now = Date.now(),
+) {
+	const oldest = now - days * DAY;
+	const from =
+		full || !lastSyncedAt
+			? oldest
+			: Math.max(Math.min(now, lastSyncedAt) - 3 * DAY, oldest);
+	return { from: isoDay(from), to: isoDay(now) };
+}
 
 // Pull one connection. Lines are upserted by external id, so re-running a
 // range is safe. `full` rereads the plan's whole history.
@@ -34,14 +55,15 @@ export async function syncConnection(
 		.values({ connectionId: conn.id, startedAt: Date.now(), status: "running" })
 		.returning();
 
-	// First sync pulls the plan's history; later runs pull a short tail.
-	const from = daysAgo(opts.full || !conn.lastSyncedAt ? historyDays(ws) : 3);
-	const range = { from, to: today() };
+	const range = syncRange(conn.lastSyncedAt, historyDays(ws), opts.full);
+	// A paused connection stays paused; Sync now still runs it.
+	const paused = conn.status === "paused";
 	let written = 0;
 
 	try {
 		const c = connector(conn.provider);
 		const creds = await decrypt<Credentials>(conn.credentials);
+		const window = deletionWindow(range, c.historyDays);
 		const mappings = await db.query.productMappings.findMany({
 			where: eq(schema.productMappings.connectionId, conn.id),
 		});
@@ -90,7 +112,7 @@ export async function syncConnection(
 			await deleteMissing(
 				schema.revenueLines,
 				conn.id,
-				range,
+				window,
 				new Set(lines.map((l) => l.externalId)),
 			);
 		}
@@ -132,15 +154,16 @@ export async function syncConnection(
 			await deleteMissing(
 				schema.costLines,
 				conn.id,
-				range,
+				window,
 				new Set(lines.map((l) => `${conn.id}:${l.externalId}`)),
 			);
 		}
 
 		if (c.fetchSnapshots) {
-			const snaps = await c.fetchSnapshots(creds, range.to);
-			for (const s of snaps) {
-				// `mrr_base_cents` arrives in the provider's currency; stored in base.
+			// Snapshots of one metric and day add up; `mrr_base_cents` arrives
+			// per currency and is converted to base before summing.
+			const sums = new Map<string, Snapshot>();
+			for (const s of await c.fetchSnapshots(creds, range.to)) {
 				const value =
 					s.metric === "mrr_base_cents"
 						? await convert(
@@ -150,13 +173,19 @@ export async function syncConnection(
 								s.date,
 							)
 						: s.value;
+				const key = `${s.date}:${s.metric}`;
+				const sum = sums.get(key);
+				if (sum) sum.value += value;
+				else sums.set(key, { date: s.date, metric: s.metric, value });
+			}
+			for (const { date, metric, value } of sums.values()) {
 				await db
 					.insert(schema.metricSnapshots)
 					.values({
 						workspaceId: ws.id,
 						connectionId: conn.id,
-						date: s.date,
-						metric: s.metric,
+						date,
+						metric,
 						value,
 					})
 					.onConflictDoUpdate({
@@ -173,7 +202,11 @@ export async function syncConnection(
 
 		await db
 			.update(schema.connections)
-			.set({ status: "active", lastSyncedAt: Date.now(), lastError: null })
+			.set({
+				status: paused ? "paused" : "active",
+				lastSyncedAt: Date.now(),
+				lastError: null,
+			})
 			.where(eq(schema.connections.id, conn.id));
 		await db
 			.update(schema.syncRuns)
@@ -184,13 +217,14 @@ export async function syncConnection(
 		const message = err instanceof Error ? err.message : String(err);
 		await db
 			.update(schema.connections)
-			.set({ status: "error", lastError: message })
+			.set({ status: paused ? "paused" : "error", lastError: message })
 			.where(eq(schema.connections.id, conn.id));
 		await db
 			.update(schema.syncRuns)
 			.set({
 				finishedAt: Date.now(),
-				status: "error",
+				status:
+					err instanceof ConnectorError && err.auth ? "auth_error" : "error",
 				error: message,
 				linesWritten: written,
 			})
@@ -199,24 +233,36 @@ export async function syncConnection(
 	}
 }
 
-// Deletes the connection's synced lines that the provider no longer returns.
-// Only lines dated inside [from, to] go, since the fetch covered those days
-// in full. A monthly line is dated the 1st, so a range that starts mid-month
-// never deletes it. Runs only after the whole range was fetched without error.
+// The days whose stored lines a fetch can delete: the sync range, cut to the
+// connector's complete history. Null when the connector never deletes.
+function deletionWindow(range: SyncRange, days?: number) {
+	if (days === 0) return null;
+	if (days === undefined) return range;
+	const from = isoDay(Date.now() - days * DAY);
+	return { from: from > range.from ? from : range.from, to: range.to };
+}
+
+// Deletes the connection's synced lines that the provider no longer returns,
+// dated inside the window. A monthly line is dated the 1st, so a window that
+// starts mid-month never deletes it. Runs only after the whole range was
+// fetched without error. A fetch that returned nothing deletes nothing: an
+// empty answer is more often a provider hiccup than every line going away,
+// and the next fetch with lines cleans up.
 async function deleteMissing(
 	table: typeof schema.revenueLines | typeof schema.costLines,
 	connectionId: string,
-	range: { from: string; to: string },
+	window: SyncRange | null,
 	keep: Set<string>,
 ) {
+	if (!window || !keep.size || window.from > window.to) return;
 	const rows = await db
 		.select({ id: table.id, externalId: table.externalId })
 		.from(table)
 		.where(
 			and(
 				eq(table.connectionId, connectionId),
-				gte(table.date, range.from),
-				lte(table.date, range.to),
+				gte(table.date, window.from),
+				lte(table.date, window.to),
 			),
 		);
 	const gone = rows.filter((r) => !keep.has(r.externalId)).map((r) => r.id);
@@ -224,19 +270,45 @@ async function deleteMissing(
 		await db.delete(table).where(inArray(table.id, gone.slice(i, i + 1000)));
 }
 
-// When an errored connection may retry: 1h after its last attempt, doubling
-// with each consecutive failure, capped at 24h.
-async function retryAt(connectionId: string) {
-	const runs = await db
-		.select({ status: schema.syncRuns.status, at: schema.syncRuns.startedAt })
-		.from(schema.syncRuns)
-		.where(eq(schema.syncRuns.connectionId, connectionId))
-		.orderBy(desc(schema.syncRuns.startedAt))
-		.limit(6);
+// When an errored connection may retry, from its latest runs (newest first):
+// 1h after the last attempt, doubling with each consecutive failure, capped
+// at 24h. Never, when the provider rejected the key: the user fixes it and
+// clicks Sync now.
+export function retryAt(runs: { status: string; at: number }[]) {
+	if (runs[0]?.status === "auth_error") return Number.POSITIVE_INFINITY;
 	const ok = runs.findIndex((r) => r.status === "ok");
 	const failures = ok === -1 ? runs.length : ok;
 	const hours = Math.min(2 ** Math.max(failures - 1, 0), 24);
 	return (runs[0]?.at ?? 0) + hours * 3_600_000;
+}
+
+// The latest 6 runs of each connection, newest first, in one query.
+export async function latestRuns(ids: string[]) {
+	const byConn = new Map<string, { status: string; at: number }[]>();
+	if (!ids.length) return byConn;
+	const ranked = db
+		.select({
+			connectionId: schema.syncRuns.connectionId,
+			status: schema.syncRuns.status,
+			at: schema.syncRuns.startedAt,
+			n: sql<number>`row_number() over (partition by ${schema.syncRuns.connectionId} order by ${schema.syncRuns.startedAt} desc)`.as(
+				"n",
+			),
+		})
+		.from(schema.syncRuns)
+		.where(inArray(schema.syncRuns.connectionId, ids))
+		.as("ranked");
+	const rows = await db
+		.select()
+		.from(ranked)
+		.where(lte(ranked.n, 6))
+		.orderBy(ranked.connectionId, desc(ranked.at));
+	for (const r of rows) {
+		const list = byConn.get(r.connectionId) ?? [];
+		list.push({ status: r.status, at: Number(r.at) });
+		byConn.set(r.connectionId, list);
+	}
+	return byConn;
 }
 
 // Active connections whose cadence has elapsed, and errored ones whose
@@ -264,10 +336,12 @@ export async function dueConnections() {
 			),
 		),
 	});
-	const due: Connection[] = [];
-	for (const c of conns)
-		if (c.status !== "error" || (await retryAt(c.id)) <= now) due.push(c);
-	return due;
+	const runs = await latestRuns(
+		conns.filter((c) => c.status === "error").map((c) => c.id),
+	);
+	return conns.filter(
+		(c) => c.status !== "error" || retryAt(runs.get(c.id) ?? []) <= now,
+	);
 }
 
 export async function syncDue() {

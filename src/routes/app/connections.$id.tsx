@@ -18,10 +18,23 @@ export const Route = createFileRoute("/app/connections/$id")({
 	component: Connection,
 });
 
+// What a provider's sub-unit is called. Stripe and Polar lines have none.
 const UNIT: Record<string, string> = {
+	paddle: "product",
+	lemonsqueezy: "product",
+	revenuecat: "project",
 	openai: "project",
 	anthropic: "workspace",
+	openrouter: "API key",
+	vercel: "project",
 	cloudflare: "zone",
+	railway: "project",
+	digitalocean: "project",
+	github: "repository",
+	neon: "project",
+	mongodb: "project",
+	firecrawl: "API key",
+	resend: "domain",
 };
 
 function Connection() {
