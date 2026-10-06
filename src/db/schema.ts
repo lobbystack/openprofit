@@ -144,6 +144,9 @@ export const revenueLines = pgTable(
 		refundsCents: integer("refunds_cents").notNull().default(0),
 		netCents: integer("net_cents").notNull(),
 		netBaseCents: integer("net_base_cents").notNull(),
+		// Tax the customer paid, excluded from gross and net.
+		taxCents: integer("tax_cents").notNull().default(0),
+		taxBaseCents: integer("tax_base_cents").notNull().default(0),
 		kind: text("kind", { enum: ["subscription", "one_time", "other"] })
 			.notNull()
 			.default("other"),

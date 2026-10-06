@@ -118,6 +118,9 @@ async function main() {
 				if (!product) continue;
 				const net = Math.round(REVENUE[i] * s.share * p.share * 100);
 				const gross = Math.round(net / (1 - s.fee));
+				// Stripe sales carry about 12% sales tax or VAT on top. Polar's
+				// metrics report none.
+				const tax = s.provider === "stripe" ? Math.round(gross * 0.12) : 0;
 				revenueLines.push({
 					workspaceId: ws.id,
 					connectionId: c.id,
@@ -129,6 +132,8 @@ async function main() {
 					refundsCents: 0,
 					netCents: net,
 					netBaseCents: net,
+					taxCents: tax,
+					taxBaseCents: tax,
 					kind: "subscription",
 					subUnitId: `${s.provider}:${p.slug}`,
 					subUnitLabel: p.name,

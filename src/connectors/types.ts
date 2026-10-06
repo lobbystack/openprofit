@@ -11,6 +11,10 @@ export type RevenueLine = {
 	feesCents: number;
 	refundsCents: number;
 	netCents: number;
+	// Sales tax or VAT the customer paid, whether added on top of the price
+	// or included in it. Never part of gross or net. Negative on a refund
+	// line for the share of tax returned. Default 0.
+	taxCents?: number;
 	kind: "subscription" | "one_time" | "other";
 	// Provider sub-unit the line belongs to (product id, project id), for
 	// mapping to a product.
@@ -62,6 +66,9 @@ export type Connector = {
 	// lines the fetch no longer returns only within this window (and the sync
 	// range). Unset: the whole range is complete. 0: never delete.
 	historyDays?: number;
+	// The provider files and pays the tax it collects (merchant of record,
+	// app stores). Unset: the seller owes the tax on their own lines.
+	remitsTax?: boolean;
 	// Prove the credentials work. Returns a label for the connection.
 	verify(creds: Credentials): Promise<{ label: string }>;
 	fetchRevenue?(creds: Credentials, range: SyncRange): Promise<RevenueLine[]>;

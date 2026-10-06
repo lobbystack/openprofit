@@ -35,6 +35,9 @@ export type OverviewData = {
 		label: string;
 		totals: Record<MetricKey, number>;
 		previous: Record<MetricKey, number>;
+		// Tax customers paid, kept out of every metric. `owed` is the part
+		// from providers that don't remit it.
+		tax?: { total: number; previous: number; owed: number };
 	};
 	// Breakdowns cover the period.
 	byProduct: {

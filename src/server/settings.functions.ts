@@ -102,6 +102,12 @@ export const updateSettings = createServerFn({ method: "POST" })
 							data.currency,
 							l.date,
 						),
+						taxBaseCents: await convert(
+							l.taxCents,
+							l.currency,
+							data.currency,
+							l.date,
+						),
 					})
 					.where(eq(schema.revenueLines.id, l.id));
 			}

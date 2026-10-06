@@ -88,6 +88,13 @@ export async function syncConnection(
 						ws.baseCurrency,
 						l.date,
 					),
+					taxCents: l.taxCents ?? 0,
+					taxBaseCents: await convert(
+						l.taxCents ?? 0,
+						l.currency,
+						ws.baseCurrency,
+						l.date,
+					),
 					kind: l.kind,
 					subUnitId: l.subUnitId ?? null,
 					subUnitLabel: l.subUnitLabel ?? null,

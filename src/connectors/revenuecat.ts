@@ -44,10 +44,13 @@ export function months(range: SyncRange) {
 
 // One line per project and month. RevenueCat's revenue already subtracts
 // refunds. Gross is revenue net of taxes; net is proceeds, after the store's
-// commission. Both taxes and commission are RevenueCat's estimates.
+// commission; tax is revenue minus revenue net of taxes. Taxes and
+// commission are RevenueCat's estimates.
+// https://www.revenuecat.com/docs/dashboard-and-metrics/taxes-and-commissions
 export function rcLine(
 	project: Project,
 	month: string,
+	revenue: RevenueMetric,
 	netOfTaxes: RevenueMetric,
 	proceeds: RevenueMetric,
 ): RevenueLine | null {
@@ -62,6 +65,7 @@ export function rcLine(
 		feesCents: gross - net,
 		refundsCents: 0,
 		netCents: net,
+		taxCents: toCents(revenue.value) - gross,
 		kind: "other",
 		subUnitId: project.id,
 		subUnitLabel: project.name,
@@ -88,13 +92,17 @@ export const revenuecat = register({
 			"charts_metrics:overview:read",
 		],
 	},
+	// App Store and Google Play file and pay the tax on their sales. Sales
+	// through RevenueCat Web Billing or Stripe leave it to the seller.
+	// https://www.revenuecat.com/docs/web/web-billing/tax
+	remitsTax: true,
 	async verify(c) {
 		const p = await projects(c);
 		return { label: p.map((x) => x.name).join(", ") || "RevenueCat" };
 	},
 	// The revenue metric totals an inclusive date range in the project's
 	// currency. Charts & Metrics allows 25 requests a minute, so months, not
-	// days: two years is 48 requests.
+	// days: two years is 72 requests.
 	// https://www.revenuecat.com/docs/api-v2/charts-and-metrics
 	async fetchRevenue(c, range: SyncRange) {
 		const out: RevenueLine[] = [];
@@ -108,6 +116,7 @@ export const revenuecat = register({
 				const line = rcLine(
 					p,
 					m.month,
+					await get("revenue"),
 					await get("revenue_net_of_taxes"),
 					await get("proceeds"),
 				);

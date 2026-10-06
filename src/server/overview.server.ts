@@ -1,5 +1,6 @@
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
+import { connectors } from "#/connectors";
 import { db, schema } from "#/db";
 import {
 	type MetricKey,
@@ -91,6 +92,7 @@ export async function overview(
 			.select({
 				m: month(schema.revenueLines.date),
 				v: sql<number>`sum(${schema.revenueLines.netBaseCents})`,
+				t: sql<number>`sum(${schema.revenueLines.taxBaseCents})`,
 			})
 			.from(schema.revenueLines)
 			.where(
@@ -156,6 +158,7 @@ export async function overview(
 			.select({
 				provider: schema.connections.provider,
 				v: sql<number>`sum(${schema.revenueLines.netBaseCents})`,
+				t: sql<number>`sum(${schema.revenueLines.taxBaseCents})`,
 			})
 			.from(schema.revenueLines)
 			.innerJoin(
@@ -187,6 +190,7 @@ export async function overview(
 	const byMonth = (rows: { m: string; v: number }[]) =>
 		Object.fromEntries(rows.map((r) => [r.m, Number(r.v)]));
 	const revM = byMonth(rev);
+	const taxM = byMonth(rev.map((r) => ({ m: r.m, v: r.t })));
 	const costM = byMonth(cost);
 	const units = (c: number) => Math.round(c) / 100;
 
@@ -278,6 +282,24 @@ export async function overview(
 		.map(([provider, cents]) => ({ provider, amount: units(cents) }))
 		.sort((a, b) => b.amount - a.amount);
 
+	// Tax collected in the period and the one before, and the part from
+	// providers that don't remit it, which the seller files.
+	const taxAll = all.map((m) => units(taxM[m] ?? 0));
+	const remits = new Set(
+		connectors()
+			.filter((c) => c.remitsTax)
+			.map((c) => c.id),
+	);
+	const tax = {
+		total: sum(taxAll.slice(24 - n)),
+		previous: sum(taxAll.slice(24 - 2 * n, 24 - n)),
+		owed: units(
+			revBySrc
+				.filter((r) => !remits.has(r.provider))
+				.reduce((a, r) => a + Number(r.t), 0),
+		),
+	};
+
 	return {
 		currency: ws.baseCurrency,
 		workspaceSlug: ws.slug,
@@ -289,6 +311,7 @@ export async function overview(
 			label: PERIODS.find((p) => p.key === periodKey)?.label ?? "",
 			totals: totals((v) => v.slice(24 - n)),
 			previous: totals((v) => v.slice(24 - 2 * n, 24 - n)),
+			tax,
 		},
 		byProduct,
 		costsByProvider,

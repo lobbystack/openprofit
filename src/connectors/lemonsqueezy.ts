@@ -82,7 +82,10 @@ async function* list<A>(
 
 // A sale and, once money went back, a refund dated when it happened.
 // Revenue excludes tax, which Lemon Squeezy collects and remits as merchant
-// of record; a refund removes tax in the same proportion. The API reports
+// of record, and is reported as taxCents; a refund returns tax in the same
+// proportion. `refunded_amount` is read as including tax, like `total`.
+// https://docs.lemonsqueezy.com/api/orders/the-order-object
+// The API reports
 // no fees, so net equals revenue.
 export function lsLines(
 	id: string,
@@ -108,6 +111,7 @@ export function lsLines(
 			grossCents: gross,
 			refundsCents: 0,
 			netCents: gross,
+			taxCents: s.tax,
 		});
 	if (s.refunded_amount > 0 && s.total > 0) {
 		const refund = Math.round((s.refunded_amount * gross) / s.total);
@@ -118,6 +122,7 @@ export function lsLines(
 			grossCents: 0,
 			refundsCents: refund,
 			netCents: -refund,
+			taxCents: refund - s.refunded_amount,
 		});
 	}
 	return out;
@@ -164,6 +169,8 @@ export const lemonsqueezy = register({
 		createUrl: "https://app.lemonsqueezy.com/settings/api",
 		scopes: ["Full access (Lemon Squeezy keys have no scopes)"],
 	},
+	// https://docs.lemonsqueezy.com/help/payments/merchant-of-record
+	remitsTax: true,
 	// https://docs.lemonsqueezy.com/api/stores/list-all-stores
 	async verify(c) {
 		const r = await getJson<{ data: Resource<{ name: string }>[] }>(

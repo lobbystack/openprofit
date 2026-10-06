@@ -1,5 +1,6 @@
 import { register } from "./registry";
 import {
+	ConnectorError,
 	type Credentials,
 	dayOf,
 	getJson,
@@ -10,10 +11,17 @@ import {
 } from "./types";
 
 const BASE = "https://api.stripe.com";
-const headers = (c: Credentials) => ({ Authorization: `Bearer ${c.key}` });
+// Pinned to the last version whose invoices carry `charge` and `tax`, and
+// whose charges carry `invoice`; 2025-03-31.basil removed them.
+// https://docs.stripe.com/changelog/basil/2025-03-31/add-support-for-multiple-partial-payments-on-invoices
+const VERSION = "2025-02-24.acacia";
+const headers = (c: Credentials) => ({
+	Authorization: `Bearer ${c.key}`,
+	"Stripe-Version": VERSION,
+});
 const unix = (d: string) => Math.floor(Date.parse(`${d}T00:00:00Z`) / 1000);
 
-type Txn = {
+export type StripeTxn = {
 	id: string;
 	amount: number;
 	fee: number;
@@ -21,7 +29,16 @@ type Txn = {
 	currency: string;
 	type: string;
 	created: number;
+	// Expanded: a charge carries its invoice, a refund or dispute its charge.
+	source: {
+		id: string;
+		object: string;
+		invoice?: string | null;
+		charge?: string | null;
+	} | null;
 };
+// https://docs.stripe.com/api/invoices/object
+type Invoice = { charge: string | null; tax: number | null; total: number };
 type List<T> = { data: T[]; has_more: boolean };
 
 // Cash movements, not revenue.
@@ -68,6 +85,75 @@ type Sub = {
 	};
 };
 
+// Balance transactions include tax in `amount`. A charge's tax comes from
+// its invoice, as the invoice's share of tax; a refund or dispute returns
+// tax in the same share. Charges without an invoice (one-off Checkout and
+// Payment Links payments) count no tax.
+export function stripeLine(
+	t: StripeTxn,
+	refund: boolean,
+	share: number,
+): RevenueLine {
+	const tax = Math.round(t.amount * share);
+	return {
+		externalId: t.id,
+		date: dayOf(t.created),
+		currency: t.currency.toUpperCase(),
+		grossCents: refund ? 0 : Math.max(t.amount - tax, 0),
+		feesCents: t.fee,
+		refundsCents: refund ? -(t.amount - tax) : 0,
+		netCents: t.net - tax,
+		taxCents: tax,
+		kind: "other",
+	};
+}
+
+const taxShare = (i: Invoice | null) =>
+	i && i.total > 0 && i.tax ? i.tax / i.total : 0;
+
+// Tax share by charge id: invoices from 60 days before the range in one
+// list, charges without an invoice from the transactions, and a charge
+// lookup for the rest (a refund of an older charge). A key without
+// Invoices: read counts no tax.
+async function taxShares(c: Credentials, range: SyncRange, txns: StripeTxn[]) {
+	const shares = new Map<string, number>();
+	for (const t of txns)
+		if (t.source?.object === "charge" && !t.source.invoice)
+			shares.set(t.source.id, 0);
+	let canRead = true;
+	const denied = (err: unknown) => {
+		if (!(err instanceof ConnectorError && err.status === 403)) throw err;
+		canRead = false;
+	};
+	try {
+		// https://docs.stripe.com/api/invoices/list
+		for await (const i of paginate<Invoice & { id: string }>(
+			`${BASE}/v1/invoices?created[gte]=${unix(range.from) - 60 * 86_400}`,
+			c,
+		))
+			if (i.charge) shares.set(i.charge, taxShare(i));
+	} catch (err) {
+		denied(err);
+	}
+	return async (charge: string) => {
+		let share = shares.get(charge);
+		if (share !== undefined || !canRead) return share ?? 0;
+		try {
+			// https://docs.stripe.com/api/charges/retrieve
+			const ch = await getJson<{ invoice: Invoice | null }>(
+				`${BASE}/v1/charges/${charge}?expand[]=invoice`,
+				{ headers: headers(c) },
+			);
+			share = taxShare(ch.invoice);
+		} catch (err) {
+			denied(err);
+			share = 0;
+		}
+		shares.set(charge, share);
+		return share;
+	};
+}
+
 const PER_MONTH = { day: 365 / 12, week: 52 / 12, month: 1, year: 1 / 12 };
 
 export const stripe = register({
@@ -89,6 +175,7 @@ export const stripe = register({
 			"Balance: read",
 			"Balance transaction sources: read",
 			"Charges: read",
+			"Invoices: read",
 			"Subscriptions: read",
 		],
 	},
@@ -104,21 +191,24 @@ export const stripe = register({
 		};
 	},
 	async fetchRevenue(c, range: SyncRange) {
+		// https://docs.stripe.com/api/balance_transactions/list
+		const txns: StripeTxn[] = [];
+		for await (const t of paginate<StripeTxn>(
+			`${BASE}/v1/balance_transactions?created[gte]=${unix(range.from)}&created[lt]=${unix(range.to) + 86_400}&expand[]=data.source`,
+			c,
+		))
+			if (!SKIP.has(t.type)) txns.push(t);
+		const tax = await taxShares(c, range, txns);
 		const out: RevenueLine[] = [];
-		const url = `${BASE}/v1/balance_transactions?created[gte]=${unix(range.from)}&created[lt]=${unix(range.to) + 86_400}`;
-		for await (const t of paginate<Txn>(url, c)) {
-			if (SKIP.has(t.type)) continue;
+		for (const t of txns) {
 			const refund = t.type.includes("refund") || t.type === "dispute";
-			out.push({
-				externalId: t.id,
-				date: dayOf(t.created),
-				currency: t.currency.toUpperCase(),
-				grossCents: refund ? 0 : Math.max(t.amount, 0),
-				feesCents: t.fee,
-				refundsCents: refund ? -t.amount : 0,
-				netCents: t.net,
-				kind: "other",
-			});
+			const charge =
+				t.source?.object === "charge" ? t.source.id : t.source?.charge;
+			const share =
+				charge && (refund || t.source?.object === "charge")
+					? await tax(charge)
+					: 0;
+			out.push(stripeLine(t, refund, share));
 		}
 		return out;
 	},

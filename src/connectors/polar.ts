@@ -47,6 +47,9 @@ export const polar = register({
 		createUrl: "https://polar.sh/to/dashboard/settings",
 		scopes: ["organizations:read", "metrics:read"],
 	},
+	// Polar is the merchant of record and files the tax it collects.
+	// https://polar.sh/docs/merchant-of-record/introduction
+	remitsTax: true,
 	async verify(c) {
 		const r = await getJson<{ items: { name: string }[] }>(
 			`${BASE}/organizations/?limit=1`,
@@ -55,7 +58,9 @@ export const polar = register({
 		return { label: r.items[0]?.name ?? "Polar" };
 	},
 	// One line per day from the metrics endpoint: gross and net, so Polar's
-	// fee is the difference.
+	// fee is the difference. Both exclude tax, and the metrics don't report
+	// it, so taxCents stays 0.
+	// https://polar.sh/docs/features/analytics
 	async fetchRevenue(c, range: SyncRange) {
 		// Polar caps day-interval queries at 366 days.
 		const periods: Period[] = [];

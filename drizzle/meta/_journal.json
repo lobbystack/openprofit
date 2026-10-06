@@ -15,6 +15,13 @@
       "when": 1791305748290,
       "tag": "0001_sub_unit_labels",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791308258412,
+      "tag": "0002_revenue_tax",
+      "breakpoints": true
     }
   ]
 }

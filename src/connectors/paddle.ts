@@ -51,8 +51,13 @@ export type PaddleAdjustment = {
 	subscription_id: string | null;
 	currency_code: string;
 	created_at: string;
-	items: { item_id: string; totals?: { subtotal: string } }[];
-	totals: { subtotal: string; fee: string; retained_fee?: string | null };
+	items: { item_id: string; totals?: { subtotal: string; tax: string } }[];
+	totals: {
+		subtotal: string;
+		tax: string;
+		fee: string;
+		retained_fee?: string | null;
+	};
 };
 
 // Every page of a list. `next` carries the original query, so it is fetched
@@ -67,12 +72,14 @@ async function* list<T>(c: Credentials, path: string) {
 }
 
 // One line per product in a completed transaction. Revenue excludes tax,
-// which Paddle collects and remits as merchant of record. Paddle reports
+// which Paddle collects and remits as merchant of record; it is reported as
+// taxCents. Paddle reports
 // one fee per transaction; it is split across products by revenue. Free
 // trial transactions total zero and are skipped.
 export function paddleTxnLines(t: PaddleTxn): RevenueLine[] {
 	const lines = t.details.line_items.map((li) => ({
 		gross: int(li.totals.total) - int(li.totals.tax),
+		tax: int(li.totals.tax),
 		product: li.product,
 	}));
 	const gross = lines.reduce((s, l) => s + l.gross, 0);
@@ -95,6 +102,7 @@ export function paddleTxnLines(t: PaddleTxn): RevenueLine[] {
 			feesCents: f,
 			refundsCents: 0,
 			netCents: l.gross - f,
+			taxCents: l.tax,
 			kind: t.subscription_id ? "subscription" : "one_time",
 			subUnitId: l.product.id,
 			subUnitLabel: l.product.name,
@@ -102,7 +110,8 @@ export function paddleTxnLines(t: PaddleTxn): RevenueLine[] {
 	});
 }
 
-// Refunds, credits and chargebacks take back the amount before tax. Paddle
+// Refunds, credits and chargebacks take back the amount before tax, and
+// the tax returned shows as negative taxCents. Paddle
 // returns its fee on the adjustment except `retained_fee`. An adjustment
 // over items of several products becomes one line per product, split by
 // each item's amount; the fee follows the same split.
@@ -112,25 +121,32 @@ export function paddleAdjustmentLines(
 ): RevenueLine[] {
 	const groups = new Map<
 		string,
-		{ product?: { id: string; name: string }; amount: number }
+		{ product?: { id: string; name: string }; amount: number; tax: number }
 	>();
 	for (const it of a.items) {
 		const product = productOf(it.item_id);
 		const key = product?.id ?? "";
-		const g = groups.get(key) ?? { product, amount: 0 };
+		const g = groups.get(key) ?? { product, amount: 0, tax: 0 };
 		g.amount += int(it.totals?.subtotal);
+		g.tax += int(it.totals?.tax);
 		groups.set(key, g);
 	}
 	const parts = [...groups.values()];
 	const total = int(a.totals.subtotal);
 	const fee = int(a.totals.fee);
 	const kept = int(a.totals.retained_fee);
+	const tax = int(a.totals.tax);
 	// One product, or item amounts that don't add up to the total: one line.
 	if (parts.length <= 1 || parts.reduce((s, g) => s + g.amount, 0) !== total)
-		return [adjustmentLine(a, a.id, total, fee, kept, parts[0]?.product)];
+		return [adjustmentLine(a, a.id, total, fee, kept, tax, parts[0]?.product)];
 	const weights = parts.map((g) => g.amount);
 	const fees = splitCents(fee, weights);
 	const keptParts = splitCents(kept, weights);
+	// Item taxes that don't add up to the total follow the amount split.
+	const taxes =
+		parts.reduce((s, g) => s + g.tax, 0) === tax
+			? parts.map((g) => g.tax)
+			: splitCents(tax, weights);
 	return parts.map((g, i) =>
 		adjustmentLine(
 			a,
@@ -138,6 +154,7 @@ export function paddleAdjustmentLines(
 			g.amount,
 			fees[i],
 			keptParts[i],
+			taxes[i],
 			g.product,
 		),
 	);
@@ -149,6 +166,7 @@ function adjustmentLine(
 	refund: number,
 	fee: number,
 	retained: number,
+	tax: number,
 	product?: { id: string; name: string },
 ): RevenueLine {
 	return {
@@ -159,6 +177,7 @@ function adjustmentLine(
 		feesCents: retained - fee,
 		refundsCents: refund,
 		netCents: fee - retained - refund,
+		taxCents: -tax,
 		kind: a.subscription_id ? "subscription" : "one_time",
 		subUnitId: product?.id,
 		subUnitLabel: product?.name,
@@ -186,6 +205,8 @@ export const paddle = register({
 		createUrl: "https://vendors.paddle.com/authentication-v2",
 		scopes: ["transaction.read", "adjustment.read", "metrics.read"],
 	},
+	// https://www.paddle.com/legal/terms (Paddle is the merchant of record)
+	remitsTax: true,
 	// Paddle has no endpoint for the seller's name; a one-item list proves
 	// the key and its transaction.read permission.
 	// https://developer.paddle.com/api-reference/transactions/list-transactions
