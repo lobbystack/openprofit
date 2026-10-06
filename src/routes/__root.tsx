@@ -36,9 +36,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		],
 		links: [
 			{ rel: "stylesheet", href: appCss },
-			{ rel: "icon", href: "/favicon.ico", sizes: "32x32" },
-			{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
-			{ rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+			// ?v= changes the URL so browsers that cache icons (Safari) refetch
+			// after the mark changes. Bump it with every new icon.
+			{ rel: "icon", href: "/favicon.ico?v=2", sizes: "32x32" },
+			{ rel: "icon", href: "/favicon.svg?v=2", type: "image/svg+xml" },
+			{ rel: "apple-touch-icon", href: "/apple-touch-icon.png?v=2" },
 		],
 		scripts: [{ children: THEME_SCRIPT }],
 	}),
