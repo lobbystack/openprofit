@@ -156,7 +156,7 @@ export function FeatureCosts() {
 						{
 							icon: <Receipt size={16} />,
 							title: "Flat subscriptions",
-							text: "Supabase, Resend, domains. Enter the price once and it counts every month.",
+							text: "Supabase, domains, design tools. Enter the price once and it counts every month.",
 						},
 						{
 							icon: <Tag size={16} />,

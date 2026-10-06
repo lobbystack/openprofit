@@ -13,6 +13,10 @@ import {
 	siVercel,
 } from "simple-icons";
 
+// Firecrawl is not in simple-icons; a flame drawn by hand.
+const FLAME_PATH =
+	"M12 1c1 4 7 7 7 13.5a7 7 0 0 1-14 0C5 11 6.5 9 8 7.5c.2 2 1 3.5 2.5 4C10 8 10.5 4 12 1Z";
+
 type Provider = {
 	name: string;
 	kind: "revenue" | "cost";
@@ -59,6 +63,7 @@ export const PROVIDERS: Record<string, Provider> = {
 	railway: { name: "Railway", kind: "cost", v1: true, path: siRailway.path },
 	supabase: { name: "Supabase", kind: "cost", v1: true, path: siSupabase.path },
 	resend: { name: "Resend", kind: "cost", v1: true, path: siResend.path },
+	firecrawl: { name: "Firecrawl", kind: "cost", v1: true, path: FLAME_PATH },
 	github: { name: "GitHub", kind: "cost", v1: false, path: siGithub.path },
 };
 

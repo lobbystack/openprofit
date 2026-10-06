@@ -81,24 +81,42 @@ function Connect() {
 						{info.name}
 					</div>
 					<div className="mt-5 space-y-4">
-						{info.fields.map((f) => (
-							<label key={f.name} className="block">
-								<span className="label-mono">{f.label}</span>
-								<input
-									type={f.secret ? "password" : "text"}
-									autoComplete="off"
-									spellCheck={false}
-									required={!f.optional}
-									value={values[f.name] ?? ""}
-									onChange={(e) => {
-										setValues({ ...values, [f.name]: e.target.value });
-										setTest({ state: "idle" });
-									}}
-									placeholder={f.placeholder}
-									className={`${field} mt-2`}
-								/>
-							</label>
-						))}
+						{info.fields.map((f) => {
+							const props = {
+								id: `field-${f.name}`,
+								required: !f.optional,
+								value: values[f.name] ?? "",
+								onChange: (
+									e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+								) => {
+									setValues({ ...values, [f.name]: e.target.value });
+									setTest({ state: "idle" });
+								},
+								className: `${field} mt-2`,
+							};
+							return (
+								<label key={f.name} htmlFor={props.id} className="block">
+									<span className="label-mono">{f.label}</span>
+									{f.options ? (
+										<select {...props}>
+											{f.options.map((o) => (
+												<option key={o.value} value={o.value}>
+													{o.label}
+												</option>
+											))}
+										</select>
+									) : (
+										<input
+											{...props}
+											type={f.secret ? "password" : "text"}
+											autoComplete="off"
+											spellCheck={false}
+											placeholder={f.placeholder}
+										/>
+									)}
+								</label>
+							);
+						})}
 					</div>
 					<div className="mt-5 flex items-center gap-2">
 						<button

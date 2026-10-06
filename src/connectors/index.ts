@@ -7,6 +7,8 @@ import "./anthropic";
 import "./railway";
 import "./vercel";
 import "./cloudflare";
+import "./firecrawl";
+import "./resend";
 
 export type { ConnectorInfo } from "./registry";
 export { connector, connectorInfo, connectors } from "./registry";

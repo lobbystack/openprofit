@@ -9,6 +9,7 @@ Every release, newest first. The full history is in the [commit log on GitHub](h
 
 ## October 6, 2026
 
+- **Firecrawl and Resend connectors.** Neither API reports dollars, so OpenProfit prices their usage at published rates. Firecrawl costs split by API key, Resend costs by sending domain. Both detect your plan, and you can pick it yourself.
 - **Optional fields no longer block connecting.** Connectors with an optional field, like Railway's workspace id or Vercel's team id, submitted nothing if you left it empty. They connect now.
 - **Self-hosting with the built-in database works from the Docker image.** The production build dropped files the embedded Postgres needs, so the container failed on its first start. Fixed.
 - **Pages load faster.** HTML is compressed; the homepage went from 74 KB to 15 KB.

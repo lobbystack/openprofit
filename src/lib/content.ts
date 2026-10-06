@@ -45,7 +45,17 @@ export const INTEGRATIONS = order(
 			eager: true,
 		}) as Record<string, string>,
 	),
-	["stripe", "polar", "openai", "anthropic", "vercel", "cloudflare", "railway"],
+	[
+		"stripe",
+		"polar",
+		"openai",
+		"anthropic",
+		"vercel",
+		"cloudflare",
+		"railway",
+		"firecrawl",
+		"resend",
+	],
 );
 
 export const COMPARISONS = load(

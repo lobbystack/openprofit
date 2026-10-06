@@ -27,6 +27,8 @@ Each connector needs a key with specific permissions. The table lists what each 
 | [Vercel](/integrations/vercel) | Daily charges per project | Access token scoped to the team |
 | [Cloudflare](/integrations/cloudflare) | Billable usage, or invoices when usage isn’t available | API token with Account · Billing · Read and Account · Account Settings · Read |
 | [Railway](/integrations/railway) | Monthly CPU, memory, egress, disk and backup usage per project, priced at Railway’s published rates | Account token, or a workspace token with its workspace id |
+| [Firecrawl](/integrations/firecrawl) | Credits per API key per billing period, priced at Firecrawl’s published plan and extra-credit rates | Any API key on the team |
+| [Resend](/integrations/resend) | Transactional emails per sending domain per month, priced at Resend’s published plan and overage rates | API key with full access |
 
 ## Assign costs to products
 
@@ -37,6 +39,8 @@ OpenProfit assigns a cost to a product through the provider’s own grouping. Th
 - **Vercel**: projects
 - **Railway**: projects
 - **Cloudflare**: zones
+- **Firecrawl**: API keys
+- **Resend**: sending domains
 
 Open a connection from **Connections** to see each grouping with this month’s spend, then pick the product it serves. Past lines move to that product too.
 
@@ -44,7 +48,7 @@ Lines with no grouping, and all revenue from the connection, go to the product y
 
 ## Add costs that have no API
 
-Services like Supabase, Resend or a domain registrar don’t expose billing data. Add them on the **Costs** page as a fixed amount per month or per year, with a start date. OpenProfit counts them from that date and spreads a yearly amount evenly over 12 months.
+Services like Supabase or a domain registrar don’t expose billing data, and neither do Resend’s marketing plans and add-ons. Add them on the **Costs** page as a fixed amount per month or per year, with a start date. OpenProfit counts them from that date and spreads a yearly amount evenly over 12 months.
 
 ## Currency conversion
 
