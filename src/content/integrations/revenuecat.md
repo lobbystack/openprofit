@@ -16,7 +16,7 @@ OpenProfit reads RevenueCat's metrics for the project your key belongs to:
 
 - **Revenue, net of taxes:** what customers paid, minus taxes and refunds.
 - **Proceeds:** revenue net of taxes, minus the store's commission. The commission shows as the fee.
-- **Revenue:** what customers paid. Revenue minus revenue net of taxes is the tax, which shows as **Tax collected** on the overview. The App Store and Google Play file it; for RevenueCat Web Billing sales, you do.
+- **Revenue:** what customers paid. Revenue minus revenue net of taxes is the tax, which shows as **Tax collected** on the overview. The App Store and Google Play file the tax on their sales, and you file it for RevenueCat Web Billing sales. RevenueCat's metrics can't split tax by store, so the overview counts all of it as yours to file.
 - **Overview:** monthly recurring revenue (MRR) and active subscriptions.
 
 Taxes and commission are RevenueCat's estimates and can differ from the store's payout report. RevenueCat subtracts refunds in the month it processes them.

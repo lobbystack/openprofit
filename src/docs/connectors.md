@@ -22,7 +22,7 @@ Each connector needs a key with specific permissions. The table lists what each 
 
 | Provider | What it reads | Key |
 | --- | --- | --- |
-| [Stripe](/integrations/stripe) | Balance transactions, and active subscriptions for monthly recurring revenue (MRR) and customer count | Restricted key with read access to Balance, Balance transaction sources, Charges, Invoices and Subscriptions |
+| [Stripe](/integrations/stripe) | Balance transactions, and active subscriptions for monthly recurring revenue (MRR) and customer count | Restricted key with read access to Balance, Balance transaction sources, Charges, Checkout Sessions, Invoices and Subscriptions |
 | [Polar](/integrations/polar) | Daily revenue and net revenue, MRR, active subscriptions | Organization access token with `organizations:read` and `metrics:read` |
 | [Paddle](/integrations/paddle) | Completed transactions without tax, Paddle’s fee, refunds, credits and chargebacks, MRR, paying subscribers | API key with `transaction.read`, `adjustment.read` and `metrics.read` |
 | [Lemon Squeezy](/integrations/lemonsqueezy) | Orders and subscription renewals without tax, refunds, MRR, active subscriptions. No fees: the API doesn’t report them | API key, which has full access |
@@ -48,13 +48,13 @@ Revenue, profit, MRR and margins leave out the sales tax and VAT your customers 
 
 | Provider | Tax it records | Who files it |
 | --- | --- | --- |
-| Stripe | The tax on the invoice behind each charge. A refund or dispute takes back the same share of tax. Payments without an invoice, such as one-off Checkout and Payment Links payments, record no tax, and their tax stays in revenue | You |
+| Stripe | The tax on the invoice or Checkout Session behind each payment, Payment Links included. A refund or dispute takes back the same share of tax. A payment with neither, such as a PaymentIntent your code creates, records no tax, and its tax stays in revenue | You |
 | Polar | None. Polar’s metrics leave tax out of revenue and don’t report it | Polar, as merchant of record |
 | Paddle | The tax on each transaction, and the tax returned on each refund, credit or chargeback | Paddle, as merchant of record |
 | Lemon Squeezy | The tax on each order and renewal, and the tax share of each refund | Lemon Squeezy, as merchant of record |
-| RevenueCat | RevenueCat’s monthly estimate: revenue minus revenue net of taxes | The App Store and Google Play. For RevenueCat Web Billing sales, you |
+| RevenueCat | RevenueCat’s monthly estimate: revenue minus revenue net of taxes | You, on the overview. The App Store and Google Play file the tax on their sales, but RevenueCat’s metrics can’t split tax by store |
 
-Stripe needs read access to **Invoices** to find the tax. A key without it still syncs, but its revenue includes tax.
+Stripe needs read access to **Invoices** and **Checkout Sessions** to find the tax. A key without them still syncs, but revenue from those payments includes tax.
 
 ## Assign costs to products
 

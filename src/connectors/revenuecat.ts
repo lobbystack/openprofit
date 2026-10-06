@@ -92,10 +92,12 @@ export const revenuecat = register({
 			"charts_metrics:overview:read",
 		],
 	},
-	// App Store and Google Play file and pay the tax on their sales. Sales
-	// through RevenueCat Web Billing or Stripe leave it to the seller.
+	// App Store and Google Play file the tax on their sales; Web Billing and
+	// Stripe sales leave it to the seller. The revenue metric can't split
+	// by store, so the whole connection counts as the seller's to file.
 	// https://www.revenuecat.com/docs/web/web-billing/tax
-	remitsTax: true,
+	// https://www.revenuecat.com/docs/api-v2/charts-and-metrics
+	remitsTax: false,
 	async verify(c) {
 		const p = await projects(c);
 		return { label: p.map((x) => x.name).join(", ") || "RevenueCat" };

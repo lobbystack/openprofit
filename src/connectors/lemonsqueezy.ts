@@ -82,8 +82,12 @@ async function* list<A>(
 
 // A sale and, once money went back, a refund dated when it happened.
 // Revenue excludes tax, which Lemon Squeezy collects and remits as merchant
-// of record, and is reported as taxCents; a refund returns tax in the same
-// proportion. `refunded_amount` is read as including tax, like `total`.
+// of record, and is reported as taxCents. A refund returns tax in the
+// order's proportion: tax × refunded_amount / total. Neither the order
+// object nor the refund docs say whether `refunded_amount` includes tax
+// (https://docs.lemonsqueezy.com/api/orders/issue-refund); it is read as
+// including it, like `total`. Were it pre-tax, the refund's tax would come
+// out low by a factor of subtotal / total.
 // https://docs.lemonsqueezy.com/api/orders/the-order-object
 // The API reports
 // no fees, so net equals revenue.
@@ -114,7 +118,8 @@ export function lsLines(
 			taxCents: s.tax,
 		});
 	if (s.refunded_amount > 0 && s.total > 0) {
-		const refund = Math.round((s.refunded_amount * gross) / s.total);
+		const tax = Math.round((s.tax * s.refunded_amount) / s.total);
+		const refund = s.refunded_amount - tax;
 		out.push({
 			...base,
 			externalId: `${id}:refund`,
@@ -122,7 +127,7 @@ export function lsLines(
 			grossCents: 0,
 			refundsCents: refund,
 			netCents: -refund,
-			taxCents: refund - s.refunded_amount,
+			taxCents: -tax,
 		});
 	}
 	return out;

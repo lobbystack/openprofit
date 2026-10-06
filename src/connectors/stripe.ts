@@ -11,10 +11,10 @@ import {
 } from "./types";
 
 const BASE = "https://api.stripe.com";
-// Pinned to the last version whose invoices carry `charge` and `tax`, and
-// whose charges carry `invoice`; 2025-03-31.basil removed them.
-// https://docs.stripe.com/changelog/basil/2025-03-31/add-support-for-multiple-partial-payments-on-invoices
-const VERSION = "2025-02-24.acacia";
+// Every request names the API version, as Stripe recommends, so response
+// shapes don't follow the account's dashboard setting.
+// https://docs.stripe.com/upgrades
+const VERSION = "2026-09-30.endive";
 const headers = (c: Credentials) => ({
 	Authorization: `Bearer ${c.key}`,
 	"Stripe-Version": VERSION,
@@ -29,16 +29,27 @@ export type StripeTxn = {
 	currency: string;
 	type: string;
 	created: number;
-	// Expanded: a charge carries its invoice, a refund or dispute its charge.
+	// Expanded. Charges, refunds and disputes carry their payment intent.
 	source: {
 		id: string;
 		object: string;
-		invoice?: string | null;
-		charge?: string | null;
+		payment_intent?: string | null;
 	} | null;
 };
-// https://docs.stripe.com/api/invoices/object
-type Invoice = { charge: string | null; tax: number | null; total: number };
+// https://docs.stripe.com/api/invoices/payments
+type InvoicePayment = {
+	id: string;
+	payment: { payment_intent?: string };
+	// Expanded. https://docs.stripe.com/api/invoices/object
+	invoice: { total: number; total_taxes: { amount: number }[] | null };
+};
+// https://docs.stripe.com/api/checkout/sessions/object
+type Session = {
+	id: string;
+	payment_intent: string | null;
+	amount_total: number | null;
+	total_details: { amount_tax: number } | null;
+};
 type List<T> = { data: T[]; has_more: boolean };
 
 // Cash movements, not revenue.
@@ -85,10 +96,10 @@ type Sub = {
 	};
 };
 
-// Balance transactions include tax in `amount`. A charge's tax comes from
-// its invoice, as the invoice's share of tax; a refund or dispute returns
-// tax in the same share. Charges without an invoice (one-off Checkout and
-// Payment Links payments) count no tax.
+// Balance transactions include tax in `amount`. The tax share comes from
+// the payment's invoice or Checkout Session; a refund or dispute returns
+// tax in the same share. Payments with neither, such as direct
+// PaymentIntents, count no tax.
 export function stripeLine(
 	t: StripeTxn,
 	refund: boolean,
@@ -108,48 +119,77 @@ export function stripeLine(
 	};
 }
 
-const taxShare = (i: Invoice | null) =>
-	i && i.total > 0 && i.tax ? i.tax / i.total : 0;
+const invoiceShare = (i: InvoicePayment["invoice"]) =>
+	i.total > 0
+		? (i.total_taxes ?? []).reduce((a, t) => a + t.amount, 0) / i.total
+		: 0;
+const sessionShare = (s: Session) =>
+	s.amount_total ? (s.total_details?.amount_tax ?? 0) / s.amount_total : 0;
 
-// Tax share by charge id: invoices from 60 days before the range in one
-// list, charges without an invoice from the transactions, and a charge
-// lookup for the rest (a refund of an older charge). A key without
-// Invoices: read counts no tax.
-async function taxShares(c: Credentials, range: SyncRange, txns: StripeTxn[]) {
+// Tax share by payment intent, for one sync. Two lists cover the range:
+// paid invoice payments and completed Checkout Sessions, from 3 days
+// before it (a session lasts at most a day). A payment they miss is looked
+// up on its own: an invoice paid long after it was issued, or a refund of
+// an older payment. A key without Invoices or Checkout Sessions read access
+// counts no tax from that source.
+// ponytail: a payment with neither costs one lookup per sync while it is in
+// the 3-day reread; cache "no tax" across syncs if that shows in rate limits.
+async function taxShares(c: Credentials, range: SyncRange) {
 	const shares = new Map<string, number>();
-	for (const t of txns)
-		if (t.source?.object === "charge" && !t.source.invoice)
-			shares.set(t.source.id, 0);
-	let canRead = true;
-	const denied = (err: unknown) => {
-		if (!(err instanceof ConnectorError && err.status === 403)) throw err;
-		canRead = false;
+	const denied = new Set<string>();
+	const read = async (source: string, f: () => Promise<void>) => {
+		if (denied.has(source)) return;
+		try {
+			await f();
+		} catch (err) {
+			if (!(err instanceof ConnectorError && err.status === 403)) throw err;
+			denied.add(source);
+		}
 	};
-	try {
-		// https://docs.stripe.com/api/invoices/list
-		for await (const i of paginate<Invoice & { id: string }>(
-			`${BASE}/v1/invoices?created[gte]=${unix(range.from) - 60 * 86_400}`,
+	const created = `created[gte]=${unix(range.from) - 3 * 86_400}&created[lt]=${unix(range.to) + 86_400}`;
+	// https://docs.stripe.com/api/invoice-payment/list
+	await read("invoices", async () => {
+		for await (const p of paginate<InvoicePayment>(
+			`${BASE}/v1/invoice_payments?status=paid&${created}&expand[]=data.invoice`,
 			c,
 		))
-			if (i.charge) shares.set(i.charge, taxShare(i));
-	} catch (err) {
-		denied(err);
-	}
-	return async (charge: string) => {
-		let share = shares.get(charge);
-		if (share !== undefined || !canRead) return share ?? 0;
-		try {
-			// https://docs.stripe.com/api/charges/retrieve
-			const ch = await getJson<{ invoice: Invoice | null }>(
-				`${BASE}/v1/charges/${charge}?expand[]=invoice`,
+			if (p.payment.payment_intent)
+				shares.set(p.payment.payment_intent, invoiceShare(p.invoice));
+	});
+	// https://docs.stripe.com/api/checkout/sessions/list
+	await read("checkout", async () => {
+		for await (const s of paginate<Session>(
+			`${BASE}/v1/checkout/sessions?status=complete&${created}`,
+			c,
+		))
+			if (s.payment_intent) shares.set(s.payment_intent, sessionShare(s));
+	});
+	// `listed`: the payment falls inside the range, so the session list
+	// already covered it.
+	return async (pi: string, listed: boolean) => {
+		let share = shares.get(pi);
+		if (share !== undefined) return share;
+		share = 0;
+		let found = false;
+		await read("invoices", async () => {
+			const r = await getJson<List<InvoicePayment>>(
+				`${BASE}/v1/invoice_payments?status=paid&payment[type]=payment_intent&payment[payment_intent]=${pi}&expand[]=data.invoice`,
 				{ headers: headers(c) },
 			);
-			share = taxShare(ch.invoice);
-		} catch (err) {
-			denied(err);
-			share = 0;
-		}
-		shares.set(charge, share);
+			if (r.data[0]) {
+				share = invoiceShare(r.data[0].invoice);
+				found = true;
+			}
+		});
+		if (!found && !listed)
+			await read("checkout", async () => {
+				const r = await getJson<List<Session>>(
+					`${BASE}/v1/checkout/sessions?payment_intent=${pi}`,
+					{ headers: headers(c) },
+				);
+				if (r.data[0]) share = sessionShare(r.data[0]);
+			});
+		shares.set(pi, share);
 		return share;
 	};
 }
@@ -175,6 +215,7 @@ export const stripe = register({
 			"Balance: read",
 			"Balance transaction sources: read",
 			"Charges: read",
+			"Checkout Sessions: read",
 			"Invoices: read",
 			"Subscriptions: read",
 		],
@@ -198,16 +239,13 @@ export const stripe = register({
 			c,
 		))
 			if (!SKIP.has(t.type)) txns.push(t);
-		const tax = await taxShares(c, range, txns);
+		const tax = await taxShares(c, range);
 		const out: RevenueLine[] = [];
 		for (const t of txns) {
 			const refund = t.type.includes("refund") || t.type === "dispute";
-			const charge =
-				t.source?.object === "charge" ? t.source.id : t.source?.charge;
-			const share =
-				charge && (refund || t.source?.object === "charge")
-					? await tax(charge)
-					: 0;
+			const charge = t.source?.object === "charge";
+			const pi = t.source?.payment_intent;
+			const share = pi && (refund || charge) ? await tax(pi, charge) : 0;
 			out.push(stripeLine(t, refund, share));
 		}
 		return out;
