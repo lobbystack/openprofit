@@ -50,6 +50,7 @@ export const INTEGRATIONS = order(
 		"polar",
 		"openai",
 		"anthropic",
+		"openrouter",
 		"vercel",
 		"cloudflare",
 		"railway",

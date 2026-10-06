@@ -24,6 +24,7 @@ Each connector needs a key with specific permissions. The table lists what each 
 | [Polar](/integrations/polar) | Daily revenue and net revenue, MRR, active subscriptions | Organization access token with `organizations:read` and `metrics:read` |
 | [OpenAI](/integrations/openai) | Daily cost by project and line item | Organization admin key |
 | [Anthropic](/integrations/anthropic) | Daily cost by workspace and description | Admin key, available on organization accounts only |
+| [OpenRouter](/integrations/openrouter) | Daily cost by API key and model for the last 30 days, excluding bring-your-own-key (BYOK) usage | Management key, which can also create and delete API keys |
 | [Vercel](/integrations/vercel) | Daily charges per project | Access token scoped to the team |
 | [Cloudflare](/integrations/cloudflare) | Billable usage, or invoices when usage isn’t available | API token with Account · Billing · Read and Account · Account Settings · Read |
 | [Railway](/integrations/railway) | Monthly CPU, memory, egress, disk and backup usage per project, priced at Railway’s published rates | Account token, or a workspace token with its workspace id |
@@ -37,6 +38,7 @@ OpenProfit assigns a cost to a product through the provider’s own grouping. Th
 
 - **OpenAI**: projects
 - **Anthropic**: workspaces
+- **OpenRouter**: API keys
 - **Vercel**: projects
 - **Railway**: projects
 - **Cloudflare**: zones

@@ -4,6 +4,7 @@ import "./stripe";
 import "./polar";
 import "./openai";
 import "./anthropic";
+import "./openrouter";
 import "./railway";
 import "./vercel";
 import "./cloudflare";

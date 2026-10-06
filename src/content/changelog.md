@@ -9,7 +9,7 @@ Every release, newest first. The full history is in the [commit log on GitHub](h
 
 ## October 6, 2026
 
-- **DigitalOcean, GitHub and Twilio connectors.** DigitalOcean reports monthly cost per project from your invoices. GitHub reports daily Actions, Copilot and Packages charges per repository, for an organization or a personal account. Twilio reports your daily usage total.
+- **OpenRouter, DigitalOcean, GitHub and Twilio connectors.** OpenRouter reports daily cost per API key and model for the last 30 days. DigitalOcean reports monthly cost per project from your invoices. GitHub reports daily Actions, Copilot and Packages charges per repository, for an organization or a personal account. Twilio reports your daily usage total.
 - **Optional fields no longer block connecting.** Connectors with an optional field, like Railway's workspace id or Vercel's team id, submitted nothing if you left it empty. They connect now.
 - **Self-hosting with the built-in database works from the Docker image.** The production build dropped files the embedded Postgres needs, so the container failed on its first start. Fixed.
 - **Pages load faster.** HTML is compressed; the homepage went from 74 KB to 15 KB.

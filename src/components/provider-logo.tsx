@@ -6,6 +6,7 @@ import {
 	siGithub,
 	siGoogleplay,
 	siLemonsqueezy,
+	siOpenrouter,
 	siPaddle,
 	siRailway,
 	siResend,
@@ -53,6 +54,12 @@ export const PROVIDERS: Record<string, Provider> = {
 		kind: "cost",
 		v1: true,
 		path: siAnthropic.path,
+	},
+	openrouter: {
+		name: "OpenRouter",
+		kind: "cost",
+		v1: true,
+		path: siOpenrouter.path,
 	},
 	vercel: { name: "Vercel", kind: "cost", v1: true, path: siVercel.path },
 	cloudflare: {
