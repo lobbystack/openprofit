@@ -26,12 +26,14 @@ export function Hero() {
 							<ArrowRight size={12} />
 						</span>
 					</a>
-					<h1 className="mt-6 max-w-[760px] text-[40px] leading-[1.05] md:text-[56px]">
-						Know if your software makes money.
+					<div className="label-mono mt-8">Finance for developers</div>
+					<h1 className="mt-4 max-w-[760px] text-[40px] leading-[1.05] md:text-[56px]">
+						Every product you run, its revenue, its costs, what is left.
 					</h1>
 					<p className="prose-landing mt-5 max-w-[640px]">
-						Connect Stripe or Polar and the services you pay for. See revenue,
-						costs and profit for every product you run, updated every hour.
+						Revenue and costs pulled from the services you already use and
+						assigned to your products. See what each one makes, what it costs to
+						run, and which way it is going.
 					</p>
 					<div className="mt-8 flex gap-3">
 						<Button href="/login">Start for free</Button>

@@ -29,8 +29,9 @@ export function Connectors() {
 						cta="All connectors"
 						href="/docs/connectors"
 					>
-						Revenue from Stripe and Polar. Costs from OpenAI, Anthropic, Vercel,
-						Cloudflare and Railway. Flat plans take ten seconds to add by hand.
+						Revenue from your payment processor. Costs from your AI, hosting and
+						infrastructure bills. Anything else, typed in once and counted every
+						month.
 					</SectionHeader>
 				</div>
 				<div className="relative h-[300px]">

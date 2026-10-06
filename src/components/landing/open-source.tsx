@@ -4,7 +4,7 @@ import { Container, Section, SectionHeader } from "./primitives";
 const STATS = [
 	["MIT", "License"],
 	["1", "Container to self-host"],
-	["12", "Connectors"],
+	["7", "Connectors"],
 	["$0", "Under $2.5K MRR"],
 ];
 
@@ -19,8 +19,8 @@ export function OpenSource() {
 					cta="Read the source"
 					href={GITHUB_URL}
 				>
-					One Docker image with Postgres built in, or bring your own. Your
-					Stripe keys never leave your server.
+					One Docker image with Postgres built in, or bring your own. Your API
+					keys never leave your server.
 				</SectionHeader>
 				<div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line">
 					{STATS.map(([n, l]) => (

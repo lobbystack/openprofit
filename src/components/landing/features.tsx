@@ -35,9 +35,9 @@ export function FeatureProfit() {
 						cta="See the dashboard"
 						href="/login"
 					>
-						Revenue dashboards are everywhere. This one subtracts Stripe fees,
-						refunds, your AI bills and your hosting, so the number you see is
-						the number you keep.
+						Revenue dashboards are everywhere. This one subtracts processor
+						fees, refunds, your AI bills and your hosting, so the number you see
+						is the number you keep.
 					</SectionHeader>
 				</div>
 				<div className="mt-14 rounded-xl border border-line bg-card">
@@ -180,11 +180,11 @@ export function FeatureWeekly() {
 					tone="ink"
 					title="Know every Monday."
 					cta="See an example"
-					href="/docs/weekly-email"
+					href="/docs/connectors"
 				>
 					A short email with last week's revenue, costs and profit, and the one
-					cost that moved most. Paid plans add an alert the day a bill doubles
-					or a margin drops.
+					cost that moved most. Alerts the day a bill doubles, a margin drops or
+					a sync fails.
 				</SectionHeader>
 				<div className="mt-14 grid gap-4 md:grid-cols-2">
 					<div className="rounded-xl border border-line bg-card p-6">
