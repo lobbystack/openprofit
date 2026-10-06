@@ -69,7 +69,7 @@ function Onboarding() {
 					</select>
 				</label>
 				<Button className="h-9 w-full" size="sm">
-					{busy ? "Creating" : "Continue"}
+					{busy ? "Creating…" : "Continue"}
 				</Button>
 			</form>
 		</main>

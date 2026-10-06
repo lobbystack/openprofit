@@ -34,7 +34,13 @@ function Products() {
 		router.invalidate();
 	}
 
-	async function remove(id: string) {
+	async function remove(id: string, name: string) {
+		if (
+			!window.confirm(
+				`Remove ${name}? Its costs and revenue move to Shared, and its public page goes offline.`,
+			)
+		)
+			return;
 		await deleteProduct({ data: { id } });
 		router.invalidate();
 	}
@@ -139,7 +145,7 @@ function Products() {
 											<button
 												type="button"
 												title="Remove"
-												onClick={() => remove(p.id)}
+												onClick={() => remove(p.id, p.name)}
 												className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-negative"
 											>
 												<X size={13} />

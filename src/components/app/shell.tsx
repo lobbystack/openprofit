@@ -75,7 +75,7 @@ function Menu({
 			</button>
 			{open && (
 				<div
-					className={`absolute z-50 rounded-lg border border-line bg-paper p-1 shadow-[0_8px_24px_-12px_rgb(0_0_0/0.25)] ${panelClassName}`}
+					className={`menu-panel absolute z-50 rounded-lg border border-line bg-paper p-1 shadow-[0_8px_24px_-12px_rgb(0_0_0/0.25)] ${panelClassName}`}
 				>
 					{children(() => setOpen(false))}
 				</div>
@@ -99,7 +99,7 @@ export function Shell({
 			<aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-line bg-paper p-3 md:flex">
 				<Menu
 					className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2"
-					panelClassName="inset-x-0 top-10"
+					panelClassName="inset-x-0 top-10 origin-top"
 					trigger={
 						<>
 							<span className="flex min-w-0 items-center gap-2">
@@ -203,7 +203,7 @@ export function Shell({
 					</button>
 					<Menu
 						className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-[13px] hover:bg-surface-2"
-						panelClassName="inset-x-0 bottom-10"
+						panelClassName="inset-x-0 bottom-10 origin-bottom"
 						trigger={
 							<>
 								<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-3 text-[10px]">
@@ -234,10 +234,61 @@ export function Shell({
 			</aside>
 
 			<div className="min-w-0 flex-1">
-				<header className="flex h-12 items-center justify-between border-b border-line px-4 md:hidden">
-					<Link to="/app">
-						<Logo size={15} />
-					</Link>
+				{/* Phones: the sidebar's sections as a scrollable bar. */}
+				<header className="chrome sticky top-0 z-40 border-b border-line md:hidden">
+					<div className="flex h-12 items-center justify-between px-4">
+						<Link to="/app">
+							<Logo size={15} />
+						</Link>
+						<Menu
+							className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-[12px]"
+							panelClassName="right-0 top-10 w-56 origin-top-right"
+							trigger={workspace.email[0]}
+						>
+							{() => (
+								<>
+									<div className="truncate px-2 py-1.5 text-[12px] text-text-3">
+										{workspace.email}
+									</div>
+									<button type="button" className={item} onClick={toggleTheme}>
+										<SunMoon size={14} />
+										Theme
+									</button>
+									<button
+										type="button"
+										className={item}
+										onClick={() =>
+											authClient.signOut().then(() => {
+												window.location.href = "/login";
+											})
+										}
+									>
+										<LogOut size={14} />
+										Sign out
+									</button>
+								</>
+							)}
+						</Menu>
+					</div>
+					<nav className="flex gap-1 overflow-x-auto px-3 pb-2 [scrollbar-width:none]">
+						{NAV.map(({ to, label, ...rest }) => {
+							const active =
+								"exact" in rest ? path === to : path.startsWith(to);
+							return (
+								<Link
+									key={to}
+									to={to}
+									className={`flex h-8 shrink-0 items-center rounded-md px-3 text-[13px] ${
+										active
+											? "bg-surface-2 text-ink"
+											: "text-text-2 hover:text-ink"
+									}`}
+								>
+									{label}
+								</Link>
+							);
+						})}
+					</nav>
 				</header>
 				<main className="mx-auto max-w-[1024px] p-4 md:p-6">
 					{workspace.overCap && (

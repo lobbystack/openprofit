@@ -112,7 +112,7 @@ export function SectionHeader({
 		<div className={center ? "flex flex-col items-center text-center" : ""}>
 			{eyebrow && <Eyebrow tone={tone}>{eyebrow}</Eyebrow>}
 			<h2
-				className={`${eyebrow ? "mt-4" : ""} max-w-[512px] leading-[1]`}
+				className={`${eyebrow ? "mt-4" : ""} display max-w-[512px]`}
 				style={{ fontSize: size }}
 			>
 				{title}

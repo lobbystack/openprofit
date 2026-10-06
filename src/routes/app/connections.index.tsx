@@ -65,7 +65,13 @@ function Connections() {
 		}
 	}
 
-	async function remove(id: string) {
+	async function remove(id: string, name: string) {
+		if (
+			!window.confirm(
+				`Remove the ${name} connection? Its synced revenue and costs are deleted. Reconnecting syncs the history again.`,
+			)
+		)
+			return;
 		setBusy(id);
 		await deleteConnection({ data: { id } });
 		setBusy(null);
@@ -155,7 +161,9 @@ function Connections() {
 											type="button"
 											title="Remove"
 											disabled={busy === r.id}
-											onClick={() => remove(r.id)}
+											onClick={() =>
+												remove(r.id, PROVIDERS[r.provider]?.name ?? r.provider)
+											}
 											className="flex h-7 w-7 items-center justify-center rounded-md text-text-3 hover:bg-surface-2 hover:text-negative disabled:opacity-50"
 										>
 											<X size={13} />

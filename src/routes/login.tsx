@@ -100,7 +100,7 @@ function Login() {
 							className="h-9 w-full rounded-md border border-line bg-paper px-3 text-[13px] outline-none placeholder:text-text-3 focus:border-line-strong"
 						/>
 						<Button className="h-9 w-full" size="sm">
-							{state === "sending" ? "Sending" : "Email me a link"}
+							{state === "sending" ? "Sending…" : "Email me a link"}
 						</Button>
 						{state === "error" && (
 							<p className="text-[12px] text-negative">

@@ -107,14 +107,14 @@ function Connect() {
 							onClick={runTest}
 							className="h-8 rounded-md border border-line bg-paper px-3 text-[13px] hover:border-line-strong disabled:opacity-50"
 						>
-							{test.state === "testing" ? "Testing" : "Test"}
+							{test.state === "testing" ? "Testing…" : "Test"}
 						</button>
 						<button
 							type="submit"
 							disabled={test.state !== "ok" || saving}
 							className="h-8 rounded-md bg-ink px-3 text-[13px] text-paper hover:bg-ink-2 disabled:opacity-50"
 						>
-							{saving ? "Connecting" : "Connect"}
+							{saving ? "Connecting…" : "Connect"}
 						</button>
 						{test.state === "ok" && (
 							<span className="flex items-center gap-1.5 text-[12px] text-positive">

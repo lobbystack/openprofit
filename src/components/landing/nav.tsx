@@ -23,7 +23,7 @@ export function Nav() {
 
 	return (
 		<header
-			className={`fixed inset-x-0 top-0 z-40 bg-paper/90 backdrop-blur transition-[border-color] duration-150 ${
+			className={`chrome fixed inset-x-0 top-0 z-40 transition-[border-color] duration-150 ${
 				scrolled ? "border-b border-line" : "border-b border-transparent"
 			}`}
 		>

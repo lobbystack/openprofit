@@ -26,7 +26,7 @@ export function Hero() {
 							<ArrowRight size={12} />
 						</span>
 					</a>
-					<h1 className="mt-6 max-w-[760px] text-[40px] leading-[1.05] md:text-[56px]">
+					<h1 className="display mt-6 max-w-[760px] text-[40px] md:text-[56px]">
 						Finance for developers
 					</h1>
 					<p className="prose-landing mt-5 max-w-[640px]">

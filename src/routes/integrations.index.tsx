@@ -25,7 +25,7 @@ function Integrations() {
 		<>
 			<Nav />
 			<main className="mx-auto w-full max-w-[1024px] px-4 pt-28 pb-24">
-				<h1 className="text-[36px] leading-tight">Integrations</h1>
+				<h1 className="display text-[36px]">Integrations</h1>
 				<p className="prose-landing mt-3 max-w-[560px]">
 					Revenue from your payment processor, costs from the services you pay
 					for. Each takes a read-only key.
