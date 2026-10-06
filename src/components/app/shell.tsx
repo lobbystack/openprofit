@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "#/components/logo";
-import { resetAnalytics } from "#/lib/analytics";
 import { authClient } from "#/lib/auth-client";
 import { money } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
@@ -38,7 +37,6 @@ const item =
 	"flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[13px] text-text-2 hover:bg-surface-2 hover:text-ink";
 
 function signOut() {
-	resetAnalytics();
 	authClient.signOut().then(() => {
 		window.location.href = "/login";
 	});
