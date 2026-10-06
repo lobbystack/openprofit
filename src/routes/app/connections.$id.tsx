@@ -52,13 +52,14 @@ function Connection() {
 	const select = (
 		value: string | null,
 		onChange: (v: string | null) => void,
+		empty = "Shared",
 	) => (
 		<select
 			value={value ?? ""}
 			onChange={(e) => onChange(e.target.value || null)}
 			className="h-7 w-40 rounded-md border border-line bg-paper px-1.5 text-[12px] outline-none focus:border-line-strong"
 		>
-			<option value="">Shared</option>
+			<option value="">{empty}</option>
 			{c.products.map((pr) => (
 				<option key={pr.id} value={pr.id}>
 					{pr.name}
@@ -73,8 +74,8 @@ function Connection() {
 			<div className="mt-4 flex h-11 items-center justify-between rounded-xl border border-line bg-card px-4 text-[13px]">
 				<span>
 					{c.kind === "revenue"
-						? "Revenue counts toward"
-						: `Costs without a ${UNIT[c.provider] ?? "project"} count toward`}
+						? "Unassigned revenue counts toward"
+						: "Unassigned costs count toward"}
 				</span>
 				{select(c.productId, assignConnection)}
 			</div>
@@ -103,7 +104,7 @@ function Connection() {
 									)}
 								</span>
 								<span className="num w-24 text-right">{money(u.amount)}</span>
-								{select(u.productId, (v) => assign(u.id, v))}
+								{select(u.productId, (v) => assign(u.id, v), "Unassigned")}
 							</li>
 						))}
 					</ul>

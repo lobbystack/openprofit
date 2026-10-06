@@ -122,7 +122,11 @@ export const updateSettings = createServerFn({ method: "POST" })
 			const conns = await db.query.connections.findMany({
 				where: eq(schema.connections.workspaceId, ws.id),
 			});
-			void Promise.allSettled(conns.map((c) => syncConnection(c)));
+			void Promise.allSettled(
+				conns
+					.filter((c) => c.status !== "paused")
+					.map((c) => syncConnection(c)),
+			);
 		}
 		if (data.cadenceMinutes !== undefined) {
 			const floor = isCloud ? PLANS[ws.plan].cadenceMinutes : 0;

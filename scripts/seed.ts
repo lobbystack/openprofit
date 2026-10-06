@@ -35,8 +35,6 @@ const COST_PROVIDERS = [
 	{ provider: "anthropic", share: 0.16, mapped: true },
 	{ provider: "railway", share: 0.07, mapped: true },
 	{ provider: "cloudflare", share: 0.04, mapped: false },
-	{ provider: "supabase", share: 0.03, mapped: false },
-	{ provider: "resend", share: 0.03, mapped: false },
 ];
 
 // `--owner=you@example.com` makes that signed-in user a member of the
@@ -74,6 +72,7 @@ async function main() {
 		.values(PRODUCTS.map((p) => ({ workspaceId: ws.id, name: p.name, slug: p.slug })))
 		.returning();
 
+	// Paused: the credentials are fake, so the scheduler must not sync them.
 	const creds = await encrypt({ seeded: true });
 	const connections = await db
 		.insert(schema.connections)
@@ -84,6 +83,7 @@ async function main() {
 				kind: "revenue" as const,
 				authKind: "oauth" as const,
 				credentials: creds,
+				status: "paused" as const,
 				cadenceMinutes: 60,
 				lastSyncedAt: Date.now() - 4 * 60_000,
 			})),
@@ -93,6 +93,7 @@ async function main() {
 				kind: "cost" as const,
 				authKind: "key" as const,
 				credentials: creds,
+				status: "paused" as const,
 				cadenceMinutes: 60,
 				lastSyncedAt: Date.now() - 4 * 60_000,
 			})),
@@ -129,6 +130,8 @@ async function main() {
 					netCents: net,
 					netBaseCents: net,
 					kind: "subscription",
+					subUnitId: `${s.provider}:${p.slug}`,
+					subUnitLabel: p.name,
 					externalId: `seed-${m}-${p.slug}`,
 				});
 			}
@@ -166,6 +169,7 @@ async function main() {
 						amountBaseCents: Math.round(total * p.share),
 						service: cp.provider,
 						subUnitId: `${cp.provider}:${p.slug}`,
+						subUnitLabel: p.name,
 						source: "sync",
 						externalId: `seed-${cp.provider}-${m}-${p.slug}`,
 					});
@@ -188,17 +192,20 @@ async function main() {
 		}
 	});
 
-	// Mapped providers get a mapping row per product, as a real sync would.
+	// Mapped providers get a mapping row per product, as a user would set.
 	const mappings: (typeof schema.productMappings.$inferInsert)[] = [];
-	for (const cp of COST_PROVIDERS.filter((x) => x.mapped)) {
+	const mappedProviders = [
+		...REVENUE_SOURCES.map((s) => s.provider),
+		...COST_PROVIDERS.filter((x) => x.mapped).map((x) => x.provider),
+	];
+	for (const provider of mappedProviders) {
 		for (const p of PRODUCTS) {
 			const product = products.find((x) => x.slug === p.slug);
 			if (!product) continue;
 			mappings.push({
 				workspaceId: ws.id,
-				connectionId: conn(cp.provider).id,
-				subUnitId: `${cp.provider}:${p.slug}`,
-				subUnitLabel: `${p.name} (${cp.provider})`,
+				connectionId: conn(provider).id,
+				subUnitId: `${provider}:${p.slug}`,
 				productId: product.id,
 			});
 		}
@@ -210,7 +217,26 @@ async function main() {
 
 	const draftly = products.find((p) => p.slug === "draftly");
 	const shipmail = products.find((p) => p.slug === "shipmail");
+	// Providers without a connector are flat costs, as a user would add them.
 	await db.insert(schema.flatCosts).values([
+		{
+			workspaceId: ws.id,
+			name: "Supabase Pro",
+			provider: "supabase",
+			amountCents: 2500,
+			currency: "USD",
+			interval: "month",
+			startsOn: `${months[0]}-01`,
+		},
+		{
+			workspaceId: ws.id,
+			name: "Resend Pro",
+			provider: "resend",
+			amountCents: 2000,
+			currency: "USD",
+			interval: "month",
+			startsOn: `${months[0]}-01`,
+		},
 		{
 			workspaceId: ws.id,
 			productId: draftly?.id,
