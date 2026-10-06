@@ -28,14 +28,18 @@ const edge = createMiddleware({ type: "request" }).server(
 		}
 
 		const o = await import("./server/observability.server");
+		const route = o.routePattern(url.pathname);
 		const result = url.pathname.startsWith("/ingest/")
 			? await next()
 			: await o.traced(
-					`${request.method} ${url.pathname}`,
-					{ "http.request.method": request.method, "url.path": url.pathname },
+					`${request.method} ${route}`,
+					{ "http.request.method": request.method, "http.route": route },
 					async (span) => {
 						const r = await next();
 						span.setAttribute("http.response.status_code", r.response.status);
+						// Unknown paths (mostly probes) share one name.
+						if (r.response.status === 404)
+							span.updateName(`${request.method} not found`);
 						return r;
 					},
 					o.SpanKind.SERVER,
@@ -90,7 +94,8 @@ const edge = createMiddleware({ type: "request" }).server(
 );
 
 // Server function errors go to PostHog error tracking. Redirects and
-// not-found are control flow, not errors.
+// not-found are control flow, not errors; reportError also skips provider
+// and validation errors.
 const errors = createMiddleware({ type: "function" }).server(
 	async ({ next }) => {
 		try {

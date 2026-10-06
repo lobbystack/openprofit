@@ -9,7 +9,13 @@ async function proxy({ request }: { request: Request }) {
 	const api = new URL(process.env.POSTHOG_HOST ?? "https://us.i.posthog.com");
 	const url = new URL(request.url);
 	const path = url.pathname.replace(/^\/ingest/, "");
-	const target = new URL(path + url.search, api);
+	// Only paths on the PostHog host: "//evil.com/x" would resolve to another
+	// host if joined as a URL.
+	if (!/^\/(?!\/)/.test(path) || path.includes("\\"))
+		return new Response(null, { status: 400 });
+	const target = new URL(api);
+	target.pathname = path;
+	target.search = url.search;
 	if (/^\/(static|array)\//.test(path))
 		target.hostname = api.hostname.replace(/^(\w+)\.i\./, "$1-assets.i.");
 

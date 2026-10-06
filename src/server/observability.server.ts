@@ -29,6 +29,46 @@ import "./env";
 const key = process.env.POSTHOG_KEY;
 const host = process.env.POSTHOG_HOST ?? "https://us.i.posthog.com";
 
+// Emails, bearer headers and anything shaped like a key or token are
+// replaced before text leaves the server.
+export function scrub(text: string) {
+	return text
+		.replace(/[^\s@"'<>()]+@[^\s@"'<>()]+\.[a-z]{2,}/gi, "[email]")
+		.replace(/\b(Bearer|Basic)\s+\S+/gi, "$1 [secret]")
+		.replace(
+			/\b[a-z]{2,12}(?:[_-][a-z0-9]{2,12})*[_-][A-Za-z0-9]{16,}\b/gi,
+			"[secret]",
+		)
+		.replace(/[A-Za-z0-9+/=_-]{40,}/g, "[secret]");
+}
+
+// What an error may say outside the server. Provider errors carry the
+// provider's response text, so only their status goes out.
+export function safeError(err: unknown) {
+	if (!(err instanceof Error)) return scrub(String(err));
+	if (err.name === "ConnectorError")
+		return `ConnectorError ${(err as Error & { status?: number }).status ?? ""}`.trim();
+	return scrub(err.stack ?? `${err.name}: ${err.message}`);
+}
+
+// The app's own log lines, by their tag. Anything else stays local.
+const TAGGED = /^\[(sync|weekly|billing|scheduler)\]/;
+
+// Span names use route patterns, so ids and slugs stay out of them.
+const ROUTES: [RegExp, string][] = [
+	[/^\/app\/connections\/[^/]+$/, "/app/connections/$id"],
+	[/^\/app\/connect\/[^/]+$/, "/app/connect/$provider"],
+	[/^\/p\/[^/]+\/[^/]+$/, "/p/$workspace/$product"],
+	[/^\/(docs|integrations|compare)\/[^/]+$/, "/$1/$slug"],
+	[/^\/api\/auth\/.*/, "/api/auth/$"],
+	[/^\/_serverFn\/.*/, "/_serverFn/$"],
+];
+export function routePattern(path: string) {
+	for (const [re, pattern] of ROUTES)
+		if (re.test(path)) return path.replace(re, pattern);
+	return path;
+}
+
 function setup() {
 	if (!key) return null;
 	const resource = resourceFromAttributes({
@@ -50,8 +90,9 @@ function setup() {
 		],
 	});
 	const logger = logs.getLogger("openprofit");
-	// console.info, warn and error also become log records. console.log
-	// stays local: without an email provider it prints sign-in links.
+	// The app's tagged console.info, warn and error lines also become log
+	// records, scrubbed. console.log stays local: without an email provider
+	// it prints sign-in links.
 	const levels = [
 		["info", SeverityNumber.INFO],
 		["warn", SeverityNumber.WARN],
@@ -61,11 +102,12 @@ function setup() {
 		const original = console[level].bind(console);
 		console[level] = (...args: unknown[]) => {
 			original(...args);
+			if (typeof args[0] !== "string" || !TAGGED.test(args[0])) return;
 			logger.emit({
 				severityNumber,
 				severityText: level.toUpperCase(),
 				body: args
-					.map((a) => (a instanceof Error ? (a.stack ?? a.message) : String(a)))
+					.map((a) => (a instanceof Error ? safeError(a) : scrub(String(a))))
 					.join(" "),
 			});
 		};
@@ -110,7 +152,10 @@ export async function traced<T>(
 	try {
 		return await fn(span);
 	} catch (err) {
-		span.recordException(err as Error);
+		span.recordException({
+			name: err instanceof Error ? err.name : "Error",
+			message: safeError(err),
+		});
 		span.setStatus({ code: SpanStatusCode.ERROR });
 		throw err;
 	} finally {
@@ -118,9 +163,19 @@ export async function traced<T>(
 	}
 }
 
-// Server exceptions, sent without a person.
+// Server exceptions, sent without a person. Provider and validation
+// errors are the user's to fix, not bugs, so they stay out; the rest are
+// scrubbed.
 export function reportError(err: unknown, props?: Record<string, unknown>) {
-	o?.posthog.captureException(err, undefined, props);
+	if (!o) return;
+	const name = err instanceof Error ? err.name : "";
+	if (name === "ConnectorError" || name === "ZodError") return;
+	const safe = new Error(
+		scrub(err instanceof Error ? err.message : String(err)),
+	);
+	safe.name = name || "Error";
+	if (err instanceof Error && err.stack) safe.stack = scrub(err.stack);
+	o.posthog.captureException(safe, undefined, props);
 }
 
 export { SpanKind };

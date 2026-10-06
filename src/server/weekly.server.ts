@@ -1,6 +1,5 @@
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { authSchema, db, schema } from "#/db";
-import { APP_NAME } from "#/lib/app";
 import { sendEmail } from "./email.server";
 
 const day = (offset: number) =>
@@ -111,7 +110,6 @@ export async function sendWeeklyEmails() {
 			sent++;
 		}
 	}
-	if (sent)
-		console.info(`[${APP_NAME}] weekly email sent to ${sent} member(s)`);
+	if (sent) console.info(`[weekly] email sent to ${sent} member(s)`);
 	return sent;
 }

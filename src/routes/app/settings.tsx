@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader } from "#/components/app/shell";
-import { setConsent, track } from "#/lib/analytics";
+import { readConsent, setConsent, track } from "#/lib/analytics";
 import { PLANS, type Plan } from "#/lib/plans";
 import { openPortal, startCheckout } from "#/server/billing.functions";
 import { CURRENCIES } from "#/server/onboarding.functions";
@@ -46,6 +46,14 @@ function Settings() {
 	const [billingError, setBillingError] = useState<string | null>(null);
 	const analytics = useLoaderData({ from: "__root__" });
 	const [tracking, setTracking] = useState(analytics.consent === "yes");
+	// The root loader is cached for the session; the cookie is current, and
+	// follows the banner too.
+	useEffect(() => {
+		const sync = () => setTracking(readConsent() === "yes");
+		sync();
+		window.addEventListener("op:consent", sync);
+		return () => window.removeEventListener("op:consent", sync);
+	}, []);
 
 	// Polar sends the browser back here with ?checkout_id= after paying.
 	useEffect(() => {
