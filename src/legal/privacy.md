@@ -2,7 +2,7 @@
 
 Last updated: October 6, 2026
 
-This policy explains what personal information OpenProfit collects, why, and what you can do about it. OpenProfit is operated by LobbyStack, Montreal, Quebec, Canada ("we", "us"). It covers the hosted service at openprofit.dev. If you run the open-source software on your own server, we receive nothing from it unless you switch on the usage ping described in section 5.
+This policy explains what personal information OpenProfit collects, why, and what you can do about it. OpenProfit is operated by Lobbystack Inc., Montreal, Quebec, Canada ("we", "us"). It covers the hosted service at openprofit.dev. If you run the open-source software on your own server, we receive nothing from it unless you switch on the usage ping described in section 5.
 
 ## 1. What we collect
 

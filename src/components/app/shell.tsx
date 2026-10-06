@@ -126,7 +126,7 @@ export function Shell({
 						title="Sign out"
 						className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-[13px] hover:bg-surface-2"
 					>
-						<span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-3 text-[10px] uppercase">
+						<span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-3 text-[10px]">
 							{workspace.email[0]}
 						</span>
 						<span className="flex-1 truncate text-left text-text-2">

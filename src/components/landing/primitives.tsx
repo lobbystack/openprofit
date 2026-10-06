@@ -27,12 +27,15 @@ export function Button({
 	size = "md",
 	href,
 	className = "",
+	type = "submit",
 }: {
 	children: React.ReactNode;
 	variant?: "primary" | "secondary" | "paper" | "translucent";
 	size?: "sm" | "md";
 	href?: string;
 	className?: string;
+	// Without href the button sits in a form, so it submits by default.
+	type?: "submit" | "button";
 }) {
 	const base =
 		"inline-flex items-center justify-center gap-1.5 rounded-md whitespace-nowrap font-medium transition-colors duration-150";
@@ -55,7 +58,7 @@ export function Button({
 		);
 	}
 	return (
-		<button type="button" className={cls}>
+		<button type={type} className={cls}>
 			{children}
 		</button>
 	);

@@ -2,7 +2,7 @@
 
 Last updated: October 6, 2026
 
-These terms are a contract between you and LobbyStack (Montreal, Quebec, Canada), which operates OpenProfit ("we", "us"). They cover the hosted service at openprofit.dev and its subdomains (the "Service"). By creating an account or using the Service you accept them. If you use the Service for a company, you confirm you can bind that company, and "you" means the company.
+These terms are a contract between you and Lobbystack Inc. (Montreal, Quebec, Canada), which operates OpenProfit ("we", "us"). They cover the hosted service at openprofit.dev and its subdomains (the "Service"). By creating an account or using the Service you accept them. If you use the Service for a company, you confirm you can bind that company, and "you" means the company.
 
 The open-source code at github.com/lobbystack/openprofit is licensed under the MIT License. If you run your own copy, the MIT License governs the software and these terms do not apply, except section 11 on telemetry if you switch it on.
 
