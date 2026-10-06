@@ -124,8 +124,14 @@ export function priceConsumption(
 							add(key, (v / 1e9) * 0.01);
 							break;
 						case "extra_branches_month": {
-							// The metric counts every child branch; the plan's allowance
-							// is free for each hour of the bucket.
+							// Branch-hours of every child branch. The plan's allowance
+							// (branches per project minus the root) is free for each
+							// hour of the bucket; a branch-month is 744 hours at $1.50
+							// (https://neon.com/docs/introduction/usage-calculations,
+							// read 2026-10-06).
+							// ponytail: Neon meters hourly; a monthly bucket nets busy
+							// hours against quiet ones, so spiky branch counts price
+							// low. Daily buckets reach back only 60 days.
 							const billable = Math.max(
 								0,
 								v - plan.freeBranches * Math.max(0, hours),
@@ -193,6 +199,8 @@ export const neon = register({
 		const o = await org(c);
 		return { label: o.name };
 	},
+	// Monthly history reaches back a year, from the first full month.
+	historyDays: 330,
 	async fetchCosts(c, range: SyncRange) {
 		const o = await org(c);
 		// The Free plan has no bill and no consumption history.

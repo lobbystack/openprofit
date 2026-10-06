@@ -5,7 +5,13 @@ const BASE = "https://openrouter.ai/api/v1";
 const headers = (c: Credentials) => ({ Authorization: `Bearer ${c.key}` });
 
 type Row = { date: string; model: string; usage: number };
-type Key = { hash: string; name: string; label: string; usage: number };
+type Key = {
+	hash: string;
+	name: string;
+	label: string;
+	usage: number;
+	usage_monthly?: number;
+};
 
 // Sum usage per day and model. `usage` is OpenRouter credits in USD;
 // byok_usage_inference is billed by the user's own provider account, so it
@@ -99,6 +105,7 @@ export const openrouter = register({
 	},
 	// The API covers the last 30 completed UTC days and ignores the range:
 	// every sync rereads all 30, so late corrections replace earlier figures.
+	historyDays: 30,
 	async fetchCosts(c) {
 		const keys: Key[] = [];
 		const seen = new Set<string>();
@@ -115,10 +122,13 @@ export const openrouter = register({
 		}
 		const total = await activity(c);
 		const perKey: { key: Key; rows: Row[] }[] = [];
-		// ponytail: one request per key that has ever spent credits. Fine for
-		// tens of keys; with hundreds, map workspaces (group_by=workspace).
+		// One request per key that spent this UTC month. The key list has no
+		// figure for the 30-day window itself.
+		// ponytail: a key idle so far this month but used late last month
+		// shows that spend without a key until it spends again; a per-key
+		// usage field for the window would close the gap.
 		for (const key of keys) {
-			if (!key.usage) continue;
+			if (!(key.usage_monthly ?? key.usage)) continue;
 			perKey.push({
 				key,
 				rows: await activity(c, `?api_key_hash=${key.hash}`),

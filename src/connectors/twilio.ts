@@ -58,7 +58,9 @@ export const twilio = register({
 	async verify(c) {
 		const today = new Date().toISOString().slice(0, 10);
 		await getJson<Page>(dailyUrl(c, today, today, 1), { headers: headers(c) });
-		return { label: c.accountSid.trim() };
+		// A usage-only key can't read the account's name.
+		const sid = c.accountSid.trim();
+		return { label: `${sid.slice(0, 2)}…${sid.slice(-4)}` };
 	},
 	async fetchCosts(c, range: SyncRange) {
 		const records: UsageRecord[] = [];

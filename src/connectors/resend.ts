@@ -1,5 +1,11 @@
 import { register } from "./registry";
-import { type CostLine, type Credentials, getJson, splitCents } from "./types";
+import {
+	ConnectorError,
+	type CostLine,
+	type Credentials,
+	getJson,
+	splitByUsage,
+} from "./types";
 
 const API = "https://api.resend.com";
 const headers = (c: Credentials) => ({ Authorization: `Bearer ${c.key}` });
@@ -62,23 +68,8 @@ export const RESEND_TIERS: Record<
 		per1k: 46,
 	},
 };
-// The Free plan stops at 100 emails a day and has no overage (same pages).
-const FREE_DAILY = 100;
-
-const cost = (t: (typeof RESEND_TIERS)[string], emails: number) =>
-	t.fee + Math.round((Math.max(0, emails - t.emails) * t.per1k) / 1000);
-
-// Detection prices a month at the cheapest plan that could have sent it.
-// Free only fits under its monthly and daily caps.
-export function cheapestTier(emails: number, busiestDay: number) {
-	let best = RESEND_TIERS["pro-50k"];
-	for (const [id, t] of Object.entries(RESEND_TIERS)) {
-		if (id === "free" && (emails > t.emails || busiestDay > FREE_DAILY))
-			continue;
-		if (cost(t, emails) < cost(best, emails)) best = t;
-	}
-	return best;
-}
+const overage = (t: (typeof RESEND_TIERS)[string], emails: number) =>
+	Math.round((Math.max(0, emails - t.emails) * t.per1k) / 1000);
 
 // One row of https://resend.com/docs/api-reference/emails/get-metrics.md
 // with dimensions period, domain and optionally broadcast. Field names from
@@ -91,80 +82,75 @@ export type ResendRow = {
 	received?: number;
 };
 
-// One line per month and sending domain. A domain carries its share of the
-// month's emails times the plan fee plus overage. `since` is the first day
-// the API actually returned (it clamps to the plan's retention), so a month
-// cut short is skipped instead of overwriting a complete figure.
+const DAY = 86_400_000;
+const daysIn = (day: string) =>
+	new Date(
+		Date.UTC(Number(day.slice(0, 4)), Number(day.slice(5, 7)), 0),
+	).getUTCDate();
+
+// One line per day and sending domain. Each day carries its share of the
+// month's plan fee, plus the overage its emails add once the month is past
+// the plan's volume, split across domains by that day's emails. A day with
+// no email puts its fee share on the connection. Days stand alone, so a
+// month that falls partly out of Resend's retention never freezes half
+// counted: its older days keep the lines they were given.
+// ponytail: when a month's first days fall out of the window, its later
+// days are repriced without them, which undercounts overage only in a month
+// that went over the plan's volume.
 export function resendLines(
 	all: ResendRow[],
 	broadcasts: ResendRow[],
-	plan: string | undefined,
+	plan: (typeof RESEND_TIERS)[string],
 	since: string,
+	today: string,
 ): CostLine[] {
 	// Broadcasts are billed by contacts on marketing plans, not by email.
-	const daily = new Map<string, number>();
+	const daily = new Map<string, Map<string, number>>();
 	const add = (r: ResendRow, sign: number) => {
 		if (!r.period) return;
-		const k = `${r.period.slice(0, 10)}|${r.domain_name ?? ""}`;
-		daily.set(k, (daily.get(k) ?? 0) + sign * (r.received ?? 0));
+		const day = r.period.slice(0, 10);
+		const domains = daily.get(day) ?? new Map<string, number>();
+		const name = r.domain_name ?? "";
+		domains.set(name, (domains.get(name) ?? 0) + sign * (r.received ?? 0));
+		daily.set(day, domains);
 	};
 	for (const r of all) add(r, 1);
 	for (const r of broadcasts) if (r.broadcast_id) add(r, -1);
 
-	const months = new Map<
-		string,
-		{ domains: Map<string, number>; days: Map<string, number> }
-	>();
-	for (const [k, n] of daily) {
-		if (n <= 0) continue;
-		const [day, domain] = k.split("|");
-		const m = months.get(day.slice(0, 7)) ?? {
-			domains: new Map(),
-			days: new Map(),
-		};
-		m.domains.set(domain, (m.domains.get(domain) ?? 0) + n);
-		m.days.set(day, (m.days.get(day) ?? 0) + n);
-		months.set(day.slice(0, 7), m);
-	}
-	// A chosen plan charges its fee in months with no email too.
-	if (plan) {
-		for (
-			let d = new Date(`${since.slice(0, 7)}-01T00:00:00Z`);
-			d.getTime() <= Date.now();
-			d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1))
-		) {
-			const month = d.toISOString().slice(0, 7);
-			if (!months.has(month))
-				months.set(month, { domains: new Map(), days: new Map() });
-		}
-	}
-
 	const out: CostLine[] = [];
-	for (const [month, m] of months) {
-		if (`${month}-01` < since.slice(0, 10)) continue;
-		const emails = [...m.domains.values()].reduce((a, b) => a + b, 0);
-		const tier =
-			(plan && RESEND_TIERS[plan]) ||
-			cheapestTier(emails, Math.max(0, ...m.days.values()));
-		const total = cost(tier, emails);
-		if (!total) continue;
-		// Emails with no domain, and the fee of an empty month, go to the
-		// connection. That line drops to zero once domains have email.
-		if (!emails) m.domains.set("", 1);
-		else if (!m.domains.has("")) m.domains.set("", 0);
-		const names = [...m.domains.keys()];
-		const parts = splitCents(total, [...m.domains.values()]);
-		names.forEach((name, i) => {
+	let month = "";
+	let sent = 0;
+	for (
+		let t = Date.parse(`${since.slice(0, 10)}T00:00:00Z`);
+		t <= Date.parse(`${today}T00:00:00Z`);
+		t += DAY
+	) {
+		const day = new Date(t).toISOString().slice(0, 10);
+		if (day.slice(0, 7) !== month) {
+			month = day.slice(0, 7);
+			sent = 0;
+		}
+		const domains = daily.get(day) ?? new Map<string, number>();
+		const emails = [...domains.values()].reduce(
+			(a, n) => a + Math.max(0, n),
+			0,
+		);
+		const n = daysIn(day);
+		const fee =
+			Math.floor(plan.fee / n) +
+			(Number(day.slice(8, 10)) <= plan.fee % n ? 1 : 0);
+		const cents = fee + overage(plan, sent + emails) - overage(plan, sent);
+		sent += emails;
+		for (const [name, part] of splitByUsage(cents, domains))
 			out.push({
-				externalId: `${month}:${name || "none"}`,
-				date: `${month}-01`,
+				externalId: `${day}:${name || "none"}`,
+				date: day,
 				currency: "USD",
-				amountCents: parts[i],
+				amountCents: part,
 				service: "Emails",
 				subUnitId: name || undefined,
 				subUnitLabel: name || undefined,
 			});
-		});
 	}
 	return out;
 }
@@ -182,9 +168,8 @@ export const resend = register({
 			{
 				name: "plan",
 				label: "Plan",
-				optional: true,
 				options: [
-					{ value: "", label: "Detect automatically" },
+					{ value: "", label: "Pick your plan" },
 					...Object.entries(RESEND_TIERS).map(([value, t]) => ({
 						value,
 						label: t.label,
@@ -203,8 +188,15 @@ export const resend = register({
 		);
 		return { label: r.data[0]?.name ?? "Resend" };
 	},
+	// Resend keeps 30 days; lines inside the last 28 are always returned.
+	historyDays: 28,
 	async fetchCosts(c, range) {
-		// Whole months, so the first month's line is never partial.
+		const plan = RESEND_TIERS[c.plan];
+		if (!plan)
+			throw new ConnectorError(
+				"Pick your Resend plan on the connection. OpenProfit prices emails by it.",
+			);
+		// From the month's start, so overage counts the whole month.
 		const start = `${range.from.slice(0, 7)}-01`;
 		// https://resend.com/docs/api-reference/emails/get-metrics.md (read
 		// 2026-10-06). Cached up to 15 minutes; start_date clamps to the plan's
@@ -219,8 +211,9 @@ export const resend = register({
 		return resendLines(
 			all.data ?? [],
 			broadcasts.data ?? [],
-			c.plan || undefined,
-			all.start_date,
+			plan,
+			all.start_date > start ? all.start_date : start,
+			range.to,
 		);
 	},
 });

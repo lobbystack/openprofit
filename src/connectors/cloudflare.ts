@@ -15,6 +15,7 @@ type Envelope<T> = {
 	success: boolean;
 	result: T;
 	errors: { message: string }[];
+	result_info?: { page: number; per_page: number; total_count?: number };
 };
 
 async function accountId(c: Credentials) {
@@ -105,11 +106,21 @@ export const cloudflare = register({
 			)
 				throw err;
 		}
-		const h = await getJson<Envelope<Invoice[]>>(
-			`${BASE}/accounts/${id}/billing/history?per_page=50`,
-			{ headers: headers(c) },
-		);
-		for (const inv of h.result ?? []) {
+		// Every page of the history, so a full sync sees every invoice.
+		// https://developers.cloudflare.com/api/resources/user/subresources/billing/subresources/history/methods/list/
+		const invoices: Invoice[] = [];
+		for (let page = 1; ; page++) {
+			const h = await getJson<Envelope<Invoice[]>>(
+				`${BASE}/accounts/${id}/billing/history?per_page=50&page=${page}`,
+				{ headers: headers(c) },
+			);
+			const rows = h.result ?? [];
+			invoices.push(...rows);
+			const total = h.result_info?.total_count;
+			if (rows.length < 50 || (total !== undefined && invoices.length >= total))
+				break;
+		}
+		for (const inv of invoices) {
 			const date = inv.occurred_at.slice(0, 10);
 			if (date < range.from || date > range.to || !inv.amount) continue;
 			out.push({

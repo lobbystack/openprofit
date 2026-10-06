@@ -5,6 +5,7 @@ import {
 	type RevenueLine,
 	type Snapshot,
 	type SyncRange,
+	splitCents,
 } from "./types";
 
 // Paddle Billing. Sandbox keys contain `_sdbx_` and talk to the sandbox API.
@@ -50,7 +51,7 @@ export type PaddleAdjustment = {
 	subscription_id: string | null;
 	currency_code: string;
 	created_at: string;
-	items: { item_id: string }[];
+	items: { item_id: string; totals?: { subtotal: string } }[];
 	totals: { subtotal: string; fee: string; retained_fee?: string | null };
 };
 
@@ -102,21 +103,62 @@ export function paddleTxnLines(t: PaddleTxn): RevenueLine[] {
 }
 
 // Refunds, credits and chargebacks take back the amount before tax. Paddle
-// returns its fee on the adjustment except `retained_fee`.
-export function paddleAdjustmentLine(
+// returns its fee on the adjustment except `retained_fee`. An adjustment
+// over items of several products becomes one line per product, split by
+// each item's amount; the fee follows the same split.
+export function paddleAdjustmentLines(
 	a: PaddleAdjustment,
+	productOf: (itemId: string) => { id: string; name: string } | undefined,
+): RevenueLine[] {
+	const groups = new Map<
+		string,
+		{ product?: { id: string; name: string }; amount: number }
+	>();
+	for (const it of a.items) {
+		const product = productOf(it.item_id);
+		const key = product?.id ?? "";
+		const g = groups.get(key) ?? { product, amount: 0 };
+		g.amount += int(it.totals?.subtotal);
+		groups.set(key, g);
+	}
+	const parts = [...groups.values()];
+	const total = int(a.totals.subtotal);
+	const fee = int(a.totals.fee);
+	const kept = int(a.totals.retained_fee);
+	// One product, or item amounts that don't add up to the total: one line.
+	if (parts.length <= 1 || parts.reduce((s, g) => s + g.amount, 0) !== total)
+		return [adjustmentLine(a, a.id, total, fee, kept, parts[0]?.product)];
+	const weights = parts.map((g) => g.amount);
+	const fees = splitCents(fee, weights);
+	const keptParts = splitCents(kept, weights);
+	return parts.map((g, i) =>
+		adjustmentLine(
+			a,
+			`${a.id}:${g.product?.id ?? "none"}`,
+			g.amount,
+			fees[i],
+			keptParts[i],
+			g.product,
+		),
+	);
+}
+
+function adjustmentLine(
+	a: PaddleAdjustment,
+	externalId: string,
+	refund: number,
+	fee: number,
+	retained: number,
 	product?: { id: string; name: string },
 ): RevenueLine {
-	const refund = int(a.totals.subtotal);
-	const feeBack = int(a.totals.fee) - int(a.totals.retained_fee);
 	return {
-		externalId: a.id,
+		externalId,
 		date: day(a.created_at),
 		currency: a.currency_code.toUpperCase(),
 		grossCents: 0,
-		feesCents: int(a.totals.retained_fee) - int(a.totals.fee),
+		feesCents: retained - fee,
 		refundsCents: refund,
-		netCents: feeBack - refund,
+		netCents: fee - retained - refund,
 		kind: a.subscription_id ? "subscription" : "one_time",
 		subUnitId: product?.id,
 		subUnitLabel: product?.name,
@@ -194,8 +236,7 @@ export const paddle = register({
 		)) {
 			if (day(a.created_at) < since) break;
 			if (!TAKES_BACK.has(a.action)) continue;
-			const item = a.items[0]?.item_id;
-			if (item && !products.has(item)) {
+			if (a.items.some((it) => !products.has(it.item_id))) {
 				// https://developer.paddle.com/api-reference/transactions/get-transaction
 				const r = await getJson<{ data: PaddleTxn }>(
 					`${base(c)}/transactions/${a.transaction_id}`,
@@ -203,7 +244,7 @@ export const paddle = register({
 				);
 				remember(r.data);
 			}
-			out.push(paddleAdjustmentLine(a, item ? products.get(item) : undefined));
+			out.push(...paddleAdjustmentLines(a, (id) => products.get(id)));
 		}
 		return out;
 	},

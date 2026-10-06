@@ -4,7 +4,7 @@ import {
 	type CostLine,
 	type Credentials,
 	getJson,
-	splitCents,
+	splitByUsage,
 } from "./types";
 
 const API = "https://api.firecrawl.dev/v2/team";
@@ -82,17 +82,15 @@ function planFor(c: Credentials, planCredits: number) {
 
 // https://docs.firecrawl.dev/api-reference/endpoint/credit-usage (read 2026-10-06)
 async function creditUsage(c: Credentials) {
-	const r = await getJson<{ data: { planCredits: number } }>(
-		`${API}/credit-usage`,
-		{ headers: headers(c) },
-	);
+	const r = await getJson<{
+		data: { planCredits: number; billingPeriodStart?: string | null };
+	}>(`${API}/credit-usage`, { headers: headers(c) });
 	return r.data;
 }
 
 // One plan line and one extra-credits line per billing period and API key.
-// Each key carries its share of the period's credits. Every period is priced
-// at the current plan. Extra credits are the credits above the allotment,
-// rounded up to whole $5 packs.
+// Each key carries its share of the period's credits. Extra credits are the
+// credits above the allotment, rounded up to whole $5 packs.
 export function firecrawlLines(
 	periods: FirecrawlPeriod[],
 	plan: (typeof FIRECRAWL_PLANS)[string],
@@ -109,36 +107,50 @@ export function firecrawlLines(
 	const out: CostLine[] = [];
 	for (const [day, keys] of byPeriod) {
 		const used = [...keys.values()].reduce((a, b) => a + b, 0);
-		for (const k of [...keys.keys()]) if (!keys.get(k)) keys.delete(k);
-		// A period with no usage puts the fee on the connection. Once keys
-		// have usage, that line drops to zero instead of counting twice.
-		if (!used) keys.set("", 1);
-		else if (!keys.has("")) keys.set("", 0);
 		const extra = plan.pack
 			? Math.ceil(Math.max(0, used - plan.credits) / plan.pack) * PACK_CENTS
 			: 0;
 		const fee = yearly ? Math.round(plan.yearly / 12) : plan.monthly;
-		for (const [service, total] of [
-			["Plan", fee],
-			["Extra credits", extra],
+		for (const [service, id, total] of [
+			["Plan", "plan", fee],
+			["Extra credits", "extra", extra],
 		] as const) {
-			if (!total) continue;
-			const names = [...keys.keys()];
-			const parts = splitCents(total, [...keys.values()]);
-			names.forEach((name, i) => {
+			const parts = splitByUsage(total, keys);
+			// A period with no usage puts the fee on the connection. Lines are
+			// never deleted (historyDays 0), so once keys have usage that line
+			// is written as zero instead of counting the fee twice.
+			if (id === "plan" && fee && used && !parts.some(([n]) => !n))
+				parts.push(["", 0]);
+			for (const [name, cents] of parts)
 				out.push({
-					externalId: `${day}:${name || "none"}:${service === "Plan" ? "plan" : "extra"}`,
+					externalId: `${day}:${name || "none"}:${id}`,
 					date: day,
 					currency: "USD",
-					amountCents: parts[i],
+					amountCents: cents,
 					service,
 					subUnitId: name || undefined,
 					subUnitLabel: name || undefined,
 				});
-			});
 		}
 	}
 	return out;
+}
+
+// The periods of the current billing period: those ending after it began.
+// Without a start from the API, the latest period up to `today`.
+export function currentPeriod(
+	periods: FirecrawlPeriod[],
+	billingPeriodStart: string | null | undefined,
+	today: string,
+) {
+	const start =
+		billingPeriodStart?.slice(0, 10) ??
+		periods
+			.map((p) => p.startDate.slice(0, 10))
+			.filter((d) => d <= today)
+			.sort()
+			.at(-1);
+	return start ? periods.filter((p) => p.endDate.slice(0, 10) > start) : [];
 }
 
 export const firecrawl = register({
@@ -178,15 +190,20 @@ export const firecrawl = register({
 		const plan = planFor(c, (await creditUsage(c)).planCredits);
 		return { label: `Firecrawl ${plan.label}` };
 	},
+	// Only the current billing period is priced, at the current plan. Past
+	// periods keep the figures they had when they closed: they are neither
+	// repriced nor deleted.
+	historyDays: 0,
 	async fetchCosts(c, range) {
-		const plan = planFor(c, (await creditUsage(c)).planCredits);
+		const usage = await creditUsage(c);
+		const plan = planFor(c, usage.planCredits);
 		// https://docs.firecrawl.dev/api-reference/endpoint/credit-usage-historical (read 2026-10-06)
 		const r = await getJson<{ periods: FirecrawlPeriod[] }>(
 			`${API}/credit-usage/historical?byApiKey=true`,
 			{ headers: headers(c) },
 		);
 		return firecrawlLines(
-			r.periods.filter((p) => p.endDate.slice(0, 10) >= range.from),
+			currentPeriod(r.periods, usage.billingPeriodStart, range.to),
 			plan,
 			c.billing === "yearly",
 		);

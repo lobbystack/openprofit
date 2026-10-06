@@ -3,6 +3,7 @@ import {
 	type Credentials,
 	dayOf,
 	getJson,
+	mrrSnapshots,
 	type RevenueLine,
 	type Snapshot,
 	type SyncRange,
@@ -140,14 +141,7 @@ export const stripe = register({
 				byCurrency.set(cur, (byCurrency.get(cur) ?? 0) + monthly);
 			}
 		}
-		// One currency per snapshot: the largest. Others are rare and small.
-		const [currency, mrr] = [...byCurrency].sort((a, b) => b[1] - a[1])[0] ?? [
-			"USD",
-			0,
-		];
-		return [
-			{ date, metric: "mrr_base_cents", value: Math.round(mrr), currency },
-			{ date, metric: "customers", value: customers },
-		];
+		// One snapshot per currency; sync converts and adds them up.
+		return mrrSnapshots(date, byCurrency, customers);
 	},
 });

@@ -2,6 +2,7 @@ import { register } from "./registry";
 import {
 	type Credentials,
 	getJson,
+	mrrSnapshots,
 	type RevenueLine,
 	type Snapshot,
 	type SyncRange,
@@ -124,6 +125,35 @@ export function lsLines(
 
 const PER_MONTH = { day: 365 / 12, week: 52 / 12, month: 1, year: 1 / 12 };
 
+// Every subscription, read once per sync: revenue and snapshots get the
+// same credentials object, so the walk is shared through it.
+// https://docs.lemonsqueezy.com/api/subscriptions/list-all-subscriptions
+const subsOf = new WeakMap<Credentials, Promise<Resource<LsSubscription>[]>>();
+function subscriptions(c: Credentials) {
+	let p = subsOf.get(c);
+	if (!p) {
+		p = (async () => {
+			const all: Resource<LsSubscription>[] = [];
+			for await (const s of list<LsSubscription>(c, "/subscriptions"))
+				all.push(s);
+			return all;
+		})();
+		subsOf.set(c, p);
+	}
+	return p;
+}
+
+// Refunds only show on the original order or invoice, and neither can be
+// filtered by date. A regular sync rereads 30 days before the range; the
+// first successful sync of each UTC day per key rereads 180, for later
+// refunds. Kept in memory; a restart rereads 180 once more.
+const deepReadOn = new Map<string, string>();
+const keyId = async (c: Credentials) =>
+	Buffer.from(
+		await crypto.subtle.digest("SHA-256", new TextEncoder().encode(c.key)),
+	).toString("hex");
+const today = () => new Date().toISOString().slice(0, 10);
+
 export const lemonsqueezy = register({
 	id: "lemonsqueezy",
 	name: "Lemon Squeezy",
@@ -144,23 +174,26 @@ export const lemonsqueezy = register({
 			label: r.data.map((s) => s.attributes.name).join(", ") || "Lemon Squeezy",
 		};
 	},
+	// Refund lines on orders older than the reread window aren't returned,
+	// so a fetch never proves a line is gone.
+	historyDays: 0,
 	async fetchRevenue(c, range: SyncRange) {
 		// Subscriptions give renewals their product and tell subscription
 		// orders from one-time ones.
-		// https://docs.lemonsqueezy.com/api/subscriptions/list-all-subscriptions
 		const subs = new Map<string, LsSubscription>();
 		const subOrders = new Set<number>();
-		for await (const s of list<LsSubscription>(c, "/subscriptions")) {
+		for (const s of await subscriptions(c)) {
 			subs.set(s.id, s.attributes);
 			subOrders.add(s.attributes.order_id);
 		}
-		// Refunds only show on the original order or invoice, and neither can
-		// be filtered by date. Reading 30 days back catches refunds issued
-		// within 30 days of the sale.
-		// ponytail: refunds later than 30 days after the sale are missed.
-		const since = shift(range.from, -30);
+		const id = await keyId(c);
+		const deep = deepReadOn.get(id) !== today();
+		const since = shift(range.from, deep ? -180 : -30);
 		const older = (a: LsSale) => a.created_at.slice(0, 10) < since;
 		const out: RevenueLine[] = [];
+		// An order can hold several items, but the order list only carries
+		// the first; the whole order goes to that item's product.
+		// ponytail: per-item amounts need a request per order (order-items).
 		// https://docs.lemonsqueezy.com/api/orders/list-all-orders
 		for await (const o of list<LsOrder>(c, "/orders", older)) {
 			const item = o.attributes.first_order_item;
@@ -192,6 +225,7 @@ export const lemonsqueezy = register({
 				),
 			);
 		}
+		if (deep) deepReadOn.set(id, today());
 		return out;
 	},
 	// MRR from active subscriptions at their price, in the store's currency.
@@ -208,10 +242,8 @@ export const lemonsqueezy = register({
 		const prices = new Map<number, LsPrice>();
 		const byCurrency = new Map<string, number>();
 		let customers = 0;
-		for await (const { attributes: s } of list<LsSubscription>(
-			c,
-			"/subscriptions?filter[status]=active",
-		)) {
+		for (const { attributes: s } of await subscriptions(c)) {
+			if (s.status !== "active") continue;
 			customers++;
 			const item = s.first_subscription_item;
 			if (!item) continue;
@@ -234,14 +266,6 @@ export const lemonsqueezy = register({
 			const cur = (currencyOf.get(s.store_id) ?? "USD").toUpperCase();
 			byCurrency.set(cur, (byCurrency.get(cur) ?? 0) + monthly);
 		}
-		// One currency per snapshot: the largest.
-		const [currency, mrr] = [...byCurrency].sort((a, b) => b[1] - a[1])[0] ?? [
-			"USD",
-			0,
-		];
-		return [
-			{ date, metric: "mrr_base_cents", value: Math.round(mrr), currency },
-			{ date, metric: "customers", value: customers },
-		];
+		return mrrSnapshots(date, byCurrency, customers);
 	},
 });

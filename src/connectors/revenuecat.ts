@@ -117,31 +117,33 @@ export const revenuecat = register({
 		return out;
 	},
 	// Overview metrics are documented by display name; ids are matched too.
+	// Each project reports in its own currency, so each gets its own
+	// snapshots; sync converts and adds them up.
 	// https://www.revenuecat.com/docs/api-v2/charts-and-metrics
 	// https://www.revenuecat.com/docs/dashboard-and-metrics/overview
 	async fetchSnapshots(c, date): Promise<Snapshot[]> {
-		let mrr = 0;
-		let subs = 0;
-		let currency = "USD";
+		const out: Snapshot[] = [];
 		for (const p of await projects(c)) {
 			const o = await getJson<{
 				currency: string;
 				metrics: { id: string; name: string; value: number }[];
 			}>(`${BASE}/projects/${p.id}/metrics/overview`, { headers: headers(c) });
-			currency = o.currency;
 			const find = (id: string, name: string) =>
 				o.metrics.find((m) => m.id === id || m.name === name)?.value ?? 0;
-			mrr += find("mrr", "MRR");
-			subs += find("active_subscriptions", "Active Subscriptions");
+			out.push(
+				{
+					date,
+					metric: "mrr_base_cents",
+					value: toCents(find("mrr", "MRR")),
+					currency: o.currency.toUpperCase(),
+				},
+				{
+					date,
+					metric: "customers",
+					value: find("active_subscriptions", "Active Subscriptions"),
+				},
+			);
 		}
-		return [
-			{
-				date,
-				metric: "mrr_base_cents",
-				value: toCents(mrr),
-				currency: currency.toUpperCase(),
-			},
-			{ date, metric: "customers", value: subs },
-		];
+		return out;
 	},
 });

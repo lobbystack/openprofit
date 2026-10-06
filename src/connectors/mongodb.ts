@@ -1,5 +1,6 @@
 import { register } from "./registry";
 import {
+	type Connector,
 	ConnectorError,
 	type CostLine,
 	type Credentials,
@@ -93,7 +94,15 @@ export function itemLines(items: LineItem[]): CostLine[] {
 	return [...lines.values()];
 }
 
-export const mongodb = register({
+// Atlas only answers API calls from addresses on the organization's access
+// list. The hosted service lists Atlas only when it knows its own outbound
+// addresses (OUTBOUND_IPS, comma-separated), so the page can name them.
+const outboundIps = (process.env.OUTBOUND_IPS ?? "")
+	.split(",")
+	.map((ip) => ip.trim())
+	.filter(Boolean);
+
+export const mongodb: Connector = {
 	id: "mongodb",
 	name: "MongoDB Atlas",
 	kind: "cost",
@@ -113,13 +122,13 @@ export const mongodb = register({
 				optional: true,
 			},
 		],
-		// The docs' link to the service accounts page of the current organization.
-		// https://www.mongodb.com/docs/atlas/configure-api-access/ (read 2026-10-06)
 		createUrl:
-			"https://cloud.mongodb.com/go?l=https%3A%2F%2Fcloud.mongodb.com%2Fv2%23%2Forg%2F%3Corganization%3E%2Faccess%2FserviceAccounts",
+			"https://www.mongodb.com/docs/atlas/configure-api-access/#grant-programmatic-access-to-an-organization",
 		scopes: [
 			"Organization service account with the Organization Billing Viewer role",
-			"An API access list entry for the server running OpenProfit",
+			outboundIps.length
+				? `API access list entries for ${outboundIps.join(", ")}`
+				: "An API access list entry for the server running OpenProfit",
 		],
 	},
 	async verify(c) {
@@ -162,4 +171,6 @@ export const mongodb = register({
 		}
 		return itemLines(items);
 	},
-});
+};
+
+if (process.env.APP_MODE !== "cloud" || outboundIps.length) register(mongodb);

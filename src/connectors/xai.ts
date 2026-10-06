@@ -69,6 +69,17 @@ async function usage(c: Credentials, teamId: string, from: string, to: string) {
 	});
 }
 
+// 31-day windows covering the range, newest first.
+export function windows(range: SyncRange) {
+	const out: [string, string][] = [];
+	for (let from = range.from; from <= range.to; from = addDays(from, 31))
+		out.push([
+			from,
+			addDays(from, 30) < range.to ? addDays(from, 30) : range.to,
+		]);
+	return out.reverse();
+}
+
 export function usageLines(r: Usage): CostLine[] {
 	const out: CostLine[] = [];
 	for (const s of r.timeSeries ?? []) {
@@ -124,12 +135,32 @@ export const xai = register({
 		).catch(() => null);
 		return { label: info?.billingInfo?.name || t.keyName || "xAI" };
 	},
+	// xAI documents no history limit. Windows are read newest first, and a
+	// rejected older window ends the walk, so only the newest window is sure
+	// to be complete.
+	historyDays: 30,
 	async fetchCosts(c, range: SyncRange) {
 		const t = await team(c);
 		const out: CostLine[] = [];
-		for (let from = range.from; from <= range.to; from = addDays(from, 31)) {
-			const to = addDays(from, 30) < range.to ? addDays(from, 30) : range.to;
-			const r = await usage(c, t.id, from, to);
+		for (const [i, [from, to]] of windows(range).entries()) {
+			let r: Usage;
+			try {
+				r = await usage(c, t.id, from, to);
+			} catch (err) {
+				// A 4xx on an older window means the history ends there. The
+				// newest window, rate limits and key errors still fail the sync.
+				if (
+					i === 0 ||
+					!(err instanceof ConnectorError) ||
+					!err.status ||
+					err.status < 400 ||
+					err.status >= 500 ||
+					err.status === 429 ||
+					err.auth
+				)
+					throw err;
+				break;
+			}
 			// Partial data would undercount silently; fail so the user sees it.
 			if (r.limitReached)
 				throw new ConnectorError(
