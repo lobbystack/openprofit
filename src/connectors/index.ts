@@ -16,6 +16,9 @@ import "./github";
 import "./twilio";
 import "./firecrawl";
 import "./resend";
+import "./xai";
+import "./neon";
+import "./mongodb";
 
 export type { ConnectorInfo } from "./registry";
 export { connector, connectorInfo, connectors } from "./registry";

@@ -90,6 +90,9 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 | Twilio | Cost | Daily total usage cost |
 | Firecrawl | Cost | Credits per API key at published rates |
 | Resend | Cost | Emails per sending domain at published rates |
+| xAI | Cost | Daily cost by billing description |
+| Neon | Cost | Monthly usage per project at published rates |
+| MongoDB Atlas | Cost | Daily invoice line items per project |
 | Flat costs | Cost | Any monthly or yearly amount, typed in |
 
 App Store, Google Play and Supabase are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.

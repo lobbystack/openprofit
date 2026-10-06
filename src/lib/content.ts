@@ -54,6 +54,7 @@ export const INTEGRATIONS = order(
 		"openai",
 		"anthropic",
 		"openrouter",
+		"xai",
 		"vercel",
 		"cloudflare",
 		"railway",
@@ -62,6 +63,8 @@ export const INTEGRATIONS = order(
 		"twilio",
 		"firecrawl",
 		"resend",
+		"neon",
+		"mongodb",
 	],
 );
 

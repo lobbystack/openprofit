@@ -36,6 +36,9 @@ Each connector needs a key with specific permissions. The table lists what each 
 | [Twilio](/integrations/twilio) | Daily total usage cost, subaccounts included | Restricted API key with `/twilio/billing/usage/read` |
 | [Firecrawl](/integrations/firecrawl) | Credits per API key per billing period, priced at Firecrawl’s published plan and extra-credit rates | Any API key on the team |
 | [Resend](/integrations/resend) | Transactional emails per sending domain per month, priced at Resend’s published plan and overage rates | API key with full access |
+| [xAI](/integrations/xai) | Daily cost by billing description, such as a model | Management key |
+| [Neon](/integrations/neon) | Monthly compute, storage, transfer and branch usage per project, priced at Neon’s published rates | Organization API key |
+| [MongoDB Atlas](/integrations/mongodb) | Daily invoice line items per project and stock keeping unit (SKU), including the current month’s pending invoice | Service account with the Organization Billing Viewer role |
 
 ## Assign costs to products
 
@@ -51,6 +54,8 @@ OpenProfit assigns a cost to a product through the provider’s own grouping. Th
 - **GitHub**: repositories
 - **Firecrawl**: API keys
 - **Resend**: sending domains
+- **Neon**: projects
+- **MongoDB Atlas**: projects
 
 Open a connection from **Connections** to see each grouping with this month’s spend, then pick the product it serves. Past lines move to that product too.
 

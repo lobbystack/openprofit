@@ -6,6 +6,8 @@ import {
 	siGithub,
 	siGoogleplay,
 	siLemonsqueezy,
+	siMongodb,
+	siNeon,
 	siOpenrouter,
 	siPaddle,
 	siRailway,
@@ -96,6 +98,14 @@ export const PROVIDERS: Record<string, Provider> = {
 	},
 	twilio: { name: "Twilio", kind: "cost", v1: true, path: TWILIO_PATH },
 	firecrawl: { name: "Firecrawl", kind: "cost", v1: true, path: FLAME_PATH },
+	xai: { name: "xAI", kind: "cost", v1: true },
+	neon: { name: "Neon", kind: "cost", v1: true, path: siNeon.path },
+	mongodb: {
+		name: "MongoDB Atlas",
+		kind: "cost",
+		v1: true,
+		path: siMongodb.path,
+	},
 };
 
 export type ProviderId = keyof typeof PROVIDERS;
