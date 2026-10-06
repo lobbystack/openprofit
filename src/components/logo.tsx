@@ -1,8 +1,9 @@
 import { APP_NAME } from "#/lib/app";
 
-// Wordmark: medium weight, tight tracking. `mark` puts the mark (an O with a
-// quarter cut out, same as public/favicon.svg) before it; only the landing
-// nav uses it. Colors come from the tokens, so it flips with the theme.
+// Wordmark: medium weight, tight tracking. `mark` puts the mark (the O with a
+// quarter cut out from public/favicon.svg, without its square) before it;
+// only the landing nav uses it. It takes the ink token, so it flips with the
+// theme.
 export function Logo({
 	size = 17,
 	mark = false,
@@ -19,16 +20,15 @@ export function Logo({
 		>
 			{mark && (
 				<svg
-					viewBox="0 0 64 64"
+					viewBox="9 9 46 46"
 					aria-hidden="true"
-					style={{ width: "1.25em", height: "1.25em" }}
+					style={{ width: "1.1em", height: "1.1em" }}
 				>
-					<rect width="64" height="64" rx="14" className="fill-ink" />
 					<path
 						d="M32 13 A19 19 0 1 0 51 32"
 						fill="none"
 						strokeWidth="8"
-						className="stroke-paper"
+						className="stroke-ink"
 					/>
 				</svg>
 			)}
