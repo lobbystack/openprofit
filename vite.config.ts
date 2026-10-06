@@ -9,6 +9,8 @@ import { defineConfig } from "vite";
 
 const config = defineConfig({
 	resolve: { tsconfigPaths: true },
+	// PGlite docs: keep it out of Vite's dependency pre-bundling.
+	optimizeDeps: { exclude: ["@electric-sql/pglite"] },
 	plugins: [
 		devtools(),
 		nitro({
