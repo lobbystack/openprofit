@@ -8,6 +8,7 @@ import {
 	PERIODS,
 	type PeriodKey,
 } from "#/lib/overview";
+import { convert } from "./fx.server";
 import type { Workspace } from "./workspace.server";
 
 const ym = (d: Date) =>
@@ -222,6 +223,21 @@ export async function overview(
 			)
 			.groupBy(schema.costLines.productId, month(schema.costLines.date)),
 	]);
+	// Flat costs saved before amount_base_cents existed: convert once and
+	// store it, so they stop counting in their own currency.
+	for (const f of flats) {
+		if (f.amountBaseCents !== null) continue;
+		f.amountBaseCents = await convert(
+			f.amountCents,
+			f.currency,
+			ws.baseCurrency,
+			new Date().toISOString().slice(0, 10),
+		);
+		await db
+			.update(schema.flatCosts)
+			.set({ amountBaseCents: f.amountBaseCents })
+			.where(eq(schema.flatCosts.id, f.id));
+	}
 
 	const byMonth = (rows: { m: string; v: number }[]) =>
 		Object.fromEntries(rows.map((r) => [r.m, Number(r.v)]));

@@ -70,6 +70,9 @@ const FlatCostInput = z
 	});
 
 // The values to store, with the amount in the base currency at today's rate.
+// ponytail: every month of a flat cost uses this one rate, and saving the
+// cost reprices its past months; convert per month from fx_rates at read
+// time if foreign-currency flat costs need exact history.
 async function flatValues(ws: Workspace, f: z.infer<typeof FlatCostInput>) {
 	if (f.productId) {
 		const product = await db.query.products.findFirst({

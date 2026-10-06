@@ -1,6 +1,6 @@
 import { and, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
-import { providerName } from "#/components/provider-logo";
 import { authSchema, db, schema } from "#/db";
+import { providerName } from "#/lib/providers";
 import { sendEmail } from "./email.server";
 
 const day = (offset: number) =>

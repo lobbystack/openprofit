@@ -1,8 +1,8 @@
 import { and, eq, gte, isNull, sql } from "drizzle-orm";
-import { providerName } from "#/components/provider-logo";
 import { authSchema, db, schema } from "#/db";
 import { RULE_NAMES } from "#/lib/alerts";
 import { describeError } from "#/lib/errors";
+import { providerName } from "#/lib/providers";
 import { sendEmail } from "./email.server";
 import type { Workspace } from "./workspace.server";
 
@@ -52,11 +52,13 @@ export async function evaluateAlerts(workspaceId: string) {
 	const openByKey = new Map(
 		open.filter((a) => a.key).map((a) => [a.key as string, a]),
 	);
-	// Alerts opened before alerts had keys can't be matched to a finding.
-	// They resolve here, and their rule's findings reopen without an email,
-	// so the change doesn't send a second email for the same thing.
+	// Alerts opened before alerts had keys can't be matched to a finding by
+	// key. They resolve here, and a finding for the same rule whose title
+	// starts with the same word (the provider or product) reopens without an
+	// email, so the change doesn't send a second email for the same thing.
 	const legacy = open.filter((a) => !a.key);
-	const quiet = new Set(legacy.map((a) => a.ruleId));
+	const head = (title: string) => title.split(" ")[0].toLowerCase();
+	const quiet = new Set(legacy.map((a) => `${a.ruleId}:${head(a.title)}`));
 	const now = Date.now();
 	const opened: Finding[] = [];
 
@@ -87,7 +89,8 @@ export async function evaluateAlerts(workspaceId: string) {
 			})
 			.onConflictDoNothing()
 			.returning({ id: schema.alerts.id });
-		if (inserted.length && !quiet.has(f.ruleId)) opened.push(f);
+		if (inserted.length && !quiet.has(`${f.ruleId}:${head(f.title)}`))
+			opened.push(f);
 	}
 	// Whatever is still open and not found again has cleared.
 	for (const stale of [...openByKey.values(), ...legacy]) {
@@ -127,7 +130,9 @@ async function emailAlerts(ws: Workspace, rules: Rule[], opened: Finding[]) {
 			`You get this email because the ${rule} rule is on in ${ws.name}. To stop these alerts, turn the rule off on the Alerts page.`,
 		].join("\n");
 		for (const m of members)
-			await sendEmail(m.email, `${ws.name}: ${f.title}`, text);
+			await sendEmail(m.email, `${ws.name}: ${f.title}`, text).catch((err) =>
+				console.error(`[alerts] email to a member of ${ws.id} failed:`, err),
+			);
 	}
 	console.info(
 		`[alerts] emailed ${opened.length} alert(s) to ${members.length} member(s)`,
