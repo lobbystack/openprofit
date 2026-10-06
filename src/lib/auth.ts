@@ -2,6 +2,7 @@ import "#/server/env";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins";
+import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { db } from "#/db";
 import * as authSchema from "#/db/auth-schema";
 import { capture } from "#/server/analytics.server";
@@ -60,6 +61,9 @@ export const auth = betterAuth({
 					`Open this link to sign in:\n\n${url}\n\nIt expires in 5 minutes.`,
 				),
 		}),
+		// Must stay last: forwards cookies set inside server functions (session
+		// refresh) to the response.
+		tanstackStartCookies(),
 	],
 });
 
