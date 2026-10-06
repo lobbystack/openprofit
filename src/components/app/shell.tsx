@@ -1,21 +1,28 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import {
 	Bell,
 	Cable,
+	Check,
 	ChevronsUpDown,
 	LayoutGrid,
+	LogOut,
 	Package,
+	Plus,
 	Receipt,
 	Search,
 	Settings,
 	SunMoon,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "#/components/logo";
 import { authClient } from "#/lib/auth-client";
 import { money } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
 import { toggleTheme } from "#/lib/theme";
-import type { WorkspaceSummary } from "#/server/workspace.functions";
+import {
+	switchWorkspace,
+	type WorkspaceSummary,
+} from "#/server/workspace.functions";
 
 const NAV = [
 	{ to: "/app", label: "Overview", icon: LayoutGrid, exact: true },
@@ -23,7 +30,59 @@ const NAV = [
 	{ to: "/app/connections", label: "Connections", icon: Cable },
 	{ to: "/app/costs", label: "Costs", icon: Receipt },
 	{ to: "/app/alerts", label: "Alerts", icon: Bell },
+	{ to: "/app/settings", label: "Settings", icon: Settings },
 ] as const;
+
+const item =
+	"flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[13px] text-text-2 hover:bg-surface-2 hover:text-ink";
+
+// A button that opens a small panel. Closes on outside click and Escape.
+function Menu({
+	trigger,
+	className,
+	panelClassName,
+	children,
+}: {
+	trigger: React.ReactNode;
+	className: string;
+	panelClassName: string;
+	children: (close: () => void) => React.ReactNode;
+}) {
+	const [open, setOpen] = useState(false);
+	const ref = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		if (!open) return;
+		const onDown = (e: MouseEvent) => {
+			if (!ref.current?.contains(e.target as Node)) setOpen(false);
+		};
+		const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+		document.addEventListener("mousedown", onDown);
+		document.addEventListener("keydown", onKey);
+		return () => {
+			document.removeEventListener("mousedown", onDown);
+			document.removeEventListener("keydown", onKey);
+		};
+	}, [open]);
+	return (
+		<div ref={ref} className="relative">
+			<button
+				type="button"
+				aria-expanded={open}
+				onClick={() => setOpen(!open)}
+				className={className}
+			>
+				{trigger}
+			</button>
+			{open && (
+				<div
+					className={`absolute z-50 rounded-lg border border-line bg-paper p-1 shadow-[0_8px_24px_-12px_rgb(0_0_0/0.25)] ${panelClassName}`}
+				>
+					{children(() => setOpen(false))}
+				</div>
+			)}
+		</div>
+	);
+}
 
 // 240px sidebar, paper background, hairline right border. See design/DESIGN.md.
 export function Shell({
@@ -34,21 +93,54 @@ export function Shell({
 	children: React.ReactNode;
 }) {
 	const path = useRouterState({ select: (s) => s.location.pathname });
+	const router = useRouter();
 	return (
 		<div className="flex min-h-screen">
 			<aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-line bg-paper p-3 md:flex">
-				<button
-					type="button"
+				<Menu
 					className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2"
+					panelClassName="inset-x-0 top-10"
+					trigger={
+						<>
+							<span className="flex min-w-0 items-center gap-2">
+								<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
+									{workspace.name[0]}
+								</span>
+								<span className="truncate">{workspace.name}</span>
+							</span>
+							<ChevronsUpDown size={14} className="shrink-0 text-text-3" />
+						</>
+					}
 				>
-					<span className="flex items-center gap-2">
-						<span className="flex h-5 w-5 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
-							{workspace.name[0]}
-						</span>
-						{workspace.name}
-					</span>
-					<ChevronsUpDown size={14} className="text-text-3" />
-				</button>
+					{(close) => (
+						<>
+							{workspace.workspaces.map((w) => (
+								<button
+									key={w.id}
+									type="button"
+									className={item}
+									onClick={async () => {
+										close();
+										if (w.id === workspace.id) return;
+										await switchWorkspace({ data: { id: w.id } });
+										router.invalidate();
+									}}
+								>
+									<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-surface-3 text-[10px] text-ink">
+										{w.name[0]}
+									</span>
+									<span className="flex-1 truncate">{w.name}</span>
+									{w.id === workspace.id && <Check size={14} />}
+								</button>
+							))}
+							<div className="my-1 h-px bg-line" />
+							<Link to="/onboarding" className={item} onClick={close}>
+								<Plus size={14} />
+								New workspace
+							</Link>
+						</>
+					)}
+				</Menu>
 
 				<button
 					type="button"
@@ -101,13 +193,6 @@ export function Shell({
 				</ul>
 
 				<div className="mt-auto space-y-px">
-					<Link
-						to="/app/settings"
-						className="flex h-8 items-center gap-2.5 rounded-md px-2 text-[13px] text-text-2 hover:bg-surface-1 hover:text-ink"
-					>
-						<Settings size={16} />
-						Settings
-					</Link>
 					<button
 						type="button"
 						onClick={toggleTheme}
@@ -116,23 +201,35 @@ export function Shell({
 						<SunMoon size={16} />
 						Theme
 					</button>
-					<button
-						type="button"
-						onClick={() =>
-							authClient.signOut().then(() => {
-								window.location.href = "/login";
-							})
-						}
-						title="Sign out"
+					<Menu
 						className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-[13px] hover:bg-surface-2"
+						panelClassName="inset-x-0 bottom-10"
+						trigger={
+							<>
+								<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-3 text-[10px]">
+									{workspace.email[0]}
+								</span>
+								<span className="flex-1 truncate text-left text-text-2">
+									{workspace.email}
+								</span>
+							</>
+						}
 					>
-						<span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-3 text-[10px]">
-							{workspace.email[0]}
-						</span>
-						<span className="flex-1 truncate text-left text-text-2">
-							{workspace.email}
-						</span>
-					</button>
+						{() => (
+							<button
+								type="button"
+								className={item}
+								onClick={() =>
+									authClient.signOut().then(() => {
+										window.location.href = "/login";
+									})
+								}
+							>
+								<LogOut size={14} />
+								Sign out
+							</button>
+						)}
+					</Menu>
 				</div>
 			</aside>
 

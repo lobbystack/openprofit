@@ -1,18 +1,52 @@
 import { redirect } from "@tanstack/react-router";
-import { eq } from "drizzle-orm";
+import { getCookie, setCookie } from "@tanstack/react-start/server";
+import { and, eq } from "drizzle-orm";
 import { db, schema } from "#/db";
 import { requireUser } from "./auth.server";
 
 export type Workspace = typeof schema.workspaces.$inferSelect;
 
-// The signed-in user's workspace, or a redirect to onboarding when they
-// don't have one yet.
+const COOKIE = "op_ws";
+
+export function rememberWorkspace(id: string) {
+	setCookie(COOKIE, id, {
+		path: "/",
+		httpOnly: true,
+		sameSite: "lax",
+		secure: process.env.NODE_ENV === "production",
+		maxAge: 60 * 60 * 24 * 365,
+	});
+}
+
+export async function userWorkspaces(userId: string) {
+	return db
+		.select({ id: schema.workspaces.id, name: schema.workspaces.name })
+		.from(schema.workspaceMembers)
+		.innerJoin(
+			schema.workspaces,
+			eq(schema.workspaces.id, schema.workspaceMembers.workspaceId),
+		)
+		.where(eq(schema.workspaceMembers.userId, userId))
+		.orderBy(schema.workspaceMembers.createdAt);
+}
+
+// The workspace picked in the switcher (a cookie), else the user's first.
+// Redirects to onboarding when they have none.
 export async function currentWorkspace(): Promise<Workspace> {
 	const user = await requireUser();
-	const member = await db.query.workspaceMembers.findFirst({
-		where: eq(schema.workspaceMembers.userId, user.id),
-		orderBy: (m, { asc }) => asc(m.createdAt),
-	});
+	const picked = getCookie(COOKIE);
+	const member =
+		(picked &&
+			(await db.query.workspaceMembers.findFirst({
+				where: and(
+					eq(schema.workspaceMembers.userId, user.id),
+					eq(schema.workspaceMembers.workspaceId, picked),
+				),
+			}))) ||
+		(await db.query.workspaceMembers.findFirst({
+			where: eq(schema.workspaceMembers.userId, user.id),
+			orderBy: (m, { asc }) => asc(m.createdAt),
+		}));
 	if (!member) throw redirect({ to: "/onboarding" });
 	const ws = await db.query.workspaces.findFirst({
 		where: eq(schema.workspaces.id, member.workspaceId),
