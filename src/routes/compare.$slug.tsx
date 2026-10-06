@@ -1,14 +1,11 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ContentPage } from "#/components/content-page";
 import { seo } from "#/lib/app";
-import { COMPARISONS } from "#/lib/content";
+import { getContentPage } from "#/server/content.functions";
 
 export const Route = createFileRoute("/compare/$slug")({
-	loader: ({ params }) => {
-		const page = COMPARISONS.find((p) => p.slug === params.slug);
-		if (!page) throw notFound();
-		return page;
-	},
+	loader: ({ params }) =>
+		getContentPage({ data: { section: "compare", slug: params.slug } }),
 	head: ({ loaderData: p }) =>
 		seo({
 			title: `${p?.title} · OpenProfit`,
