@@ -14,7 +14,7 @@ export const Route = createFileRoute("/integrations/")({
 		seo({
 			title: "Integrations · OpenProfit",
 			description:
-				"Connect Stripe, Polar, OpenAI, Anthropic, Vercel, Cloudflare and Railway to see revenue, costs and profit per product.",
+				"Connect Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat, OpenAI, Anthropic, Vercel, Cloudflare and Railway to see revenue, costs and profit per product.",
 			path: "/integrations",
 		}),
 	component: Integrations,

@@ -4,6 +4,9 @@ import { Container, Section, SectionHeader } from "./primitives";
 const TILES: ProviderId[] = [
 	"stripe",
 	"polar",
+	"paddle",
+	"lemonsqueezy",
+	"revenuecat",
 	"openai",
 	"anthropic",
 	"vercel",
@@ -11,9 +14,6 @@ const TILES: ProviderId[] = [
 	"railway",
 	"supabase",
 	"resend",
-	"paddle",
-	"lemonsqueezy",
-	"appstore",
 ];
 
 // Muted band, text column of 384px on

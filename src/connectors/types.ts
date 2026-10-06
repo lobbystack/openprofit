@@ -76,8 +76,15 @@ export class ConnectorError extends Error {
 export async function getJson<T>(
 	url: string,
 	init: RequestInit & { headers: Record<string, string> },
+	retries = 5,
 ): Promise<T> {
 	const res = await fetch(url, init);
+	// Rate limited: wait as long as Retry-After (seconds) says, then retry.
+	if (res.status === 429 && retries > 0) {
+		const wait = Number(res.headers.get("retry-after")) || 10;
+		await new Promise((r) => setTimeout(r, Math.min(wait, 60) * 1000));
+		return getJson(url, init, retries - 1);
+	}
 	if (!res.ok) {
 		const text = await res.text().catch(() => "");
 		throw new ConnectorError(

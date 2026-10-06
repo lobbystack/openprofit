@@ -76,6 +76,9 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 | --- | --- | --- |
 | Stripe | Revenue | Balance transactions, active subscriptions, MRR, customers |
 | Polar | Revenue | Daily revenue and net revenue, MRR, active subscriptions |
+| Paddle | Revenue | Completed transactions without tax, fees, refunds and chargebacks, MRR, paying subscribers |
+| Lemon Squeezy | Revenue | Orders and renewals without tax, refunds, MRR, active subscriptions (no fees in the API) |
+| RevenueCat | Revenue | Monthly revenue and proceeds after store commission, MRR, active subscriptions |
 | OpenAI | Cost | Daily cost by project and line item |
 | Anthropic | Cost | Daily cost by workspace |
 | Vercel | Cost | Daily charges per project |
@@ -83,7 +86,7 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 | Railway | Cost | Monthly usage per project at published rates |
 | Flat costs | Cost | Any monthly or yearly amount, typed in |
 
-Paddle, Lemon Squeezy, App Store, Google Play, Supabase and Resend are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.
+App Store, Google Play, Supabase and Resend are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.
 
 ## Getting started
 

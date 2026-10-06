@@ -3,13 +3,13 @@ import { Container, Section, SectionHeader } from "./primitives";
 const ENTRIES = [
 	{
 		date: "Oct 6, 2026",
-		title: "Period picker and dark mode",
-		text: "Compare any period with the one before it. Dark mode follows your system.",
+		title: "Paddle, Lemon Squeezy and RevenueCat",
+		text: "Three new revenue sources, with refunds, MRR and active subscriptions.",
 	},
 	{
-		date: "Oct 5, 2026",
-		title: "Seven connectors",
-		text: "Stripe, Polar, OpenAI, Anthropic, Vercel, Cloudflare and Railway, plus flat costs for everything else.",
+		date: "Oct 6, 2026",
+		title: "Period picker and dark mode",
+		text: "Compare any period with the one before it. Dark mode follows your system.",
 	},
 ];
 

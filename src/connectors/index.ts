@@ -2,6 +2,9 @@
 // PROVIDERS in components/provider-logo.tsx, not by this list.
 import "./stripe";
 import "./polar";
+import "./paddle";
+import "./lemonsqueezy";
+import "./revenuecat";
 import "./openai";
 import "./anthropic";
 import "./railway";
