@@ -189,7 +189,11 @@ function Connections() {
 					const ready = implemented.has(id);
 					const inner = (
 						<>
-							<ProviderLogo id={id} size={18} className="text-ink" />
+							<ProviderLogo
+								id={id}
+								size={18}
+								className={ready ? "" : "opacity-50 grayscale"}
+							/>
 							<span className="flex-1">{p.name}</span>
 							{!ready && <span className="label-mono">soon</span>}
 						</>

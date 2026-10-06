@@ -43,11 +43,15 @@ export function Connectors() {
 								<div
 									key={id}
 									title={p.name}
-									className={`flex h-20 items-center justify-center rounded-xl border border-line bg-paper ${offset} ${
-										p.v1 ? "text-ink" : "text-text-3"
-									}`}
+									role="img"
+									aria-label={p.name}
+									className={`flex h-20 items-center justify-center rounded-xl border border-line bg-paper ${offset}`}
 								>
-									<ProviderLogo id={id} size={26} />
+									<ProviderLogo
+										id={id}
+										size={26}
+										className={p.v1 ? "" : "opacity-50 grayscale"}
+									/>
 								</div>
 							);
 						})}
