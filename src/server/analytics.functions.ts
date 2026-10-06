@@ -5,7 +5,6 @@ import {
 	CONSENT_COOKIE,
 	parseConsent,
 } from "#/lib/analytics";
-import "./env";
 
 // What the browser needs to start PostHog, and the visitor's saved choice.
 export const getAnalyticsConfig = createServerFn({ method: "GET" }).handler(

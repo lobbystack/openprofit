@@ -1,3 +1,4 @@
+import "@tanstack/react-start/server-only";
 // AES-256-GCM over Web Crypto, so it runs on Node and on Workers.
 // SECRET_KEY is 32 random bytes, base64. Generate one with:
 //   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"

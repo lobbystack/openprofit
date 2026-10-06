@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 // Shape shared by the landing preview (mock) and the app (database).
 
 export type MetricKey = "revenue" | "costs" | "profit" | "mrr" | "customers";
@@ -11,6 +13,10 @@ export const METRICS: { key: MetricKey; label: string; money: boolean }[] = [
 ];
 
 export type PeriodKey = "this-month" | "last-month" | "3m" | "12m" | "ytd";
+
+export const periodSchema = z
+	.enum(["this-month", "last-month", "3m", "12m", "ytd"])
+	.default("this-month");
 
 export const PERIODS: { key: PeriodKey; label: string }[] = [
 	{ key: "this-month", label: "This month" },

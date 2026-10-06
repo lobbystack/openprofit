@@ -1,3 +1,5 @@
+export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "CHF"] as const;
+
 export function money(
 	n: number,
 	opts: { cents?: boolean; currency?: string } = {},

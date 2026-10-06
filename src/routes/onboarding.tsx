@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Button } from "#/components/landing/primitives";
 import { Logo } from "#/components/logo";
 import { NOINDEX } from "#/lib/app";
+import { CURRENCIES } from "#/lib/format";
 import { getSession } from "#/server/auth.functions";
-import { CURRENCIES, createWorkspaceFn } from "#/server/onboarding.functions";
+import { createWorkspaceFn } from "#/server/onboarding.functions";
 
 export const Route = createFileRoute("/onboarding")({
 	head: () => ({

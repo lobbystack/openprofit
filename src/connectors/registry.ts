@@ -1,3 +1,4 @@
+import "@tanstack/react-start/server-only";
 import type { Connector } from "./types";
 
 // Populated by each connector module, in import order. The connections page
