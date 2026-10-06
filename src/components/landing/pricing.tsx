@@ -7,7 +7,7 @@ const PLANS = [
 		price: "$0",
 		note: "Under $2,500 MRR",
 		features: [
-			"Every connector",
+			"Every integration",
 			"Unlimited products",
 			"Sync every 6 hours",
 			"12 months of history",
@@ -22,19 +22,15 @@ const PLANS = [
 		price: "$19",
 		note: "Up to $25,000 MRR",
 		features: ["Everything in Free", "Sync every hour", "24 months of history"],
-		cta: "Start for free",
+		cta: "Start free, upgrade later",
 		primary: true,
 	},
 	{
 		name: "Pro",
 		price: "$49",
-		note: "Above $25,000 MRR",
-		features: [
-			"Everything in Indie",
-			"Sync every 15 minutes",
-			"Priority support",
-		],
-		cta: "Start for free",
+		note: "Over $25,000 MRR",
+		features: ["Everything in Indie", "Sync every 15 minutes"],
+		cta: "Start free, upgrade later",
 		primary: false,
 	},
 ];
@@ -44,10 +40,10 @@ export function Pricing() {
 		<Section>
 			<Container className="py-24">
 				<div id="pricing">
-					<SectionHeader align="center" title="Free until you make money">
-						Free while your products make under $2,500 a month combined. After
-						that, a flat price that never grows with your revenue. Every
-						connector on every plan.
+					<SectionHeader align="center" title="Free under $2,500 MRR">
+						Free while your products together make under $2,500 a month in
+						recurring revenue. Then $19 a month up to $25,000 MRR, and $49 above
+						that. Every plan has every integration.
 					</SectionHeader>
 				</div>
 				<div className="mt-14 grid gap-3 md:grid-cols-3">
@@ -61,7 +57,9 @@ export function Pricing() {
 							<div className="text-[14px]">{p.name}</div>
 							<div className="num mt-4 text-[40px] leading-none">
 								{p.price}
-								<span className="ml-1 text-[14px] text-text-3">/ mo</span>
+								{p.price !== "$0" && (
+									<span className="ml-1 text-[14px] text-text-3">/ mo</span>
+								)}
 							</div>
 							<div className="mt-2 text-[13px] text-text-2">{p.note}</div>
 							<ul className="mt-6 space-y-2.5 text-[13px]">
@@ -85,7 +83,7 @@ export function Pricing() {
 					))}
 				</div>
 				<p className="mt-6 text-center text-[13px] text-text-3">
-					Self-hosted is free at any revenue. Prices in USD, billed through
+					Self-hosting is free at any revenue. Prices in USD, billed through
 					Polar.
 				</p>
 			</Container>

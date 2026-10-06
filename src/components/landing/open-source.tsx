@@ -4,7 +4,7 @@ import { Container, Section, SectionHeader } from "./primitives";
 const STATS = [
 	["MIT", "License"],
 	["1", "Container to self-host"],
-	["7", "Connectors"],
+	["19", "Integrations"],
 	["$0", "Under $2.5K MRR"],
 ];
 

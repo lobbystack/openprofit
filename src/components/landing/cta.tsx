@@ -9,7 +9,7 @@ export function Cta() {
 					Know what your software makes, after costs
 				</h2>
 				<p className="mt-5 max-w-[560px] text-[18px] leading-[28px] text-paper/60 dark:text-text-2">
-					Connect in two minutes. Free under $2,500 a month.
+					Connect in two minutes. Free under $2,500 MRR.
 				</p>
 				<div className="mt-8 flex gap-3">
 					<Button variant="paper" href="/login">

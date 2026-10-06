@@ -24,14 +24,15 @@ export function Connectors() {
 			<Container className="grid items-center gap-10 py-20 md:grid-cols-[384px_1fr]">
 				<div id="connectors">
 					<SectionHeader
-						title="Connect your whole stack"
+						title="5 revenue sources, 14 cost providers"
 						size={40}
-						cta="All connectors"
+						cta="All 19 integrations"
 						href="/integrations"
 					>
-						Revenue from your payment processor. Costs from your AI providers,
-						hosting and infrastructure. Paste a read-only key and two years of
-						history fill in.
+						Revenue from Stripe, Paddle, Polar, Lemon Squeezy or RevenueCat.
+						Costs from your AI, hosting and infrastructure bills. Paste an API
+						key and the first sync backfills up to two years, as far back as
+						each provider keeps data.
 					</SectionHeader>
 				</div>
 				<div className="relative h-[300px]">

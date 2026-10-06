@@ -1,5 +1,5 @@
 import { Logo } from "#/components/logo";
-import { APP_NAME, GITHUB_URL } from "#/lib/app";
+import { GITHUB_URL } from "#/lib/app";
 import { Container } from "./primitives";
 
 const COLUMNS: [string, [string, string][]][] = [
@@ -70,7 +70,7 @@ export function Footer() {
 				</div>
 				<div className="mt-16 flex items-center justify-between border-t border-line pt-6 text-[13px] text-text-2">
 					<span>MIT licensed</span>
-					<span>© 2026 {APP_NAME}</span>
+					<span>© 2026 Lobbystack Inc.</span>
 				</div>
 			</Container>
 		</footer>

@@ -3,13 +3,13 @@ import { Container, Section, SectionHeader } from "./primitives";
 const ENTRIES = [
 	{
 		date: "Oct 6, 2026",
-		title: "Paddle, Lemon Squeezy and RevenueCat",
-		text: "Three new revenue sources, with refunds, MRR and active subscriptions.",
+		title: "Revenue leaves out sales tax and VAT",
+		text: "Stripe, Paddle, Lemon Squeezy and RevenueCat store tax apart from revenue, so profit stops counting money you pass on.",
 	},
 	{
 		date: "Oct 6, 2026",
-		title: "Nine new cost connectors",
-		text: "OpenRouter, xAI, Neon, MongoDB Atlas, DigitalOcean, GitHub, Twilio, Firecrawl and Resend.",
+		title: "Flat costs and alert emails",
+		text: "Add bills without an API on the Costs page. Every member gets one email when an alert opens.",
 	},
 ];
 

@@ -11,7 +11,7 @@ const LINKS = [
 	["Docs", "/docs"],
 ];
 
-// Fixed, 56px, white, links 14px, Log in bordered + Sign up black, both 32px.
+// Fixed, 56px, white, links 14px, Sign in bordered + Start free black, both 32px.
 export function Nav() {
 	const [scrolled, setScrolled] = useState(false);
 	useEffect(() => {
@@ -56,10 +56,10 @@ export function Nav() {
 				</nav>
 				<div className="flex items-center gap-2">
 					<Button variant="secondary" size="sm" href="/login">
-						Log in
+						Sign in
 					</Button>
 					<Button size="sm" href="/login">
-						Sign up
+						Start free
 					</Button>
 				</div>
 			</Container>
