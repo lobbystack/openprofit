@@ -30,10 +30,9 @@ export function Logo({
 }) {
 	return (
 		<span
-			className={`inline-flex items-center gap-2 font-medium tracking-[-0.02em] text-ink ${className}`}
+			className={`inline-flex items-center font-medium tracking-[-0.02em] text-ink ${className}`}
 			style={{ fontSize: size }}
 		>
-			<Mark size={Math.round(size * 1.3)} />
 			{APP_NAME}
 		</span>
 	);
