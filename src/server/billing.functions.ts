@@ -9,7 +9,12 @@ export const startCheckout = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		if (!isCloud) throw new Error("Billing is off on self-hosted instances");
 		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
-		return { url: await checkoutUrl(ws, data.plan, user.email) };
+		try {
+			return { url: await checkoutUrl(ws, data.plan, user.email) };
+		} catch (err) {
+			console.error("[billing] checkout", err);
+			throw err;
+		}
 	});
 
 export const openPortal = createServerFn({ method: "POST" }).handler(

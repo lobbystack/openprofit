@@ -6,6 +6,9 @@ import { PLANS } from "#/lib/plans";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
 import { sendEmail } from "./email.server";
+import { convert } from "./fx.server";
+import { CURRENCIES } from "./onboarding.functions";
+import { syncConnection } from "./sync.server";
 import { weeklySummary } from "./weekly.server";
 import { currentWorkspace } from "./workspace.server";
 
@@ -31,7 +34,8 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 			name: ws.name,
 			currency: ws.baseCurrency,
 			plan: ws.plan,
-			cadenceMinutes: conn?.cadenceMinutes ?? 60,
+			cadenceMinutes:
+				conn?.cadenceMinutes ?? (isCloud ? PLANS[ws.plan].cadenceMinutes : 60),
 			weeklyEmail: ws.weeklyEmail,
 			telemetry: ws.telemetry,
 			email: user.email,
@@ -51,6 +55,7 @@ export const updateSettings = createServerFn({ method: "POST" })
 				.optional(),
 			weeklyEmail: z.boolean().optional(),
 			telemetry: z.boolean().optional(),
+			currency: z.enum(CURRENCIES).optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
@@ -72,6 +77,52 @@ export const updateSettings = createServerFn({ method: "POST" })
 						: {}),
 				})
 				.where(eq(schema.workspaces.id, ws.id));
+		}
+		if (data.currency !== undefined && data.currency !== ws.baseCurrency) {
+			await db
+				.update(schema.workspaces)
+				.set({ baseCurrency: data.currency })
+				.where(eq(schema.workspaces.id, ws.id));
+			// Re-express every stored line in the new base currency.
+			const [rev, cost] = await Promise.all([
+				db.query.revenueLines.findMany({
+					where: eq(schema.revenueLines.workspaceId, ws.id),
+				}),
+				db.query.costLines.findMany({
+					where: eq(schema.costLines.workspaceId, ws.id),
+				}),
+			]);
+			for (const l of rev) {
+				await db
+					.update(schema.revenueLines)
+					.set({
+						netBaseCents: await convert(
+							l.netCents,
+							l.currency,
+							data.currency,
+							l.date,
+						),
+					})
+					.where(eq(schema.revenueLines.id, l.id));
+			}
+			for (const l of cost) {
+				await db
+					.update(schema.costLines)
+					.set({
+						amountBaseCents: await convert(
+							l.amountCents,
+							l.currency,
+							data.currency,
+							l.date,
+						),
+					})
+					.where(eq(schema.costLines.id, l.id));
+			}
+			// MRR snapshots are stored in base cents; a sync rewrites today's.
+			const conns = await db.query.connections.findMany({
+				where: eq(schema.connections.workspaceId, ws.id),
+			});
+			void Promise.allSettled(conns.map((c) => syncConnection(c)));
 		}
 		if (data.cadenceMinutes !== undefined) {
 			const floor = isCloud ? PLANS[ws.plan].cadenceMinutes : 0;

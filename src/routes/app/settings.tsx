@@ -3,6 +3,7 @@ import { useState } from "react";
 import { PageHeader } from "#/components/app/shell";
 import { PLANS, type Plan } from "#/lib/plans";
 import { openPortal, startCheckout } from "#/server/billing.functions";
+import { CURRENCIES } from "#/server/onboarding.functions";
 import {
 	CADENCES,
 	getSettings,
@@ -37,6 +38,7 @@ function Settings() {
 	const router = useRouter();
 	const [name, setName] = useState(s.name);
 	const [sent, setSent] = useState(false);
+	const [billingError, setBillingError] = useState<string | null>(null);
 
 	async function save(patch: Parameters<typeof updateSettings>[0]["data"]) {
 		await updateSettings({ data: patch });
@@ -57,11 +59,32 @@ function Settings() {
 						/>
 					</Row>
 					<Row label="Base currency">
-						<span className="num">{s.currency}</span>
+						<select
+							value={s.currency}
+							onChange={(e) =>
+								save({
+									currency: e.target.value as (typeof CURRENCIES)[number],
+								})
+							}
+							className={`${input} num`}
+						>
+							{CURRENCIES.map((c) => (
+								<option key={c} value={c}>
+									{c}
+								</option>
+							))}
+						</select>
+						<span className="text-[12px] text-text-3">
+							Stored lines are converted at their date's rate.
+						</span>
 					</Row>
 					<Row label="Sync">
 						<select
-							value={s.cadenceMinutes}
+							value={
+								s.cloud
+									? Math.max(s.cadenceMinutes, PLANS[s.plan].cadenceMinutes)
+									: s.cadenceMinutes
+							}
 							onChange={(e) =>
 								save({
 									cadenceMinutes: Number(
@@ -93,24 +116,40 @@ function Settings() {
 							{s.plan === "free" && (
 								<>
 									<Go
+										onError={setBillingError}
 										onClick={() => startCheckout({ data: { plan: "indie" } })}
 									>
 										Indie, $19
 									</Go>
-									<Go onClick={() => startCheckout({ data: { plan: "pro" } })}>
+									<Go
+										onError={setBillingError}
+										onClick={() => startCheckout({ data: { plan: "pro" } })}
+									>
 										Pro, $49
 									</Go>
 								</>
 							)}
 							{s.plan === "indie" && (
-								<Go onClick={() => startCheckout({ data: { plan: "pro" } })}>
+								<Go
+									onError={setBillingError}
+									onClick={() => startCheckout({ data: { plan: "pro" } })}
+								>
 									Pro, $49
 								</Go>
 							)}
 							{s.plan !== "free" && (
-								<Go onClick={() => openPortal()} className="ml-auto">
+								<Go
+									onError={setBillingError}
+									onClick={() => openPortal()}
+									className="ml-auto"
+								>
 									Manage billing
 								</Go>
+							)}
+							{billingError && (
+								<span className="text-[12px] text-negative">
+									{billingError}
+								</span>
 							)}
 						</Row>
 					) : (
@@ -178,10 +217,12 @@ function Row({
 // Button that sends the browser to a URL a server function returns.
 function Go({
 	onClick,
+	onError,
 	className = "",
 	children,
 }: {
 	onClick: () => Promise<{ url: string }>;
+	onError?: (message: string) => void;
 	className?: string;
 	children: React.ReactNode;
 }) {
@@ -189,8 +230,12 @@ function Go({
 		<button
 			type="button"
 			onClick={async () => {
-				const { url } = await onClick();
-				window.location.href = url;
+				try {
+					const { url } = await onClick();
+					window.location.href = url;
+				} catch (err) {
+					onError?.(err instanceof Error ? err.message : String(err));
+				}
 			}}
 			className={`h-7 rounded-md border border-line bg-paper px-2.5 text-[12px] hover:border-line-strong ${className}`}
 		>
