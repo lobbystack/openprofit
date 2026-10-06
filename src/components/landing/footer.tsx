@@ -19,6 +19,13 @@ const COLUMNS: [string, [string, string][]][] = [
 			["GitHub", GITHUB_URL],
 		],
 	],
+	[
+		"Legal",
+		[
+			["Privacy", "/privacy"],
+			["Terms", "/terms"],
+		],
+	],
 ];
 
 // 1024px wide, brand column plus link columns with 14px titles.
@@ -26,7 +33,7 @@ export function Footer() {
 	return (
 		<footer className="border-t border-line">
 			<Container width={1024} className="py-16">
-				<div className="grid gap-10 md:grid-cols-[1fr_repeat(2,160px)]">
+				<div className="grid gap-10 md:grid-cols-[1fr_repeat(3,160px)]">
 					<div>
 						<Logo />
 						<p className="mt-3 max-w-[240px] text-[13px] text-text-2">
