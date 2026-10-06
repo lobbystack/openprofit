@@ -6,9 +6,6 @@ import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
 import { createWorkspace, rememberWorkspace } from "./workspace.server";
 
-// settings.tsx still imports it from here.
-export { CURRENCIES } from "#/lib/format";
-
 const Input = z.object({
 	name: z.string().trim().min(1).max(60),
 	currency: z.enum(CURRENCIES),

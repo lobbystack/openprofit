@@ -2,12 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Footer } from "#/components/landing/footer";
 import { Nav } from "#/components/landing/nav";
 import { seo } from "#/lib/app";
-import { LEGAL } from "#/lib/legal";
+import { getLegalPage } from "#/server/content.functions";
 
 export const Route = createFileRoute("/cookies")({
-	head: () =>
+	loader: () => getLegalPage({ data: "cookies" }),
+	head: ({ loaderData }) =>
 		seo({
-			title: `${LEGAL.cookies.title} · OpenProfit`,
+			title: `${loaderData?.title} · OpenProfit`,
 			description:
 				"The cookies and browser storage OpenProfit uses, and how to change your choice.",
 			path: "/cookies",
@@ -16,12 +17,13 @@ export const Route = createFileRoute("/cookies")({
 });
 
 function Page() {
+	const { html } = Route.useLoaderData();
 	return (
 		<>
 			<Nav />
 			<main className="prose-docs mx-auto w-full max-w-[720px] px-4 pt-28 pb-24">
 				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: our own markdown */}
-				<article dangerouslySetInnerHTML={{ __html: LEGAL.cookies.html }} />
+				<article dangerouslySetInnerHTML={{ __html: html }} />
 			</main>
 			<Footer />
 		</>

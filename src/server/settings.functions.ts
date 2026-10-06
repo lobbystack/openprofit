@@ -55,9 +55,6 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 	},
 );
 
-// settings.tsx still imports it from here.
-export { CADENCES } from "#/lib/plans";
-
 export const updateSettings = createServerFn({ method: "POST" })
 	.validator(
 		z.object({

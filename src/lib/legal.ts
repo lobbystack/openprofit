@@ -1,3 +1,4 @@
+import "@tanstack/react-start/server-only";
 import { marked } from "marked";
 import cookies from "../legal/cookies.md?raw";
 import privacy from "../legal/privacy.md?raw";

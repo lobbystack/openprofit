@@ -11,11 +11,10 @@ import {
 	SettingsSection,
 	Switch,
 } from "#/components/app/shell";
-import { PLANS, type Plan } from "#/lib/plans";
+import { CURRENCIES } from "#/lib/format";
+import { CADENCES, PLANS, type Plan } from "#/lib/plans";
 import { openPortal, startCheckout } from "#/server/billing.functions";
-import { CURRENCIES } from "#/server/onboarding.functions";
 import {
-	CADENCES,
 	getSettings,
 	type Settings as SettingsData,
 	updateSettings,

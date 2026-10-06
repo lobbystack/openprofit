@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { CHANGELOG, COMPARISONS, INTEGRATIONS } from "#/lib/content";
 import { DOCS } from "#/lib/docs";
+import { LEGAL } from "#/lib/legal";
 
 // Markdown pages render on the server, so the markdown files and the parser
 // stay out of the browser bundle. Loaders call these.
@@ -37,6 +38,10 @@ export const getContentPage = createServerFn({ method: "GET" })
 export const getChangelog = createServerFn({ method: "GET" }).handler(() =>
 	page(CHANGELOG),
 );
+
+export const getLegalPage = createServerFn({ method: "GET" })
+	.validator(z.enum(["privacy", "terms", "cookies"]))
+	.handler(({ data }) => LEGAL[data]);
 
 export const getIntegrations = createServerFn({ method: "GET" }).handler(() =>
 	INTEGRATIONS.map((p) => ({
