@@ -50,25 +50,29 @@ export function AreaChart({
 	tone?: "ink" | "positive" | "negative";
 	compact?: boolean;
 }) {
-	const data = useGlide(dataIn);
-	const glidedPrevious = useGlide(previousIn ?? []);
-	const previous = previousIn ? glidedPrevious : undefined;
+	// The axis comes from the target values and glides with the line. Worked
+	// out per frame from the in-between values, it snaps between 1-2-5 steps
+	// mid-animation and the line jumps. Axis on 1-2-5 steps that always
+	// includes zero, so losses go below it.
+	const ticks = 4;
+	const targetAll = [...dataIn, ...(previousIn ?? [])];
+	const lo = Math.min(0, ...targetAll);
+	const hi = Math.max(0, ...targetAll);
+	const raw = (hi - lo || ticks) / ticks;
+	const mag = 10 ** Math.floor(Math.log10(raw));
+	const step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
+	const targetMin = Math.floor(lo / step) * step;
+	const targetMax = Math.max(Math.ceil(hi / step) * step, targetMin + step);
+	const glided = useGlide([targetMin, targetMax, ...targetAll]);
+	const [min, max] = glided;
+	const data = glided.slice(2, 2 + dataIn.length);
+	const previous = previousIn ? glided.slice(2 + dataIn.length) : undefined;
 	const W = 1000;
 	const H = height;
 	const padL = compact ? 0 : 56;
 	const padR = 8;
 	const padT = 12;
 	const padB = compact ? 0 : 28;
-	const all = [...data, ...(previous ?? [])];
-	// Axis on 1-2-5 steps that always includes zero, so losses go below it.
-	const ticks = 4;
-	const lo = Math.min(0, ...all);
-	const hi = Math.max(0, ...all);
-	const raw = (hi - lo || ticks) / ticks;
-	const mag = 10 ** Math.floor(Math.log10(raw));
-	const step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
-	const min = Math.floor(lo / step) * step;
-	const max = Math.max(Math.ceil(hi / step) * step, min + step);
 	const x = (i: number) => padL + (i / (data.length - 1)) * (W - padL - padR);
 	const y = (v: number) =>
 		padT + (1 - (v - min) / (max - min)) * (H - padT - padB);
@@ -91,8 +95,8 @@ export function AreaChart({
 				: "var(--ink)";
 
 	const tickVals = Array.from(
-		{ length: Math.round((max - min) / step) + 1 },
-		(_, i) => min + step * i,
+		{ length: Math.round((targetMax - targetMin) / step) + 1 },
+		(_, i) => targetMin + step * i,
 	);
 	const fmt = (v: number) =>
 		Math.abs(v) >= 1000
