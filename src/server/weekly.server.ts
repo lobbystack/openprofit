@@ -103,18 +103,20 @@ export function localSlot(at: Date, timeZone: string) {
 	return { day: WEEKDAYS.indexOf(get("weekday")), hour: Number(get("hour")) };
 }
 
-// Runs hourly. Sends to each workspace whose chosen day and hour, in its
-// time zone, is now. The claim update makes a second run in the same week,
-// or on another instance, skip it.
+// Runs hourly. Sends to each workspace on its chosen day, at or after its
+// chosen hour in its time zone, so an hour skipped by a DST change or a
+// missed run still sends later that day. The claim update makes a second
+// run that day, or on another instance, skip it; moving the schedule to a
+// later day of the same week sends again on that day.
 export async function sendWeeklyEmails(now = new Date()) {
 	const workspaces = await db.query.workspaces.findMany({
 		where: eq(schema.workspaces.weeklyEmail, true),
 	});
-	const weekAgo = now.getTime() - 6 * 86_400_000;
+	const dayAgo = now.getTime() - 20 * 3_600_000;
 	let sent = 0;
 	for (const ws of workspaces) {
 		const slot = localSlot(now, ws.timezone);
-		if (slot.day !== ws.weeklyDay || slot.hour !== ws.weeklyHour) continue;
+		if (slot.day !== ws.weeklyDay || slot.hour < ws.weeklyHour) continue;
 		const claimed = await db
 			.update(schema.workspaces)
 			.set({ weeklySentAt: now.getTime() })
@@ -123,26 +125,38 @@ export async function sendWeeklyEmails(now = new Date()) {
 					eq(schema.workspaces.id, ws.id),
 					or(
 						isNull(schema.workspaces.weeklySentAt),
-						lt(schema.workspaces.weeklySentAt, weekAgo),
+						lt(schema.workspaces.weeklySentAt, dayAgo),
 					),
 				),
 			)
 			.returning({ id: schema.workspaces.id });
 		if (!claimed.length) continue;
-		const summary = await weeklySummary(ws.id);
-		if (!summary) continue;
-		const members = await db
-			.select({ email: authSchema.user.email })
-			.from(schema.workspaceMembers)
-			.innerJoin(
-				authSchema.user,
-				eq(authSchema.user.id, schema.workspaceMembers.userId),
-			)
-			.where(eq(schema.workspaceMembers.workspaceId, ws.id));
-		for (const m of members) {
-			await sendEmail(m.email, summary.subject, summary.text);
-			sent++;
+		let mine = 0;
+		try {
+			const summary = await weeklySummary(ws.id);
+			if (!summary) continue;
+			const members = await db
+				.select({ email: authSchema.user.email })
+				.from(schema.workspaceMembers)
+				.innerJoin(
+					authSchema.user,
+					eq(authSchema.user.id, schema.workspaceMembers.userId),
+				)
+				.where(eq(schema.workspaceMembers.workspaceId, ws.id));
+			for (const m of members) {
+				await sendEmail(m.email, summary.subject, summary.text);
+				mine++;
+			}
+		} catch (err) {
+			console.error(`[weekly] workspace ${ws.id} failed:`, err);
+			// Nothing went out: release the claim so the next hour retries.
+			if (!mine)
+				await db
+					.update(schema.workspaces)
+					.set({ weeklySentAt: ws.weeklySentAt })
+					.where(eq(schema.workspaces.id, ws.id));
 		}
+		sent += mine;
 	}
 	if (sent) console.info(`[weekly] email sent to ${sent} member(s)`);
 	return sent;

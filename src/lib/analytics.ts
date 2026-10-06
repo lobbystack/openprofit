@@ -53,8 +53,15 @@ function clearOldStorage() {
 	for (const c of document.cookie.split("; ")) {
 		const name = c.split("=")[0];
 		if (name === "op_consent" || posthogKey(name))
-			// biome-ignore lint/suspicious/noDocumentCookie: deleting cookies by name
-			document.cookie = `${name}=; Path=/; Max-Age=0`;
+			// PostHog's defaults set its cookie on the parent domain, so delete
+			// it there too as well as host-only.
+			for (const domain of [
+				"",
+				`; Domain=${location.hostname}`,
+				`; Domain=.${location.hostname}`,
+			])
+				// biome-ignore lint/suspicious/noDocumentCookie: deleting cookies by name
+				document.cookie = `${name}=; Path=/; Max-Age=0${domain}`;
 	}
 	for (const k of Object.keys(localStorage))
 		if (posthogKey(k)) localStorage.removeItem(k);
@@ -131,6 +138,9 @@ export function identify(
 ) {
 	who = { user, on, workspace, plan };
 	if (!ph) return start();
+	// The page started cookieless (a public page, then an in-app link into
+	// /app) or the switch changed: PostHog can't change mode on a running
+	// page, so reload once into the right one. Accepted cost.
 	if (started !== (on ? user : null)) return location.reload();
 	if (started) void ph.then(group);
 }

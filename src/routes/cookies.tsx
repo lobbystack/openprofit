@@ -10,7 +10,7 @@ export const Route = createFileRoute("/cookies")({
 		seo({
 			title: `${loaderData?.title} · OpenProfit`,
 			description:
-				"The cookies and browser storage OpenProfit uses, and how to change your choice.",
+				"The cookies OpenProfit sets, and why its analytics need none.",
 			path: "/cookies",
 		}),
 	component: Page,
