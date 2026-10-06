@@ -1,10 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Footer } from "#/components/landing/footer";
 import { Nav } from "#/components/landing/nav";
+import { seo } from "#/lib/app";
 import { LEGAL } from "#/lib/legal";
 
 export const Route = createFileRoute("/terms")({
-	head: () => ({ meta: [{ title: `${LEGAL.terms.title} · OpenProfit` }] }),
+	head: () =>
+		seo({
+			title: `${LEGAL.terms.title} · OpenProfit`,
+			description:
+				"The terms for using the hosted OpenProfit service at openprofit.dev.",
+			path: "/terms",
+		}),
 	component: Page,
 });
 

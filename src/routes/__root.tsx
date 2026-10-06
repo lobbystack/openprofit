@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
-import { APP_NAME } from "../lib/app";
+import { APP_NAME, SITE_DESCRIPTION, SITE_URL } from "../lib/app";
 import { THEME_SCRIPT } from "../lib/theme";
 import appCss from "../styles.css?url";
 
@@ -20,14 +20,23 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		meta: [
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ title: `${APP_NAME}: finance for developers` },
-			{
-				name: "description",
-				content:
-					"The open-source finance dashboard for developers. Revenue and every bill you pay in one place, with profit per product.",
-			},
+			{ title: APP_NAME },
+			{ name: "description", content: SITE_DESCRIPTION },
+			{ property: "og:type", content: "website" },
+			{ property: "og:site_name", content: APP_NAME },
+			{ property: "og:image", content: `${SITE_URL}/og.png` },
+			{ property: "og:image:width", content: "1200" },
+			{ property: "og:image:height", content: "630" },
+			{ name: "twitter:card", content: "summary_large_image" },
+			{ name: "twitter:image", content: `${SITE_URL}/og.png` },
+			{ name: "theme-color", content: "#f7f7f4" },
 		],
-		links: [{ rel: "stylesheet", href: appCss }],
+		links: [
+			{ rel: "stylesheet", href: appCss },
+			{ rel: "icon", href: "/favicon.ico", sizes: "32x32" },
+			{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+			{ rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+		],
 		scripts: [{ children: THEME_SCRIPT }],
 	}),
 	shellComponent: RootDocument,

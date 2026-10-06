@@ -2,10 +2,15 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "#/components/landing/primitives";
 import { Logo } from "#/components/logo";
+import { NOINDEX } from "#/lib/app";
 import { getSession } from "#/server/auth.functions";
 import { CURRENCIES, createWorkspaceFn } from "#/server/onboarding.functions";
 
 export const Route = createFileRoute("/onboarding")({
+	head: () => ({
+		...NOINDEX,
+		meta: [{ title: "OpenProfit" }, ...NOINDEX.meta],
+	}),
 	loader: async () => {
 		const user = await getSession();
 		if (!user) throw redirect({ to: "/login" });

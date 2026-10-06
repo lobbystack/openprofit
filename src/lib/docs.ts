@@ -17,7 +17,11 @@ const ORDER = [
 export const DOCS = ORDER.map((slug) => {
 	const markdown = files[`../docs/${slug}.md`] ?? "";
 	const title = markdown.match(/^# (.+)$/m)?.[1] ?? slug;
-	return { slug, title, markdown };
+	// First paragraph after the title, plain text, for the meta description.
+	const description = (markdown.split(/\n\n/)[1] ?? "")
+		.replace(/[`*_[\]]|\(.*?\)/g, "")
+		.slice(0, 160);
+	return { slug, title, description, markdown };
 });
 
 export const renderDoc = (markdown: string) =>

@@ -3,10 +3,15 @@ import { useState } from "react";
 import { siGithub } from "simple-icons";
 import { Button } from "#/components/landing/primitives";
 import { Logo } from "#/components/logo";
+import { NOINDEX } from "#/lib/app";
 import { authClient } from "#/lib/auth-client";
 import { getAuthOptions, getSession } from "#/server/auth.functions";
 
 export const Route = createFileRoute("/login")({
+	head: () => ({
+		...NOINDEX,
+		meta: [{ title: "OpenProfit" }, ...NOINDEX.meta],
+	}),
 	loader: async () => {
 		const user = await getSession();
 		if (user) throw redirect({ to: "/app" });
@@ -35,6 +40,7 @@ function Login() {
 
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center px-4">
+			<h1 className="sr-only">Sign in to OpenProfit</h1>
 			<a href="/">
 				<Logo size={20} />
 			</a>

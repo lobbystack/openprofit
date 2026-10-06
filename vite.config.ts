@@ -11,7 +11,10 @@ const config = defineConfig({
 	resolve: { tsconfigPaths: true },
 	plugins: [
 		devtools(),
-		nitro({ rollupConfig: { external: [/^@sentry\//] } }),
+		nitro({
+			// PGlite ships wasm and data files next to its JS; bundling drops them.
+			rollupConfig: { external: [/^@sentry\//, /^@electric-sql\/pglite/] },
+		}),
 		tailwindcss(),
 		tanstackStart(),
 		viteReact(),

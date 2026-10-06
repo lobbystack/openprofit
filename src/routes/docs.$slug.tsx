@@ -1,15 +1,24 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { seo } from "#/lib/app";
 import { DOCS, renderDoc } from "#/lib/docs";
 
 export const Route = createFileRoute("/docs/$slug")({
 	loader: ({ params }) => {
 		const doc = DOCS.find((d) => d.slug === params.slug);
 		if (!doc) throw notFound();
-		return { title: doc.title, html: renderDoc(doc.markdown) };
+		return {
+			slug: doc.slug,
+			title: doc.title,
+			description: doc.description,
+			html: renderDoc(doc.markdown),
+		};
 	},
-	head: ({ loaderData }) => ({
-		meta: [{ title: `${loaderData?.title} · OpenProfit` }],
-	}),
+	head: ({ loaderData }) =>
+		seo({
+			title: `${loaderData?.title} · OpenProfit docs`,
+			description: loaderData?.description,
+			path: `/docs/${loaderData?.slug}`,
+		}),
 	component: Page,
 });
 
