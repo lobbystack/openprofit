@@ -6,6 +6,7 @@ import {
 } from "#/components/dashboard/overview";
 import { PeriodSelect } from "#/components/dashboard/period-select";
 import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
 import { money } from "#/lib/format";
 import {
 	type OverviewData,
@@ -33,7 +34,7 @@ function Overview() {
 		return (
 			<>
 				<PageHeader title="Overview" />
-				<div className="mt-4 flex flex-col items-start gap-4 rounded-xl border border-line bg-card p-6">
+				<Card className="mt-4 flex flex-col items-start gap-4 p-6">
 					<p className="text-[14px]">
 						Connect Stripe, Paddle or another revenue source. Profit shows here
 						after the first sync.
@@ -41,7 +42,7 @@ function Overview() {
 					<Button nativeButton={false} render={<Link to="/app/connections" />}>
 						Add a connection
 					</Button>
-				</div>
+				</Card>
 			</>
 		);
 	}
@@ -71,7 +72,7 @@ function TaxRow({ data }: { data: OverviewData }) {
 	const fmt = (n: number) => money(n, { currency: data.currency });
 	const d = ((tax.total - tax.previous) / tax.previous) * 100;
 	return (
-		<div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-xl border border-line bg-card px-5 py-3 text-[13px]">
+		<Card className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 px-5 py-3 text-[13px]">
 			<span className="text-text-3">Tax collected</span>
 			<span className="num">{fmt(tax.total)}</span>
 			{tax.previous !== 0 && (
@@ -87,6 +88,6 @@ function TaxRow({ data }: { data: OverviewData }) {
 						? "Yours to file"
 						: `${fmt(tax.owed)} is yours to file`}
 			</span>
-		</div>
+		</Card>
 	);
 }

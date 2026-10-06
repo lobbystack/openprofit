@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Card } from "#/components/ui/card";
 import { money } from "#/lib/format";
 import type { MetricKey, OverviewData } from "#/lib/overview";
 import { PROVIDERS, type ProviderId, ProviderLogo } from "../provider-logo";
@@ -22,7 +23,7 @@ export function OverviewCard({
 	const tone =
 		metric === "costs" ? "negative" : metric === "profit" ? "positive" : "ink";
 	return (
-		<div className="rounded-xl border border-line bg-card">
+		<Card>
 			<MetricRow
 				data={data}
 				selected={metric}
@@ -37,7 +38,7 @@ export function OverviewCard({
 					height={chartHeight}
 				/>
 			</div>
-		</div>
+		</Card>
 	);
 }
 

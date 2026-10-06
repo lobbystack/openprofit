@@ -9,6 +9,7 @@ import {
 	ProviderLogo,
 } from "#/components/provider-logo";
 import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import {
@@ -87,7 +88,7 @@ function Connect() {
 				onSubmit={save}
 				className="mt-4 grid gap-4 md:grid-cols-[1fr_320px]"
 			>
-				<div className="rounded-xl border border-line bg-card p-5">
+				<Card className="p-5">
 					<div className="flex items-center gap-2 text-[13px]">
 						{logo}
 						{info.name}
@@ -152,9 +153,9 @@ function Connect() {
 					{test.state === "error" && (
 						<TestError provider={info.name} error={test.error} />
 					)}
-				</div>
+				</Card>
 
-				<div className="rounded-xl border border-line bg-card p-5">
+				<Card className="p-5">
 					<a
 						href={info.createUrl}
 						target="_blank"
@@ -185,7 +186,7 @@ function Connect() {
 							</ul>
 						</>
 					)}
-				</div>
+				</Card>
 			</form>
 			<Link
 				to="/app/connections"

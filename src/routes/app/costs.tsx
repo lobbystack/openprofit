@@ -13,6 +13,7 @@ import { BreakdownCard } from "#/components/dashboard/breakdown-card";
 import { providerLabel } from "#/components/dashboard/overview";
 import { PeriodSelect } from "#/components/dashboard/period-select";
 import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import {
@@ -88,7 +89,7 @@ function Costs() {
 				</Button>
 			</PageHeader>
 
-			<div className="mt-4 rounded-xl border border-line bg-card px-3 pt-4 pb-2">
+			<Card className="mt-4 px-3 pt-4 pb-2">
 				<AreaChart
 					data={overview.series.costs}
 					previous={overview.previousSeries.costs}
@@ -96,7 +97,7 @@ function Costs() {
 					tone="negative"
 					height={200}
 				/>
-			</div>
+			</Card>
 
 			<div className="mt-4 grid gap-4 md:grid-cols-2">
 				<BreakdownCard
@@ -120,7 +121,7 @@ function Costs() {
 			</div>
 
 			<div className="label-mono mt-8">Flat costs</div>
-			<div className="mt-3 overflow-hidden rounded-xl border border-line bg-card">
+			<Card className="mt-3 overflow-hidden">
 				{editing === "new" && (
 					<FlatCostForm
 						products={products}
@@ -190,7 +191,7 @@ function Costs() {
 						)}
 					</ul>
 				)}
-			</div>
+			</Card>
 		</>
 	);
 }

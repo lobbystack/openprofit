@@ -6,6 +6,7 @@ import { useConfirm } from "#/components/app/confirm";
 import { PageHeader } from "#/components/app/shell";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
 import { Input } from "#/components/ui/input";
 import {
 	NativeSelect,
@@ -73,7 +74,7 @@ function Products() {
 					Add product
 				</Button>
 			</PageHeader>
-			<div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
+			<Card className="mt-4 overflow-hidden">
 				<Table>
 					<TableHeader>
 						<TableRow>
@@ -224,7 +225,7 @@ function Products() {
 						)}
 					</TableBody>
 				</Table>
-			</div>
+			</Card>
 		</>
 	);
 }

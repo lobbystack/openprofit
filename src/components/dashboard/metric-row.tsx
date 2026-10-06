@@ -1,3 +1,4 @@
+import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import { money } from "#/lib/format";
 import { METRICS, type MetricKey, type OverviewData } from "#/lib/overview";
 
@@ -11,7 +12,16 @@ export function MetricRow({
 	onSelect?: (k: MetricKey) => void;
 }) {
 	return (
-		<div className="grid grid-cols-[repeat(5,minmax(132px,1fr))] divide-x divide-line overflow-x-auto">
+		<ToggleGroup
+			variant="tile"
+			size="tile"
+			spacing={0}
+			aria-label="Metric"
+			value={[selected]}
+			// Picking the selected tile again keeps it selected.
+			onValueChange={(v) => v[0] && onSelect?.(v[0] as MetricKey)}
+			className="grid w-auto grid-cols-[repeat(5,minmax(132px,1fr))] divide-x divide-line overflow-x-auto"
+		>
 			{METRICS.map((m) => {
 				const value = data.period.totals[m.key];
 				const prev = data.period.previous[m.key];
@@ -20,15 +30,7 @@ export function MetricRow({
 				const good = m.key === "costs" ? d <= 0 : d >= 0;
 				const active = selected === m.key;
 				return (
-					<button
-						key={m.key}
-						type="button"
-						title={m.hint}
-						onClick={() => onSelect?.(m.key)}
-						className={`relative px-5 py-4 text-left transition-colors duration-150 ${
-							active ? "bg-surface-2" : "hover:bg-surface-2/60"
-						}`}
-					>
+					<ToggleGroupItem key={m.key} value={m.key} title={m.hint}>
 						<div className="label-mono">{m.label}</div>
 						<div className="num mt-3 text-[22px] leading-none">
 							{m.money
@@ -44,9 +46,9 @@ export function MetricRow({
 						{active && (
 							<span className="absolute inset-x-0 -bottom-px h-px bg-ink" />
 						)}
-					</button>
+					</ToggleGroupItem>
 				);
 			})}
-		</div>
+		</ToggleGroup>
 	);
 }

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { Logo } from "#/components/logo";
+import { Card } from "#/components/ui/card";
 import { seo } from "#/lib/app";
 import { delta, money } from "#/lib/format";
 import { getPublicProduct } from "#/server/public.functions";
@@ -69,7 +70,7 @@ function PublicPage() {
 				</div>
 				<span className="label-mono">This month</span>
 			</div>
-			<div className="mt-8 rounded-xl border border-line bg-card">
+			<Card className="mt-8">
 				<div
 					className="grid divide-x divide-line"
 					style={{
@@ -93,7 +94,7 @@ function PublicPage() {
 						/>
 					</div>
 				)}
-			</div>
+			</Card>
 			<Link
 				to="/"
 				className="mt-6 inline-flex items-center gap-2 text-[12px] text-text-3 hover:text-ink"

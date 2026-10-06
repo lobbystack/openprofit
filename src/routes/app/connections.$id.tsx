@@ -6,6 +6,7 @@ import {
 	type ProviderId,
 	ProviderLogo,
 } from "#/components/provider-logo";
+import { Card, CardHeader, CardTitle } from "#/components/ui/card";
 import {
 	NativeSelect,
 	NativeSelectOption,
@@ -85,24 +86,24 @@ function Connection() {
 	return (
 		<>
 			<PageHeader title={p?.name ?? c.provider} meta={c.label ?? undefined} />
-			<div className="mt-4 flex h-11 items-center justify-between rounded-xl border border-line bg-card px-4 text-[13px]">
+			<Card className="mt-4 flex h-11 items-center justify-between px-4 text-[13px]">
 				<span>
 					{c.kind === "revenue"
 						? "Revenue without a product goes to"
 						: "Costs without a product go to"}
 				</span>
 				{select(c.productId, assignConnection)}
-			</div>
+			</Card>
 			{c.subUnits.length > 0 && (
-				<div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
-					<div className="flex items-center justify-between border-b border-line px-4 py-3">
-						<span className="flex items-center gap-2 text-[13px]">
+				<Card className="mt-4 overflow-hidden">
+					<CardHeader className="py-3">
+						<CardTitle>
 							{p && <ProviderLogo id={c.provider as ProviderId} size={14} />}
 							{c.kind === "cost" ? "Costs by" : "Revenue by"}{" "}
 							{UNIT[c.provider] ?? "project"}
-						</span>
+						</CardTitle>
 						<span className="label-mono">This month</span>
-					</div>
+					</CardHeader>
 					<ul className="divide-y divide-line">
 						{c.subUnits.map((u) => (
 							<li
@@ -126,7 +127,7 @@ function Connection() {
 							</li>
 						))}
 					</ul>
-				</div>
+				</Card>
 			)}
 			<Link
 				to="/app/connections"

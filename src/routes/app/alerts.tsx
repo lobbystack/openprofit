@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { PageHeader } from "#/components/app/shell";
+import { Card } from "#/components/ui/card";
 import { Switch } from "#/components/ui/switch";
 import { RULE_NAMES, ruleScope } from "#/lib/alerts";
 import { getAlerts, setRuleEnabled } from "#/server/alerts.functions";
@@ -35,7 +36,7 @@ function Alerts() {
 			<PageHeader title="Alerts" meta={open ? `${open} open` : undefined} />
 
 			{alerts.length > 0 && (
-				<div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
+				<Card className="mt-4 overflow-hidden">
 					<ul className="divide-y divide-line">
 						{alerts.map((a) => {
 							const resolved = !!a.resolvedAt;
@@ -70,14 +71,14 @@ function Alerts() {
 							);
 						})}
 					</ul>
-				</div>
+				</Card>
 			)}
 
 			{alerts.length === 0 && (
-				<p className="mt-4 rounded-xl border border-line bg-card px-4 py-4 text-[13px] text-text-2">
+				<Card className="mt-4 p-4 text-[13px] text-text-2">
 					No alerts yet. One opens here when a rule below finds something, and
 					every member gets one email about it.
-				</p>
+				</Card>
 			)}
 
 			<div className="label-mono mt-8">Rules</div>
@@ -85,7 +86,7 @@ function Alerts() {
 				A rule that's on opens an alert here and emails every member once per
 				alert. Off stops both.
 			</p>
-			<div className="mt-3 overflow-hidden rounded-xl border border-line bg-card">
+			<Card className="mt-3 overflow-hidden">
 				<ul className="divide-y divide-line">
 					{rules.map((r) => (
 						<li
@@ -112,7 +113,7 @@ function Alerts() {
 						</li>
 					))}
 				</ul>
-			</div>
+			</Card>
 		</>
 	);
 }

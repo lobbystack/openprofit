@@ -10,6 +10,7 @@ import {
 	ProviderLogo,
 } from "#/components/provider-logo";
 import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
 import { describeError } from "#/lib/errors";
 import { cadenceLabel, money } from "#/lib/format";
 import {
@@ -100,7 +101,7 @@ function Connections() {
 			)}
 
 			{rows.length > 0 && (
-				<div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
+				<Card className="mt-4 overflow-hidden">
 					<ul className="divide-y divide-line">
 						{rows.map((r) => {
 							const p = PROVIDERS[r.provider];
@@ -197,7 +198,7 @@ function Connections() {
 							);
 						})}
 					</ul>
-				</div>
+				</Card>
 			)}
 
 			<div className={`label-mono ${rows.length ? "mt-8" : "mt-4"}`}>

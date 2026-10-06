@@ -1,3 +1,4 @@
+import { Card, CardHeader } from "#/components/ui/card";
 import { money } from "./mock-data";
 
 export type BreakdownRow = {
@@ -21,8 +22,8 @@ export function BreakdownCard({
 }) {
 	const max = Math.max(...rows.map((r) => r.value));
 	return (
-		<div className="rounded-xl border border-line bg-card">
-			<div className="flex items-center justify-between border-b border-line px-4">
+		<Card>
+			<CardHeader>
 				<div className="flex gap-4">
 					{tabs.map((t, i) => (
 						<span
@@ -39,7 +40,7 @@ export function BreakdownCard({
 					))}
 				</div>
 				<span className="label-mono">{total ? formatter(total) : ""}</span>
-			</div>
+			</CardHeader>
 			<ul className="p-2">
 				{rows.map((r, i) => (
 					<li
@@ -65,6 +66,6 @@ export function BreakdownCard({
 					</li>
 				))}
 			</ul>
-		</div>
+		</Card>
 	);
 }

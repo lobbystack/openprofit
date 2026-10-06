@@ -14,6 +14,7 @@ import {
 	SunMoon,
 } from "lucide-react";
 import { Logo } from "#/components/logo";
+import { Card } from "#/components/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -235,9 +236,7 @@ export function SettingsSection({
 	return (
 		<section className="mt-8">
 			<h2 className="mb-2 text-[14px]">{title}</h2>
-			<div className="divide-y divide-line rounded-xl border border-line bg-card">
-				{children}
-			</div>
+			<Card className="divide-y divide-line">{children}</Card>
 		</section>
 	);
 }
