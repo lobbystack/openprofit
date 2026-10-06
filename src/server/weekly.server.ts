@@ -1,4 +1,4 @@
-import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { and, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
 import { authSchema, db, schema } from "#/db";
 import { sendEmail } from "./email.server";
 
@@ -89,12 +89,46 @@ export async function weeklySummary(workspaceId: string) {
 	};
 }
 
-export async function sendWeeklyEmails() {
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+// Day (0 = Sunday) and hour of `at` in an IANA time zone.
+export function localSlot(at: Date, timeZone: string) {
+	const parts = new Intl.DateTimeFormat("en-US", {
+		timeZone,
+		weekday: "short",
+		hour: "numeric",
+		hourCycle: "h23",
+	}).formatToParts(at);
+	const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+	return { day: WEEKDAYS.indexOf(get("weekday")), hour: Number(get("hour")) };
+}
+
+// Runs hourly. Sends to each workspace whose chosen day and hour, in its
+// time zone, is now. The claim update makes a second run in the same week,
+// or on another instance, skip it.
+export async function sendWeeklyEmails(now = new Date()) {
 	const workspaces = await db.query.workspaces.findMany({
 		where: eq(schema.workspaces.weeklyEmail, true),
 	});
+	const weekAgo = now.getTime() - 6 * 86_400_000;
 	let sent = 0;
 	for (const ws of workspaces) {
+		const slot = localSlot(now, ws.timezone);
+		if (slot.day !== ws.weeklyDay || slot.hour !== ws.weeklyHour) continue;
+		const claimed = await db
+			.update(schema.workspaces)
+			.set({ weeklySentAt: now.getTime() })
+			.where(
+				and(
+					eq(schema.workspaces.id, ws.id),
+					or(
+						isNull(schema.workspaces.weeklySentAt),
+						lt(schema.workspaces.weeklySentAt, weekAgo),
+					),
+				),
+			)
+			.returning({ id: schema.workspaces.id });
+		if (!claimed.length) continue;
 		const summary = await weeklySummary(ws.id);
 		if (!summary) continue;
 		const members = await db

@@ -2,14 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { authSchema, db, schema } from "#/db";
-import { CURRENCIES } from "#/lib/format";
+import { CURRENCIES, TimeZone } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
-import { sendEmail } from "./email.server";
 import { convert } from "./fx.server";
 import { syncConnection } from "./sync.server";
-import { weeklySummary } from "./weekly.server";
 import { currentWorkspace } from "./workspace.server";
 
 export type Settings = {
@@ -18,10 +16,12 @@ export type Settings = {
 	plan: "free" | "indie" | "pro";
 	cadenceMinutes: number;
 	weeklyEmail: boolean;
+	weeklyDay: number;
+	weeklyHour: number;
+	timezone: string;
 	telemetry: boolean;
-	// The signed-in user's product analytics switch.
+	// The signed-in user's analytics switch: product events and replay.
 	analytics: boolean;
-	email: string;
 	// Hosted instance: billing rows show and the plan caps the cadence.
 	cloud: boolean;
 };
@@ -45,9 +45,11 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 			cadenceMinutes:
 				conn?.cadenceMinutes ?? (isCloud ? PLANS[ws.plan].cadenceMinutes : 60),
 			weeklyEmail: ws.weeklyEmail,
+			weeklyDay: ws.weeklyDay,
+			weeklyHour: ws.weeklyHour,
+			timezone: ws.timezone,
 			telemetry: ws.telemetry,
 			analytics: me?.analytics ?? true,
-			email: user.email,
 			cloud: isCloud,
 		};
 	},
@@ -64,6 +66,9 @@ export const updateSettings = createServerFn({ method: "POST" })
 				.union([z.literal(15), z.literal(60), z.literal(360), z.literal(1440)])
 				.optional(),
 			weeklyEmail: z.boolean().optional(),
+			weeklyDay: z.number().int().min(0).max(6).optional(),
+			weeklyHour: z.number().int().min(0).max(23).optional(),
+			timezone: TimeZone.optional(),
 			telemetry: z.boolean().optional(),
 			analytics: z.boolean().optional(),
 			currency: z.enum(CURRENCIES).optional(),
@@ -76,24 +81,20 @@ export const updateSettings = createServerFn({ method: "POST" })
 				.update(authSchema.user)
 				.set({ analytics: data.analytics })
 				.where(eq(authSchema.user.id, user.id));
-		if (
-			data.name !== undefined ||
-			data.weeklyEmail !== undefined ||
-			data.telemetry !== undefined
-		) {
+		// Drizzle leaves undefined fields out of the update.
+		const patch = {
+			name: data.name,
+			weeklyEmail: data.weeklyEmail,
+			weeklyDay: data.weeklyDay,
+			weeklyHour: data.weeklyHour,
+			timezone: data.timezone,
+			telemetry: data.telemetry,
+		};
+		if (Object.values(patch).some((v) => v !== undefined))
 			await db
 				.update(schema.workspaces)
-				.set({
-					...(data.name !== undefined ? { name: data.name } : {}),
-					...(data.weeklyEmail !== undefined
-						? { weeklyEmail: data.weeklyEmail }
-						: {}),
-					...(data.telemetry !== undefined
-						? { telemetry: data.telemetry }
-						: {}),
-				})
+				.set(patch)
 				.where(eq(schema.workspaces.id, ws.id));
-		}
 		if (data.currency !== undefined && data.currency !== ws.baseCurrency) {
 			await db
 				.update(schema.workspaces)
@@ -159,13 +160,3 @@ export const updateSettings = createServerFn({ method: "POST" })
 		}
 		return { ok: true };
 	});
-
-export const sendWeeklyNow = createServerFn({ method: "POST" }).handler(
-	async () => {
-		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
-		const summary = await weeklySummary(ws.id);
-		if (!summary) return { ok: false };
-		await sendEmail(user.email, summary.subject, summary.text);
-		return { ok: true };
-	},
-);

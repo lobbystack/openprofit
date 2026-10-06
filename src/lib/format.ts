@@ -1,4 +1,16 @@
+import { z } from "zod";
+
 export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "CHF"] as const;
+
+// An IANA time zone name the server's Intl knows, such as "Europe/Paris".
+export const TimeZone = z.string().refine((timeZone) => {
+	try {
+		new Intl.DateTimeFormat("en-US", { timeZone });
+		return true;
+	} catch {
+		return false;
+	}
+});
 
 export function money(
 	n: number,

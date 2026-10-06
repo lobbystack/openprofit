@@ -16,8 +16,11 @@ export const Route = createFileRoute("/app")({
 
 function AppLayout() {
 	const workspace = Route.useLoaderData();
-	const { userId, id, plan } = workspace;
-	useEffect(() => identify(userId, id, plan), [userId, id, plan]);
+	const { userId, analytics, id, plan } = workspace;
+	useEffect(
+		() => identify(userId, analytics, id, plan),
+		[userId, analytics, id, plan],
+	);
 	return (
 		<Shell workspace={workspace}>
 			<Outlet />

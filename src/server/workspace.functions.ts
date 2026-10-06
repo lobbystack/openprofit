@@ -21,6 +21,8 @@ export type WorkspaceSummary = {
 	overCap: boolean;
 	userId: string;
 	email: string;
+	// The user's Analytics switch; the browser records replay when on.
+	analytics: boolean;
 	workspaces: { id: string; name: string }[];
 	products: { id: string; name: string; profit: number }[];
 };
@@ -49,6 +51,7 @@ export const getWorkspace = createServerFn({ method: "GET" }).handler(
 			overCap: isCloud && cap !== null && mrr > cap,
 			userId: user.id,
 			email: user.email,
+			analytics: user.analytics,
 			workspaces: await userWorkspaces(user.id),
 			products: data.byProduct
 				.filter((p) => p.id !== "shared")

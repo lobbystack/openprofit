@@ -3,78 +3,94 @@ import type { PostHog } from "posthog-js";
 // PostHog in the browser: web analytics and session replay. Product events
 // are captured on the server (src/server/analytics.server.ts).
 //
-// PostHog loads on every page. Until the visitor accepts in the cookie
-// banner, and after they decline, it runs in cookieless mode: it stores
-// nothing on the device, PostHog counts visitors with a daily hash on its
-// servers, and replay is off. Accepting turns on its cookies and replay.
-//
-// The choice lives in the op_consent cookie. The server reads it to render
-// the banner without a flash, and PostHog reads it as its consent record.
+// PostHog never stores anything on the device. Each page load picks one of
+// two setups, and the choice holds until the next load:
+// - A signed-in user with the Analytics switch on (user.analytics, the
+//   default): memory persistence, started with their user id and workspace
+//   group, and replay while the page is in the app. A full reload starts a
+//   new session.
+// - Everyone else: cookieless mode, which counts visitors with a daily hash
+//   on PostHog's servers.
+// When the switch or the signed-in user calls for the other setup, the page
+// reloads.
 
-export const CONSENT_COOKIE = "op_consent";
-export type Consent = "yes" | "no" | null;
 export type AnalyticsConfig = {
 	// Project token, or null when POSTHOG_KEY is unset (self-host default).
 	key: string | null;
 	apiHost: string;
 	uiHost: string;
-	consent: Consent;
 };
 
+type Who = { user: string; workspace?: string; plan?: string; on: boolean };
+
 let ph: Promise<PostHog> | null = null;
-let who: { user: string; workspace?: string; plan?: string } | null = null;
+// The user this page's PostHog was started for, or null for cookieless.
+let started: string | null = null;
+let who: Who | null = null;
+
+const inApp = (path = location.pathname) =>
+	/^\/(app|onboarding)(\/|$)/.test(path);
 
 // Replay never shows digits, and inside the app it shows no text at all:
 // amounts, names and emails are all masked.
 const mask = (text: string) =>
-	/^\/(app|onboarding)(\/|$)/.test(location.pathname)
-		? text.replace(/\S/g, "*")
-		: text.replace(/\d/g, "*");
+	inApp() ? text.replace(/\S/g, "*") : text.replace(/\d/g, "*");
 
-// PostHog may store 1 or 0 in the same cookie; read them as yes and no.
-export const parseConsent = (v?: string | null): Consent =>
-	v === "yes" || v === "1" ? "yes" : v === "no" || v === "0" ? "no" : null;
+const record = (p: PostHog, path?: string) =>
+	started && inApp(path) ? p.startSessionRecording() : p.stopSessionRecording();
 
-export function readConsent(): Consent {
-	return parseConsent(document.cookie.match(/(?:^|; )op_consent=([^;]*)/)?.[1]);
-}
-
-function remember(yes: boolean) {
-	const secure = location.protocol === "https:" ? "; Secure" : "";
-	// biome-ignore lint/suspicious/noDocumentCookie: the Cookie Store API is missing in some browsers
-	document.cookie = `${CONSENT_COOKIE}=${yes ? "yes" : "no"}; Path=/; Max-Age=${60 * 60 * 24 * 180}; SameSite=Lax${secure}`;
-}
-
-const consented = (p: PostHog) => p.get_explicit_consent_status() === "granted";
-
-// Links this browser to the user id and workspace, only after consent.
-function apply(p: PostHog) {
-	if (!who || !consented(p)) return;
-	p.identify(who.user);
-	if (who.workspace)
+const group = (p: PostHog) => {
+	if (who?.workspace)
 		p.group("workspace", who.workspace, who.plan ? { plan: who.plan } : {});
+};
+
+// PostHog's keys: ph_<token>_* and __ph_opt_in_out_<token>.
+const posthogKey = (k: string) => /^(__)?ph_/.test(k);
+
+// ponytail: deletes what the cookie banner (October 2026) left in browsers
+// that accepted it. Drop it in 2027.
+function clearOldStorage() {
+	for (const c of document.cookie.split("; ")) {
+		const name = c.split("=")[0];
+		if (name === "op_consent" || posthogKey(name))
+			// biome-ignore lint/suspicious/noDocumentCookie: deleting cookies by name
+			document.cookie = `${name}=; Path=/; Max-Age=0`;
+	}
+	for (const k of Object.keys(localStorage))
+		if (posthogKey(k)) localStorage.removeItem(k);
 }
 
-// Once per page load, from the root route.
-export function initAnalytics(cfg: AnalyticsConfig) {
-	if (!cfg.key || ph) return;
+let cfg: AnalyticsConfig | null = null;
+
+// Once per page load, from the root route. On app pages PostHog waits for
+// identify() to say whose page it is.
+export function initAnalytics(config: AnalyticsConfig) {
+	if (!config.key || cfg) return;
+	cfg = config;
+	clearOldStorage();
+	if (who || !inApp()) start();
+}
+
+function start() {
+	if (!cfg?.key || ph) return;
 	const key = cfg.key;
+	const { apiHost, uiHost } = cfg;
+	started = who?.on ? who.user : null;
+	const user = started;
 	ph = import("posthog-js").then(({ default: posthog }) => {
 		posthog.init(key, {
-			api_host: cfg.apiHost,
-			ui_host: cfg.uiHost,
+			api_host: apiHost,
+			ui_host: uiHost,
 			defaults: "2026-08-30",
 			person_profiles: "identified_only",
-			// Cookieless until the visitor accepts. With no choice yet the
-			// default is opted out, which on_reject turns into cookieless.
-			cookieless_mode: "on_reject",
-			opt_out_capturing_by_default: true,
-			// PostHog reads yes and no from the banner's cookie instead of
-			// keeping its own record. Host-only, like op_consent, so PostHog's
-			// writes replace that cookie instead of adding a second one.
-			consent_persistence_name: CONSENT_COOKIE,
-			opt_out_capturing_persistence_type: "cookie",
-			cross_subdomain_cookie: false,
+			...(user
+				? {
+						persistence: "memory" as const,
+						bootstrap: { distinctID: user, isIdentifiedID: true },
+					}
+				: { cookieless_mode: "always" as const }),
+			// Replay runs only on app pages; record() starts and stops it.
+			disable_session_recording: true,
 			capture_exceptions: true,
 			// Autocapture records which element was clicked, not its text.
 			mask_all_text: true,
@@ -94,55 +110,27 @@ export function initAnalytics(cfg: AnalyticsConfig) {
 				}),
 			},
 		});
-		apply(posthog);
+		if (user) group(posthog);
+		record(posthog);
 		return posthog;
 	});
 }
 
-// The banner and the Settings row both land here; takes effect at once.
-export function setConsent(yes: boolean) {
-	const done = () => {
-		remember(yes);
-		window.dispatchEvent(new CustomEvent("op:consent", { detail: yes }));
-	};
-	// Saved before PostHog loads, so closing the tab can't lose the choice.
-	remember(yes);
-	if (!ph) return done();
-	void ph.then((p) => {
-		// Accepting switches to cookies and starts replay; declining stops
-		// replay, deletes PostHog's cookies and local storage and goes back to
-		// cookieless. Its tab ids stay in session storage, so clear those too.
-		if (yes) p.opt_in_capturing({ captureEventName: false });
-		else {
-			p.opt_out_capturing();
-			for (const k of Object.keys(sessionStorage))
-				if (k.startsWith("ph_")) sessionStorage.removeItem(k);
-		}
-		// Both store 1 or 0 in op_consent for a year; keep our value and expiry.
-		done();
-		apply(p);
-	});
+// From the root route, before each navigation renders the next page.
+export function onNavigate(path: string) {
+	void ph?.then((p) => record(p, path));
 }
 
-// Reopens the cookie banner, for the footer link.
-export function openCookieSettings() {
-	window.dispatchEvent(new CustomEvent("op:consent", { detail: null }));
-}
-
-// User id only, no email. The workspace is a PostHog group.
-export function identify(user: string, workspace?: string, plan?: string) {
-	who = { user, workspace, plan };
-	void ph?.then(apply);
-}
-
-// On sign-out. reset() also deletes the consent cookie, so opt back in
-// after it, as PostHog advises, and restore the cookie.
-export function resetAnalytics() {
-	who = null;
-	void ph?.then((p) => {
-		if (!consented(p)) return;
-		p.reset();
-		p.opt_in_capturing({ captureEventName: false });
-		remember(true);
-	});
+// From the app and onboarding: user id only, no email. The workspace is a
+// PostHog group. `on` is the user's Analytics switch.
+export function identify(
+	user: string,
+	on: boolean,
+	workspace?: string,
+	plan?: string,
+) {
+	who = { user, on, workspace, plan };
+	if (!ph) return start();
+	if (started !== (on ? user : null)) return location.reload();
+	if (started) void ph.then(group);
 }

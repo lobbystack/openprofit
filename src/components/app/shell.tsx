@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "#/components/logo";
-import { resetAnalytics } from "#/lib/analytics";
 import { authClient } from "#/lib/auth-client";
 import { money } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
@@ -39,7 +38,6 @@ const item =
 	"flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[13px] text-text-2 hover:bg-surface-2 hover:text-ink";
 
 function signOut() {
-	resetAnalytics();
 	authClient.signOut().then(() => {
 		window.location.href = "/login";
 	});
@@ -288,6 +286,84 @@ export function PageHeader({
 			</div>
 			{children && <div className="flex items-center gap-2">{children}</div>}
 		</div>
+	);
+}
+
+// A titled card of settings rows separated by hairlines.
+export function SettingsSection({
+	title,
+	children,
+}: {
+	title: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<section className="mt-8">
+			<h2 className="mb-2 text-[14px]">{title}</h2>
+			<div className="divide-y divide-line rounded-xl border border-line bg-card">
+				{children}
+			</div>
+		</section>
+	);
+}
+
+// Label and optional description on the left half, the control on the right
+// half. Below 640px the control drops under the label.
+export function SettingsRow({
+	label,
+	description,
+	htmlFor,
+	children,
+}: {
+	label: string;
+	description?: React.ReactNode;
+	// The id of the control, so clicking the label focuses it.
+	htmlFor?: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<div className="flex flex-col gap-2.5 px-4 py-3 sm:min-h-14 sm:flex-row sm:items-center sm:gap-8">
+			<div className="sm:w-1/2">
+				<label htmlFor={htmlFor} className="block text-[13px]">
+					{label}
+				</label>
+				{description && (
+					<p className="mt-0.5 text-[12px] text-text-2">{description}</p>
+				)}
+			</div>
+			<div className="flex flex-wrap items-center gap-2 sm:w-1/2 sm:justify-end">
+				{children}
+			</div>
+		</div>
+	);
+}
+
+export function Switch({
+	checked,
+	onChange,
+	id,
+}: {
+	checked: boolean;
+	onChange: (checked: boolean) => void;
+	id?: string;
+}) {
+	return (
+		<button
+			type="button"
+			role="switch"
+			id={id}
+			aria-checked={checked}
+			onClick={() => onChange(!checked)}
+			className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 ${
+				checked ? "bg-ink" : "bg-line-strong"
+			}`}
+		>
+			<span
+				className={`h-4 w-4 rounded-full bg-paper transition-transform duration-150 ease-(--ease-out) ${
+					checked ? "translate-x-4" : ""
+				}`}
+			/>
+		</button>
 	);
 }
 

@@ -19,8 +19,8 @@ export function startScheduler() {
 		const n = await syncDue();
 		if (n) console.info(`[sync] ${n} connection(s) synced`);
 	});
-	// Monday 09:00 in the server's timezone.
-	const weekly = new Cron("0 9 * * 1", { protect: true }, async () => {
+	// Hourly: each workspace picks its own day and hour.
+	const weekly = new Cron("0 * * * *", { protect: true }, async () => {
 		await sendWeeklyEmails();
 	});
 	const telemetry = new Cron("30 3 * * *", { protect: true }, () => {
