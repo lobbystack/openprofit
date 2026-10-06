@@ -63,3 +63,6 @@ export function ProviderLogo({
 		</>
 	);
 }
+
+// Display name for a provider id, such as "OpenAI" for "openai".
+export const providerName = (id: string) => PROVIDERS[id]?.name ?? id;

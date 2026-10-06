@@ -60,7 +60,7 @@ export const auth = betterAuth({
 				sendEmail(
 					email,
 					`Sign in to ${APP_NAME}`,
-					`Open this link to sign in:\n\n${url}\n\nIt expires in 5 minutes.`,
+					`Open this link to sign in:\n\n${url}\n\nIt expires in 5 minutes. If you didn't ask for this, ignore this email.`,
 				),
 		}),
 		// Must stay last: forwards cookies set inside server functions (session

@@ -1,4 +1,5 @@
 import { and, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
+import { providerName } from "#/components/provider-logo";
 import { authSchema, db, schema } from "#/db";
 import { sendEmail } from "./email.server";
 
@@ -76,13 +77,19 @@ export async function weeklySummary(workspaceId: string) {
 		`Profit   ${fmt(profit, cur)}`,
 	];
 	if (mover && Math.abs(mover.delta) >= 500) {
-		const name = mover.provider[0].toUpperCase() + mover.provider.slice(1);
+		const name = providerName(mover.provider);
 		lines.push(
 			"",
 			`Biggest change: ${name}, ${mover.delta > 0 ? "up" : "down"} ${Math.abs(Math.round(mover.pct))}% (${fmt(Math.abs(mover.delta), cur)}).`,
 		);
 	}
-	lines.push("", `${process.env.APP_URL ?? ""}/app`);
+	const url = process.env.APP_URL ?? "";
+	lines.push(
+		"",
+		`${url}/app`,
+		"",
+		`Change the day and time of this email, or turn it off, in Settings: ${url}/app/settings`,
+	);
 	return {
 		subject: `${ws.name}: ${fmt(profit, cur)} profit last week`,
 		text: lines.join("\n"),

@@ -1,24 +1,13 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { PageHeader } from "#/components/app/shell";
+import { PageHeader, Switch } from "#/components/app/shell";
+import { RULE_NAMES, ruleScope } from "#/lib/alerts";
 import { getAlerts, setRuleEnabled } from "#/server/alerts.functions";
 
 export const Route = createFileRoute("/app/alerts")({
 	loader: () => getAlerts(),
 	component: Alerts,
 });
-
-const RULE_LABELS = {
-	cost_spike: (t: number | null) => [
-		"Cost spike",
-		`Any provider, ${Math.round((t ?? 1) * 100)}% over the weekly average`,
-	],
-	margin_floor: (t: number | null) => [
-		"Margin floor",
-		`Any product, under ${Math.round((t ?? 0.6) * 100)}% for a week`,
-	],
-	sync_failure: () => ["Sync failure", "Any connection"],
-} as const;
 
 const when = (ts: number) => {
 	const d = new Date(ts);
@@ -36,7 +25,7 @@ function Alerts() {
 
 	async function toggle(id: string, enabled: boolean) {
 		await setEnabled({ data: { id, enabled } });
-		router.invalidate();
+		await router.invalidate({ sync: true });
 	}
 
 	return (
@@ -82,35 +71,44 @@ function Alerts() {
 				</div>
 			)}
 
-			<div className={`label-mono ${alerts.length ? "mt-8" : "mt-4"}`}>
-				Rules
-			</div>
+			{alerts.length === 0 && (
+				<p className="mt-4 rounded-xl border border-line bg-card px-4 py-4 text-[13px] text-text-2">
+					No alerts yet. One opens here when a rule below finds something, and
+					every member gets one email about it.
+				</p>
+			)}
+
+			<div className="label-mono mt-8">Rules</div>
+			<p className="mt-2 text-[12px] text-text-2">
+				A rule that's on opens an alert here and emails every member once per
+				alert. Off stops both.
+			</p>
 			<div className="mt-3 overflow-hidden rounded-xl border border-line bg-card">
 				<ul className="divide-y divide-line">
-					{rules.map((r) => {
-						const [name, scope] = RULE_LABELS[r.kind](r.threshold);
-						return (
-							<li
-								key={r.id}
-								className="flex h-11 items-center px-4 text-[13px]"
+					{rules.map((r) => (
+						<li
+							key={r.id}
+							className="flex min-h-11 items-center gap-3 px-4 py-2 text-[13px]"
+						>
+							<label
+								htmlFor={`rule-${r.id}`}
+								className={`w-32 shrink-0 ${r.enabled ? "" : "text-text-3"}`}
 							>
-								<span className={`w-40 ${r.enabled ? "" : "text-text-3"}`}>
-									{name}
-								</span>
-								<span className="flex-1 text-text-2">{scope}</span>
-								<button
-									type="button"
-									onClick={() => toggle(r.id, !r.enabled)}
-									className="flex items-center gap-1.5 text-[12px] text-text-2 hover:text-ink"
-								>
-									<span
-										className={`h-1.5 w-1.5 rounded-full ${r.enabled ? "bg-positive" : "bg-surface-4"}`}
-									/>
-									{r.enabled ? "Email" : "Off"}
-								</button>
-							</li>
-						);
-					})}
+								{RULE_NAMES[r.kind]}
+							</label>
+							<span className="flex-1 text-text-2">
+								{ruleScope(r.kind, r.threshold)}
+							</span>
+							<span className="w-24 text-right text-[12px] text-text-2">
+								{r.enabled ? "Email on" : "Off"}
+							</span>
+							<Switch
+								id={`rule-${r.id}`}
+								checked={r.enabled}
+								onChange={(on) => toggle(r.id, on)}
+							/>
+						</li>
+					))}
 				</ul>
 			</div>
 		</>

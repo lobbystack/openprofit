@@ -1,5 +1,10 @@
 import { and, eq, gte, isNull, sql } from "drizzle-orm";
-import { db, schema } from "#/db";
+import { providerName } from "#/components/provider-logo";
+import { authSchema, db, schema } from "#/db";
+import { RULE_NAMES } from "#/lib/alerts";
+import { describeError } from "#/lib/errors";
+import { sendEmail } from "./email.server";
+import type { Workspace } from "./workspace.server";
 
 const day = (offset: number) =>
 	new Date(Date.now() - offset * 86_400_000).toISOString().slice(0, 10);
@@ -13,18 +18,25 @@ type Finding = {
 };
 
 // Evaluates every enabled rule for a workspace. Opens alerts for new
-// findings and resolves the ones whose condition cleared.
+// findings, emails the members once per new alert, and resolves the alerts
+// whose condition cleared.
 export async function evaluateAlerts(workspaceId: string) {
-	const rules = await db.query.alertRules.findMany({
-		where: and(
-			eq(schema.alertRules.workspaceId, workspaceId),
-			eq(schema.alertRules.enabled, true),
-		),
-	});
+	const [rules, ws] = await Promise.all([
+		db.query.alertRules.findMany({
+			where: and(
+				eq(schema.alertRules.workspaceId, workspaceId),
+				eq(schema.alertRules.enabled, true),
+			),
+		}),
+		db.query.workspaces.findFirst({
+			where: eq(schema.workspaces.id, workspaceId),
+		}),
+	]);
+	if (!ws) return 0;
 	const findings: Finding[] = [];
 	for (const rule of rules) {
 		if (rule.kind === "cost_spike")
-			findings.push(...(await costSpikes(workspaceId, rule)));
+			findings.push(...(await costSpikes(ws, rule)));
 		if (rule.kind === "margin_floor")
 			findings.push(...(await marginFloors(workspaceId, rule)));
 		if (rule.kind === "sync_failure")
@@ -37,51 +49,102 @@ export async function evaluateAlerts(workspaceId: string) {
 			isNull(schema.alerts.resolvedAt),
 		),
 	});
-	const openByTitle = new Map(open.map((a) => [a.title, a]));
+	const openByKey = new Map(
+		open.filter((a) => a.key).map((a) => [a.key as string, a]),
+	);
+	// Alerts opened before alerts had keys can't be matched to a finding.
+	// They resolve here, and their rule's findings reopen without an email,
+	// so the change doesn't send a second email for the same thing.
+	const legacy = open.filter((a) => !a.key);
+	const quiet = new Set(legacy.map((a) => a.ruleId));
 	const now = Date.now();
+	const opened: Finding[] = [];
 
 	for (const f of findings) {
-		const existing = openByTitle.get(f.title);
+		const existing = openByKey.get(f.key);
 		if (existing) {
-			if (existing.detail !== f.detail) {
+			if (existing.detail !== f.detail || existing.title !== f.title) {
 				await db
 					.update(schema.alerts)
-					.set({ detail: f.detail })
+					.set({ title: f.title, detail: f.detail })
 					.where(eq(schema.alerts.id, existing.id));
 			}
-			openByTitle.delete(f.title);
+			openByKey.delete(f.key);
 			continue;
 		}
-		await db.insert(schema.alerts).values({
-			workspaceId,
-			ruleId: f.ruleId,
-			title: f.title,
-			detail: f.detail,
-			tone: f.tone,
-			openedAt: now,
-		});
+		// The partial unique index on (workspace, key) while open makes a
+		// concurrent evaluation's insert a no-op, so only one of them emails.
+		const inserted = await db
+			.insert(schema.alerts)
+			.values({
+				workspaceId,
+				ruleId: f.ruleId,
+				key: f.key,
+				title: f.title,
+				detail: f.detail,
+				tone: f.tone,
+				openedAt: now,
+			})
+			.onConflictDoNothing()
+			.returning({ id: schema.alerts.id });
+		if (inserted.length && !quiet.has(f.ruleId)) opened.push(f);
 	}
 	// Whatever is still open and not found again has cleared.
-	for (const stale of openByTitle.values()) {
+	for (const stale of [...openByKey.values(), ...legacy]) {
 		await db
 			.update(schema.alerts)
 			.set({ resolvedAt: now })
 			.where(eq(schema.alerts.id, stale.id));
 	}
+	if (opened.length)
+		await emailAlerts(ws, rules, opened).catch((err) =>
+			console.error(`[alerts] email for workspace ${workspaceId} failed:`, err),
+		);
 	return findings.length;
+}
+
+// One email per new alert to every member of the workspace.
+async function emailAlerts(ws: Workspace, rules: Rule[], opened: Finding[]) {
+	const members = await db
+		.select({ email: authSchema.user.email })
+		.from(schema.workspaceMembers)
+		.innerJoin(
+			authSchema.user,
+			eq(authSchema.user.id, schema.workspaceMembers.userId),
+		)
+		.where(eq(schema.workspaceMembers.workspaceId, ws.id));
+	const kinds = new Map(rules.map((r) => [r.id, r.kind]));
+	const url = process.env.APP_URL ?? "";
+	for (const f of opened) {
+		const kind = kinds.get(f.ruleId);
+		const rule = kind ? RULE_NAMES[kind] : "alert";
+		const text = [
+			f.title,
+			f.detail,
+			"",
+			`See it in OpenProfit: ${url}/app/alerts`,
+			"",
+			`You get this email because the ${rule} rule is on in ${ws.name}. To stop these alerts, turn the rule off on the Alerts page.`,
+		].join("\n");
+		for (const m of members)
+			await sendEmail(m.email, `${ws.name}: ${f.title}`, text);
+	}
+	console.info(
+		`[alerts] emailed ${opened.length} alert(s) to ${members.length} member(s)`,
+	);
 }
 
 type Rule = typeof schema.alertRules.$inferSelect;
 
-const money = (cents: number) =>
+const money = (cents: number, currency: string) =>
 	new Intl.NumberFormat("en-US", {
 		style: "currency",
-		currency: "USD",
+		currency,
 		maximumFractionDigits: 0,
 	}).format(cents / 100);
 
 // Yesterday's spend per provider against the previous seven-day average.
-async function costSpikes(workspaceId: string, rule: Rule): Promise<Finding[]> {
+async function costSpikes(ws: Workspace, rule: Rule): Promise<Finding[]> {
 	const threshold = rule.threshold ?? 1;
 	const rows = await db
 		.select({
@@ -92,7 +155,7 @@ async function costSpikes(workspaceId: string, rule: Rule): Promise<Finding[]> {
 		.from(schema.costLines)
 		.where(
 			and(
-				eq(schema.costLines.workspaceId, workspaceId),
+				eq(schema.costLines.workspaceId, ws.id),
 				eq(schema.costLines.source, "sync"),
 				gte(schema.costLines.date, day(8)),
 			),
@@ -111,12 +174,12 @@ async function costSpikes(workspaceId: string, rule: Rule): Promise<Finding[]> {
 		const prior = [2, 3, 4, 5, 6, 7, 8].map((i) => days.get(day(i)) ?? 0);
 		const avg = prior.reduce((a, b) => a + b, 0) / prior.length;
 		if (avg > 0 && y >= 500 && y > avg * (1 + threshold)) {
-			const name = provider[0].toUpperCase() + provider.slice(1);
+			const name = providerName(provider);
 			out.push({
 				key: `spike:${provider}`,
 				ruleId: rule.id,
-				title: `${name} spend ${Math.round(y / avg)}x the weekly average`,
-				detail: `${money(y)} yesterday vs ${money(avg)} average`,
+				title: `${name} spend at ${Math.round((y / avg) * 10) / 10}x its daily average`,
+				detail: `${money(y, ws.baseCurrency)} yesterday, against ${money(avg, ws.baseCurrency)} a day over the 7 days before`,
 				tone: "negative",
 			});
 		}
@@ -195,8 +258,8 @@ async function syncFailures(
 	return failed.map((c) => ({
 		key: `sync:${c.id}`,
 		ruleId: rule.id,
-		title: `${c.provider[0].toUpperCase() + c.provider.slice(1)} sync failed`,
-		detail: c.lastError ?? "",
+		title: `${providerName(c.provider)} sync failed`,
+		detail: describeError(providerName(c.provider), c.lastError ?? "").text,
 		tone: "ink",
 	}));
 }
