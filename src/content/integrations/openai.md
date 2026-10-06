@@ -8,7 +8,7 @@ description: See your OpenAI API spend by day, by project and by model, next to 
 
 # Track OpenAI costs per project
 
-OpenAI's usage page shows what your organization spent. It doesn't show which of your products spent it, or whether that product makes enough to cover the bill. OpenProfit pulls your OpenAI costs every hour, splits them by project, and puts them next to the revenue of the product each project serves.
+OpenAI's usage page shows what your organization spent. It doesn't show which of your products spent it, or whether that product makes enough to cover the bill. OpenProfit reads your OpenAI costs on every sync, splits them by project, and puts them next to the revenue of the product each project serves.
 
 ## What it reads
 
@@ -18,7 +18,7 @@ OpenProfit calls OpenAI's organization costs API, the same data behind the usage
 - the project that incurred it;
 - the line item, such as a model's input tokens, output tokens, cached input or embeddings.
 
-The first sync goes back two years. After that, every sync rereads the last three days, so late adjustments from OpenAI replace the earlier figure instead of adding to it.
+The first sync goes back two years, or one year on the hosted Free plan. After that, every sync rereads the last three days, so late adjustments from OpenAI replace the earlier figure instead of adding to it.
 
 ## Connect it
 

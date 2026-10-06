@@ -20,7 +20,7 @@ OpenProfit reads Polar's metrics for your organization:
 
 Polar's revenue leaves tax out, and its metrics don't report the tax, so Polar adds nothing to **Tax collected** on the overview. Polar files that tax for you.
 
-The first sync goes back two years.
+The first sync goes back two years, or one year on the hosted Free plan.
 
 ## Connect it
 

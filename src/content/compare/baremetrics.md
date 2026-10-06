@@ -14,19 +14,19 @@ Both show MRR. They part ways on costs: Baremetrics brings in expenses from your
 | | Baremetrics | OpenProfit |
 | --- | --- | --- |
 | Price | Priced by tracked ARR, with paid add-ons | Free under $2,500 MRR, then $19 or $49 a month. Free to self-host |
-| Revenue sources | Stripe, Braintree, Chargebee, Recurly, App Store, Google Play, Shopify | Stripe, Polar |
-| Costs | From QuickBooks Online or Xero, on the Scale plan | From OpenAI, Anthropic, Vercel, Cloudflare and Railway billing APIs, on every plan |
+| Revenue sources | Stripe, Braintree, Chargebee, Recurly, App Store, Google Play, Shopify | Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat (App Store and Google Play) |
+| Costs | From QuickBooks Online or Xero, on the Scale plan | From the billing or usage APIs of 14 providers, such as OpenAI, Vercel and Neon, plus flat costs, on every plan |
 | How fresh costs are | Monthly, once your books close | Daily for most providers, synced every 15 minutes to 6 hours |
 | Profit per product | Not listed | Yes |
-| Open source | No | MIT licensed |
-| Self-hosting | No | One Docker container |
+| Open source | Not listed | MIT licensed |
+| Self-hosting | Not listed | One Docker container |
 
 ## Where Baremetrics is stronger
 
 - **Subscription analytics.** Churn, cohorts, customer-level detail and benchmarks.
 - **Recovery and retention tools.** Dunning for failed payments and cancellation surveys, sold as add-ons.
 - **Forecasting.** A full P&L, balance sheet and cash flow model fed by your accounting software.
-- **App stores.** It reads Apple App Store and Google Play revenue today.
+- **App stores directly.** It reads App Store and Google Play revenue itself. OpenProfit reads them through RevenueCat.
 
 ## Where OpenProfit is different
 

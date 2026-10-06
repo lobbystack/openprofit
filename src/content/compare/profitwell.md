@@ -14,16 +14,16 @@ If you only need revenue metrics, ProfitWell Metrics is free and mature. If you 
 | | ProfitWell Metrics | OpenProfit |
 | --- | --- | --- |
 | Price | Free | Free under $2,500 MRR, then $19 or $49 a month. Free to self-host |
-| Revenue sources | Stripe, Braintree, Chargebee, Recurly, Zuora, Maxio, Recharge, Paddle Billing | Stripe, Polar |
-| Costs | Not tracked | OpenAI, Anthropic, Vercel, Cloudflare, Railway, plus flat costs |
-| Profit and margin | No | Per product |
-| Subscription metrics | MRR, churn, LTV, upgrades and downgrades, cohorts | MRR and active customers |
-| Open source | No | MIT licensed |
-| Self-hosting | No | One Docker container |
+| Revenue sources | Stripe, Braintree, Chargebee, Recurly, Zuora, Maxio, Recharge, Paddle Billing | Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat (App Store and Google Play) |
+| Costs | Not listed | 14 providers, from OpenAI to MongoDB Atlas, plus flat costs |
+| Profit and margin | Not listed | Per product |
+| Subscription metrics | MRR, churn, LTV, upgrades and downgrades, cohorts | MRR and active subscriptions |
+| Open source | Not listed | MIT licensed |
+| Self-hosting | Not listed | One Docker container |
 
 ## Where ProfitWell Metrics is stronger
 
-- **Subscription analytics depth.** Churn breakdowns, cohorts and lifetime value go well beyond the MRR and customer count OpenProfit shows.
+- **Subscription analytics depth.** Churn breakdowns, cohorts and lifetime value go well beyond the MRR and subscription count OpenProfit shows.
 - **Billing system coverage.** It reads from most subscription billing tools, including Paddle's own.
 - **Price.** It costs nothing at any size.
 

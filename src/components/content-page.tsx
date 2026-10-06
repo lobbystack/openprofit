@@ -5,9 +5,11 @@ import { Button } from "#/components/landing/primitives";
 // Marketing article: nav, rendered markdown, a closing call to action.
 export function ContentPage({
 	html,
+	cta = "See revenue, costs and profit for every product you run.",
 	children,
 }: {
 	html: string;
+	cta?: string;
 	children?: React.ReactNode;
 }) {
 	return (
@@ -21,9 +23,7 @@ export function ContentPage({
 					dangerouslySetInnerHTML={{ __html: html }}
 				/>
 				<div className="mt-14 flex flex-col items-start gap-4 rounded-xl border border-line bg-card p-6">
-					<p className="text-[15px]">
-						See revenue, costs and profit for every product you run.
-					</p>
+					<p className="text-[15px]">{cta}</p>
 					<div className="flex gap-3">
 						<Button href="/login">Start for free</Button>
 						<Button variant="secondary" href="/docs/self-host">

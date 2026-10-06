@@ -9,6 +9,11 @@ Every release, newest first. The full history is in the [commit log on GitHub](h
 
 ## October 6, 2026
 
+- **Flat costs.** Add a bill that has no API on the **Costs** page: its monthly or yearly price, a start date, an optional end date and the product it belongs to. OpenProfit converts it to your base currency at the day's rate. Edit or remove it from the same list.
+- **Alert emails.** When a cost spike, margin floor or sync failure alert opens, every member of the workspace gets one email about it. Turn a rule off on the **Alerts** page to stop it.
+- **The weekly email goes out on the day and hour you pick** in **Settings**, in your time zone.
+- **Each product shows its own trend.** The sparkline on **Products** plots that product's monthly profit. It used to scale the workspace total by the product's share of revenue.
+- **The Costs page has a period picker.** Its dotted line shows the same months a year earlier.
 - **Revenue leaves out sales tax and VAT.** Stripe counted the tax on invoices and Checkout payments as revenue. OpenProfit now stores tax apart from revenue for Stripe, Paddle, Lemon Squeezy and RevenueCat, and the overview shows the tax collected in the period and how much of it you file yourself. Stripe connections resync their full history on their own, and the figures update when that sync finishes. Give your Stripe key read access to **Invoices** and **Checkout Sessions** so it can find the tax.
 - **Paddle, Lemon Squeezy and RevenueCat.** Three new revenue connectors. Paddle brings completed transactions without tax, its fee, refunds and chargebacks. Lemon Squeezy brings orders, renewals and refunds; its API has no fees, so revenue shows before them. RevenueCat brings monthly revenue and proceeds after store commission. All three add MRR and active subscriptions.
 - **Syncs recover on their own.** When a provider answers 429, OpenProfit waits as long as the provider asks and tries again. A failed sync retries after an hour, then waits twice as long after each failure, up to a day. A rejected key waits for you to click **Sync now**. After an outage, the next sync rereads every day it missed.

@@ -30,7 +30,8 @@ function Integrations() {
 				<h1 className="display text-[36px]">Integrations</h1>
 				<p className="prose-landing mt-3 max-w-[560px]">
 					Revenue from your payment processor, costs from the services you pay
-					for. Each takes a read-only key.
+					for. Each connection uses an API key with the narrowest access the
+					provider offers, and OpenProfit only reads with it.
 				</p>
 				{(["revenue", "cost"] as const).map((kind) => (
 					<section key={kind} className="mt-12">

@@ -28,7 +28,7 @@ Plan fees, credits and discounts aren't part of that data, so the total can diff
 
 1. In Railway, open **Account Settings → Tokens** and create an account token, or a workspace token for the workspace you want to read.
 2. In OpenProfit, open **Connections → Railway** and paste it. With a workspace token, also paste the workspace id.
-3. Press **Test**, then **Connect**. The first sync reads two years, one month at a time, so it takes a few seconds.
+3. Press **Test**, then **Connect**. The first sync reads two years (one on the hosted Free plan) one month at a time, so it takes a few seconds.
 
 ## Costs per product
 

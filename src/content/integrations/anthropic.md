@@ -18,7 +18,7 @@ OpenProfit reads Anthropic's cost report through the Admin API. For each day it 
 - the workspace that incurred it;
 - the description Anthropic gives the charge, such as the model and token type.
 
-The first sync goes back two years. Every later sync rereads the last three days so corrections replace earlier figures.
+The first sync goes back two years, or one year on the hosted Free plan. Every later sync rereads the last three days so corrections replace earlier figures.
 
 ## Connect it
 

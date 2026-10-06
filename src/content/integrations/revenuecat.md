@@ -21,7 +21,7 @@ OpenProfit reads RevenueCat's metrics for the project your key belongs to:
 
 Taxes and commission are RevenueCat's estimates and can differ from the store's payout report. RevenueCat subtracts refunds in the month it processes them.
 
-RevenueCat limits its metrics API to 25 requests a minute, so OpenProfit reads revenue one month at a time. The first sync covers two years and takes about three minutes. Amounts come in your project's currency and convert to your base currency at the European Central Bank rate.
+RevenueCat limits its metrics API to 25 requests a minute, so OpenProfit reads revenue one month at a time. The first sync covers two years, or one year on the hosted Free plan, and takes about three minutes. Amounts come in your project's currency and convert to your base currency at the European Central Bank rate.
 
 ## Avoid counting Stripe or Paddle twice
 
