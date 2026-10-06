@@ -83,8 +83,7 @@ export function Pricing() {
 					))}
 				</div>
 				<p className="mt-6 text-center text-[13px] text-text-3">
-					Self-hosting is free at any revenue. Prices in USD, billed through
-					Polar.
+					Self-hosting is free at any revenue. Prices in USD.
 				</p>
 			</Container>
 		</Section>
