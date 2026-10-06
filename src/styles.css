@@ -75,9 +75,10 @@
 }
 
 .dark {
-  --paper: #14120b;
-  --ink: #edecec;
-  --ink-2: #d6d5d2;
+  /* Warm brown-black. A yellow-hued dark reads olive once mixed with gray. */
+  --paper: #171412;
+  --ink: #ecebe8;
+  --ink-2: #d4d2cd;
 
   --surface-1: color-mix(in oklab, var(--ink) 4%, var(--paper));
   --surface-2: color-mix(in oklab, var(--ink) 7%, var(--paper));

@@ -1,3 +1,4 @@
+import { Logo } from "#/components/logo";
 import { APP_NAME, GITHUB_URL } from "#/lib/app";
 import { Container } from "./primitives";
 
@@ -27,7 +28,7 @@ export function Footer() {
 			<Container width={1024} className="py-16">
 				<div className="grid gap-10 md:grid-cols-[1fr_repeat(2,160px)]">
 					<div>
-						<div className="text-[15px]">{APP_NAME}</div>
+						<Logo />
 						<p className="mt-3 max-w-[240px] text-[13px] text-text-2">
 							Revenue, costs and profit for every product you run.
 						</p>

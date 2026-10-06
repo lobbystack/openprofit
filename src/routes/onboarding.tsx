@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "#/components/landing/primitives";
-import { APP_NAME } from "#/lib/app";
+import { Logo } from "#/components/logo";
 import { getSession } from "#/server/auth.functions";
 import { CURRENCIES, createWorkspaceFn } from "#/server/onboarding.functions";
 
@@ -32,9 +32,7 @@ function Onboarding() {
 
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center px-4">
-			<a href="/" className="text-[15px]">
-				{APP_NAME}
-			</a>
+			<Logo size={20} />
 			<form
 				onSubmit={submit}
 				className="mt-8 w-full max-w-[360px] space-y-4 rounded-xl border border-line bg-card p-6"

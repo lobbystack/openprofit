@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AreaChart } from "#/components/dashboard/area-chart";
-import { APP_NAME } from "#/lib/app";
+import { Logo } from "#/components/logo";
 import { delta, money } from "#/lib/format";
 import { getPublicProduct } from "#/server/public.functions";
 
@@ -85,7 +85,7 @@ function PublicPage() {
 				className="mt-6 inline-flex items-center gap-2 text-[12px] text-text-3 hover:text-ink"
 			>
 				<span className="h-1.5 w-1.5 rounded-full bg-brand" />
-				Built with {APP_NAME}
+				Built with <Logo size={13} />
 			</a>
 		</main>
 	);

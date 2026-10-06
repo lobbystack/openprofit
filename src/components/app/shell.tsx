@@ -10,7 +10,7 @@ import {
 	Settings,
 	SunMoon,
 } from "lucide-react";
-import { APP_NAME } from "#/lib/app";
+import { Logo } from "#/components/logo";
 import { authClient } from "#/lib/auth-client";
 import { money } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
@@ -138,8 +138,8 @@ export function Shell({
 
 			<div className="min-w-0 flex-1">
 				<header className="flex h-12 items-center justify-between border-b border-line px-4 md:hidden">
-					<Link to="/app" className="text-[15px]">
-						{APP_NAME}
+					<Link to="/app">
+						<Logo size={15} />
 					</Link>
 				</header>
 				<main className="mx-auto max-w-[1024px] p-4 md:p-6">

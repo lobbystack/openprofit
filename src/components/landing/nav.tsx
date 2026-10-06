@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { siGithub } from "simple-icons";
-import { APP_NAME, GITHUB_URL } from "#/lib/app";
+import { Logo } from "#/components/logo";
+import { GITHUB_URL } from "#/lib/app";
 import { Button, Container } from "./primitives";
 
 const LINKS = [
@@ -27,8 +28,8 @@ export function Nav() {
 			}`}
 		>
 			<Container className="flex h-14 items-center justify-between">
-				<a href="/" className="text-[15px]">
-					{APP_NAME}
+				<a href="/">
+					<Logo />
 				</a>
 				<nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 text-[14px] text-text-2 md:flex">
 					{LINKS.map(([label, href]) => (

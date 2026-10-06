@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { siGithub } from "simple-icons";
 import { Button } from "#/components/landing/primitives";
-import { APP_NAME } from "#/lib/app";
+import { Logo } from "#/components/logo";
 import { authClient } from "#/lib/auth-client";
 import { getAuthOptions, getSession } from "#/server/auth.functions";
 
@@ -35,8 +35,8 @@ function Login() {
 
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center px-4">
-			<a href="/" className="text-[15px]">
-				{APP_NAME}
+			<a href="/">
+				<Logo size={20} />
 			</a>
 			<div className="mt-8 w-full max-w-[360px] rounded-xl border border-line bg-card p-6">
 				{state === "sent" ? (

@@ -41,8 +41,10 @@ export function Button({
 	const variants = {
 		primary: "bg-ink text-paper hover:bg-ink-2",
 		secondary: "border border-line bg-paper text-ink hover:border-line-strong",
-		paper: "bg-paper text-ink hover:bg-surface-2",
-		translucent: "bg-paper/20 text-paper hover:bg-paper/30",
+		paper:
+			"bg-paper text-ink hover:bg-surface-2 dark:bg-ink dark:text-paper dark:hover:bg-ink-2",
+		translucent:
+			"bg-paper/20 text-paper hover:bg-paper/30 dark:bg-ink/10 dark:text-ink dark:hover:bg-ink/15",
 	}[variant];
 	const cls = `${base} ${sizes} ${variants} ${className}`;
 	if (href) {
