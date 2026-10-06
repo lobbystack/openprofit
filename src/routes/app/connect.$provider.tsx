@@ -8,6 +8,7 @@ import {
 	type ProviderId,
 	ProviderLogo,
 } from "#/components/provider-logo";
+import { describeError } from "#/lib/errors";
 import {
 	createConnection,
 	getConnectorInfo,
@@ -15,6 +16,7 @@ import {
 } from "#/server/connections.functions";
 
 export const Route = createFileRoute("/app/connect/$provider")({
+	head: () => ({ meta: [{ title: "Connect · OpenProfit" }] }),
 	loader: ({ params }) => getConnectorInfo({ data: { id: params.provider } }),
 	component: Connect,
 });
@@ -73,7 +75,10 @@ function Connect() {
 
 	return (
 		<>
-			<PageHeader title={info.name} meta={info.kind} />
+			<PageHeader
+				title={info.name}
+				meta={info.kind === "revenue" ? "Revenue" : "Costs"}
+			/>
 			<form
 				onSubmit={save}
 				className="mt-4 grid gap-4 md:grid-cols-[1fr_320px]"
@@ -143,12 +148,10 @@ function Connect() {
 								{test.label}
 							</span>
 						)}
-						{test.state === "error" && (
-							<span className="num text-[12px] text-negative">
-								{test.error}
-							</span>
-						)}
 					</div>
+					{test.state === "error" && (
+						<TestError provider={info.name} error={test.error} />
+					)}
 				</div>
 
 				<div className="rounded-xl border border-line bg-card p-5">
@@ -161,6 +164,15 @@ function Connect() {
 						Create a key
 						<ArrowUpRight size={14} className="text-text-3" />
 					</a>
+					<Link
+						to="/integrations/$slug"
+						params={{ slug: info.id }}
+						target="_blank"
+						className="mt-2 flex items-center gap-1 text-[13px] hover:underline"
+					>
+						Setup guide
+						<ArrowUpRight size={14} className="text-text-3" />
+					</Link>
 					{info.scopes.length > 0 && (
 						<>
 							<div className="label-mono mt-5">Permissions</div>
@@ -179,8 +191,25 @@ function Connect() {
 				to="/app/connections"
 				className="mt-4 inline-block text-[13px] text-text-2 hover:text-ink"
 			>
-				Back
+				All connections
 			</Link>
 		</>
+	);
+}
+
+// A sentence for the failed test, with the provider's raw answer behind
+// "Details".
+function TestError({ provider, error }: { provider: string; error: string }) {
+	const { text, detail } = describeError(provider, error);
+	return (
+		<div className="mt-3 text-[12px] text-negative">
+			<p>{text}</p>
+			{detail && (
+				<details className="mt-1 text-text-2">
+					<summary className="cursor-pointer">Details</summary>
+					<pre className="num mt-1 whitespace-pre-wrap break-all">{detail}</pre>
+				</details>
+			)}
+		</div>
 	);
 }

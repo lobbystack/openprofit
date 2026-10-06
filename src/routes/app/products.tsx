@@ -10,6 +10,7 @@ import { createProduct, deleteProduct } from "#/server/products.functions";
 import { setPublicPage } from "#/server/public.functions";
 
 export const Route = createFileRoute("/app/products")({
+	head: () => ({ meta: [{ title: "Products · OpenProfit" }] }),
 	loader: () => getOverview(),
 	component: Products,
 });

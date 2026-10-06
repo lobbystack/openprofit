@@ -5,6 +5,7 @@ import { RULE_NAMES, ruleScope } from "#/lib/alerts";
 import { getAlerts, setRuleEnabled } from "#/server/alerts.functions";
 
 export const Route = createFileRoute("/app/alerts")({
+	head: () => ({ meta: [{ title: "Alerts · OpenProfit" }] }),
 	loader: () => getAlerts(),
 	component: Alerts,
 });

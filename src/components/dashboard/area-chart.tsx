@@ -104,7 +104,9 @@ export function AreaChart({
 			viewBox={`0 0 ${W} ${H}`}
 			preserveAspectRatio="none"
 			className="block h-auto w-full"
-			style={{ aspectRatio: `${W} / ${H}` }}
+			// A sparkline keeps its pixel height; at the full chart's aspect ratio
+			// it would render about 2px tall in a table cell.
+			style={compact ? { height: H } : { aspectRatio: `${W} / ${H}` }}
 			role="img"
 			aria-label="Chart"
 		>

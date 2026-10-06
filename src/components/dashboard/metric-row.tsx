@@ -23,6 +23,7 @@ export function MetricRow({
 					<button
 						key={m.key}
 						type="button"
+						title={m.hint}
 						onClick={() => onSelect?.(m.key)}
 						className={`relative px-5 py-4 text-left transition-colors duration-150 ${
 							active ? "bg-surface-2" : "hover:bg-surface-2/60"

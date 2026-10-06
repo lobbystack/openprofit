@@ -1,15 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { Logo } from "#/components/logo";
+import { seo } from "#/lib/app";
 import { delta, money } from "#/lib/format";
 import { getPublicProduct } from "#/server/public.functions";
 
 export const Route = createFileRoute("/p/$workspace/$product")({
 	loader: ({ params }) => getPublicProduct({ data: params }),
+	head: ({ loaderData: d, params }) =>
+		d
+			? seo({
+					title: `${d.product} by ${d.workspace} · OpenProfit`,
+					description:
+						d.mode === "revenue"
+							? `This month's revenue for ${d.product}, shared by ${d.workspace}.`
+							: d.mode === "percent"
+								? `Revenue growth and margin for ${d.product}, shared by ${d.workspace}.`
+								: `This month's revenue, costs, profit and margin for ${d.product}, shared by ${d.workspace}.`,
+					path: `/p/${params.workspace}/${params.product}`,
+				})
+			: {},
 	component: PublicPage,
 	notFoundComponent: () => (
 		<main className="flex min-h-screen items-center justify-center text-[13px] text-text-2">
-			Not public.
+			This page isn't public.
 		</main>
 	),
 });

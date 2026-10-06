@@ -23,6 +23,7 @@ import {
 import { getOverview } from "#/server/overview.functions";
 
 export const Route = createFileRoute("/app/costs")({
+	head: () => ({ meta: [{ title: "Costs · OpenProfit" }] }),
 	validateSearch: (s: Record<string, unknown>): { period?: PeriodKey } => ({
 		period: periodSchema.catch("this-month").parse(s.period),
 	}),

@@ -8,7 +8,8 @@ import {
 	type ProviderId,
 	ProviderLogo,
 } from "#/components/provider-logo";
-import { money } from "#/lib/format";
+import { describeError } from "#/lib/errors";
+import { cadenceLabel, money } from "#/lib/format";
 import {
 	deleteConnection,
 	getConnections,
@@ -17,6 +18,7 @@ import {
 } from "#/server/connections.functions";
 
 export const Route = createFileRoute("/app/connections/")({
+	head: () => ({ meta: [{ title: "Connections · OpenProfit" }] }),
 	loader: async () => {
 		const [rows, available] = await Promise.all([
 			getConnections(),
@@ -27,15 +29,15 @@ export const Route = createFileRoute("/app/connections/")({
 	component: Connections,
 });
 
-const cadence = (minutes: number) =>
-	minutes >= 1440
-		? "daily"
-		: minutes >= 60
-			? `every ${minutes / 60}h`.replace("every 1h", "hourly")
-			: `every ${minutes}m`;
+// Providers without a connector, and how to count them anyway.
+const ALTERNATIVE: Record<string, { label: string; to: string }> = {
+	appstore: { label: "Via RevenueCat", to: "/app/connect/revenuecat" },
+	googleplay: { label: "Via RevenueCat", to: "/app/connect/revenuecat" },
+	supabase: { label: "As a flat cost", to: "/app/costs" },
+};
 
 const ago = (ts: number | null) => {
-	if (!ts) return "never";
+	if (!ts) return "Not synced yet";
 	const m = Math.round((Date.now() - ts) / 60_000);
 	return m < 1
 		? "just now"
@@ -85,6 +87,13 @@ function Connections() {
 		<>
 			<PageHeader title="Connections" meta={`${rows.length}`} />
 
+			{rows.length === 0 && (
+				<p className="mt-4 max-w-[560px] text-[13px] text-text-2">
+					Start with your payment processor, then add the services you pay for.
+					Each form links to where you create the key.
+				</p>
+			)}
+
 			{rows.length > 0 && (
 				<div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
 					<ul className="divide-y divide-line">
@@ -113,7 +122,7 @@ function Connections() {
 										)}
 									</span>
 									<span className="label-mono hidden w-20 sm:block">
-										{r.kind}
+										{r.kind === "revenue" ? "Revenue" : "Costs"}
 									</span>
 									<span className="hidden min-w-0 items-center gap-1.5 text-[12px] text-text-2 sm:flex">
 										<span
@@ -127,17 +136,20 @@ function Connections() {
 										/>
 										{r.status === "error" ? (
 											<span
-												className="num truncate text-negative"
+												className="truncate text-negative"
 												title={r.lastError ?? ""}
 											>
-												{r.lastError ?? "error"}
+												{r.lastError
+													? describeError(p?.name ?? r.provider, r.lastError)
+															.text
+													: "Sync failed"}
 											</span>
 										) : (
 											ago(r.lastSyncedAt)
 										)}
 									</span>
-									<span className="num ml-auto hidden text-[12px] text-text-3 sm:inline">
-										{cadence(r.cadenceMinutes)}
+									<span className="num ml-auto hidden shrink-0 whitespace-nowrap text-[12px] text-text-3 sm:inline">
+										{cadenceLabel(r.cadenceMinutes)}
 									</span>
 									<span
 										className={`num ml-auto w-24 shrink-0 text-right sm:ml-0 ${
@@ -198,7 +210,9 @@ function Connections() {
 								className={ready ? "" : "opacity-50 grayscale"}
 							/>
 							<span className="flex-1">{p.name}</span>
-							{!ready && <span className="label-mono">soon</span>}
+							{!ready && (
+								<span className="label-mono">{ALTERNATIVE[id]?.label}</span>
+							)}
 						</>
 					);
 					const cls =
@@ -213,9 +227,13 @@ function Connections() {
 							{inner}
 						</Link>
 					) : (
-						<div key={id} className={`${cls} text-text-3`}>
+						<Link
+							key={id}
+							to={ALTERNATIVE[id]?.to ?? "/app/costs"}
+							className={`${cls} text-text-3 hover:border-line-strong`}
+						>
 							{inner}
-						</div>
+						</Link>
 					);
 				})}
 			</div>

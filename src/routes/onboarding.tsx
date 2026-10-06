@@ -12,7 +12,7 @@ import { createWorkspaceFn } from "#/server/onboarding.functions";
 export const Route = createFileRoute("/onboarding")({
 	head: () => ({
 		...NOINDEX,
-		meta: [{ title: "OpenProfit" }, ...NOINDEX.meta],
+		meta: [{ title: "Create your workspace · OpenProfit" }, ...NOINDEX.meta],
 	}),
 	loader: async () => {
 		const user = await getSession();
@@ -45,12 +45,13 @@ function Onboarding() {
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center px-4">
 			<Logo size={20} />
+			<h1 className="mt-6 text-[20px]">Create your workspace</h1>
 			<form
 				onSubmit={submit}
-				className="mt-8 w-full max-w-[360px] space-y-4 rounded-xl border border-line bg-card p-6"
+				className="mt-6 w-full max-w-[360px] space-y-4 rounded-xl border border-line bg-card p-6"
 			>
 				<label className="block">
-					<span className="label-mono">Workspace</span>
+					<span className="label-mono">Workspace name</span>
 					<input
 						required
 						value={name}
@@ -74,9 +75,13 @@ function Onboarding() {
 							</option>
 						))}
 					</select>
+					<span className="mt-2 block text-[12px] text-text-2">
+						Every amount converts to this currency at the European Central Bank
+						rate for its day. You can change it in Settings.
+					</span>
 				</label>
 				<Button className="h-9 w-full" size="sm">
-					{busy ? "Creating…" : "Continue"}
+					{busy ? "Creating…" : "Create workspace"}
 				</Button>
 			</form>
 		</main>

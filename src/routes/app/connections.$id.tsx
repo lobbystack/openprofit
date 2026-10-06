@@ -14,6 +14,7 @@ import {
 } from "#/server/mappings.functions";
 
 export const Route = createFileRoute("/app/connections/$id")({
+	head: () => ({ meta: [{ title: "Connection · OpenProfit" }] }),
 	loader: ({ params }) => getConnection({ data: { id: params.id } }),
 	component: Connection,
 });
@@ -43,6 +44,9 @@ function Connection() {
 	const map = useServerFn(setMapping);
 	const setProduct = useServerFn(setConnectionProduct);
 	const p = PROVIDERS[c.provider];
+	// Where lines of a sub-unit without its own product go.
+	const fallback =
+		c.products.find((pr) => pr.id === c.productId)?.name ?? "Shared";
 
 	async function assign(subUnitId: string, productId: string | null) {
 		await map({ data: { connectionId: c.id, subUnitId, productId } });
@@ -79,8 +83,8 @@ function Connection() {
 			<div className="mt-4 flex h-11 items-center justify-between rounded-xl border border-line bg-card px-4 text-[13px]">
 				<span>
 					{c.kind === "revenue"
-						? "Unassigned revenue counts toward"
-						: "Unassigned costs count toward"}
+						? "Revenue without a product goes to"
+						: "Costs without a product go to"}
 				</span>
 				{select(c.productId, assignConnection)}
 			</div>
@@ -109,7 +113,11 @@ function Connection() {
 									)}
 								</span>
 								<span className="num w-24 text-right">{money(u.amount)}</span>
-								{select(u.productId, (v) => assign(u.id, v), "Unassigned")}
+								{select(
+									u.productId,
+									(v) => assign(u.id, v),
+									`Default (${fallback})`,
+								)}
 							</li>
 						))}
 					</ul>
@@ -119,7 +127,7 @@ function Connection() {
 				to="/app/connections"
 				className="mt-4 inline-block text-[13px] text-text-2 hover:text-ink"
 			>
-				Back
+				All connections
 			</Link>
 		</>
 	);

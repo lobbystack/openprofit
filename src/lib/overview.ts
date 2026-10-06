@@ -4,12 +4,43 @@ import { z } from "zod";
 
 export type MetricKey = "revenue" | "costs" | "profit" | "mrr" | "customers";
 
-export const METRICS: { key: MetricKey; label: string; money: boolean }[] = [
-	{ key: "revenue", label: "Revenue", money: true },
-	{ key: "costs", label: "Costs", money: true },
-	{ key: "profit", label: "Profit", money: true },
-	{ key: "mrr", label: "MRR", money: true },
-	{ key: "customers", label: "Customers", money: false },
+export const METRICS: {
+	key: MetricKey;
+	label: string;
+	money: boolean;
+	// What the number counts, shown on hover.
+	hint: string;
+}[] = [
+	{
+		key: "revenue",
+		label: "Revenue",
+		money: true,
+		hint: "After refunds, sales tax and the processor fees your provider reports",
+	},
+	{
+		key: "costs",
+		label: "Costs",
+		money: true,
+		hint: "Synced costs plus flat costs",
+	},
+	{
+		key: "profit",
+		label: "Profit",
+		money: true,
+		hint: "Revenue minus costs",
+	},
+	{
+		key: "mrr",
+		label: "MRR",
+		money: true,
+		hint: "Monthly recurring revenue at the end of the period",
+	},
+	{
+		key: "customers",
+		label: "Subscriptions",
+		money: false,
+		hint: "Active subscriptions at the end of the period",
+	},
 ];
 
 export type PeriodKey = "this-month" | "last-month" | "3m" | "12m" | "ytd";

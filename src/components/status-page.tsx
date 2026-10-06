@@ -49,7 +49,7 @@ export function NotFound() {
 			}
 		>
 			<Link to={inApp ? "/app" : "/"} className={primary}>
-				{inApp ? "Overview" : "Home"}
+				{inApp ? "Go to overview" : "Go to the home page"}
 			</Link>
 		</Status>
 	);
@@ -62,7 +62,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
 	return (
 		<Status
 			title="This page didn't load"
-			text="Reload to get the latest version, or try the request again."
+			text="Reload to get the latest version of OpenProfit. If the server failed, retry without reloading."
 			// Error text can hold internals; only development shows it.
 			detail={
 				import.meta.env.DEV && error instanceof Error
@@ -82,7 +82,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
 				className={secondary}
 				onClick={() => router.invalidate()}
 			>
-				Try again
+				Retry without reloading
 			</button>
 		</Status>
 	);

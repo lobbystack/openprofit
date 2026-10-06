@@ -10,7 +10,7 @@ import { getAuthOptions, getSession } from "#/server/auth.functions";
 export const Route = createFileRoute("/login")({
 	head: () => ({
 		...NOINDEX,
-		meta: [{ title: "OpenProfit" }, ...NOINDEX.meta],
+		meta: [{ title: "Sign in · OpenProfit" }, ...NOINDEX.meta],
 	}),
 	loader: async () => {
 		const user = await getSession();
@@ -40,15 +40,16 @@ function Login() {
 
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center px-4">
-			<h1 className="sr-only">Sign in to OpenProfit</h1>
 			<a href="/">
 				<Logo size={20} />
 			</a>
-			<div className="mt-8 w-full max-w-[360px] rounded-xl border border-line bg-card p-6">
+			<h1 className="mt-6 text-[20px]">Sign in or create an account</h1>
+			<div className="mt-6 w-full max-w-[360px] rounded-xl border border-line bg-card p-6">
 				{state === "sent" ? (
 					mailer ? (
 						<p className="text-[14px]">
-							Check <span className="num">{email}</span> for a sign-in link.
+							Check <span className="num">{email}</span> for a sign-in link. It
+							expires in 5 minutes.
 						</p>
 					) : (
 						<p className="text-[14px]">
@@ -85,7 +86,9 @@ function Login() {
 												<path d={siGithub.path} />
 											</svg>
 										)}
-										{p === "github" ? "GitHub" : "Google"}
+										{p === "github"
+											? "Continue with GitHub"
+											: "Continue with Google"}
 									</button>
 								))}
 								<div className="label-mono py-1 text-center">or</div>

@@ -257,9 +257,11 @@ export function Shell({
 							className="mb-4 flex h-10 items-center justify-between rounded-md border border-pending px-3 text-[13px]"
 						>
 							<span>
-								MRR passed the {PLANS[workspace.plan].name} plan's cap.
+								Your MRR is over the {PLANS[workspace.plan].name} plan's{" "}
+								{money((PLANS[workspace.plan].mrrCapCents ?? 0) / 100)} limit.
+								Syncing continues.
 							</span>
-							<span className="text-text-2">Pick a plan</span>
+							<span className="text-text-2">Choose a plan</span>
 						</Link>
 					)}
 					{children}

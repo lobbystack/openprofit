@@ -56,7 +56,7 @@ export function Search({
 				.filter(([, p]) => p.v1)
 				.map(([id, p]) => ({
 					label: `Connect ${p.name}`,
-					hint: "Connector",
+					hint: "Connection",
 					run: () =>
 						navigate({
 							to: "/app/connect/$provider",
@@ -118,7 +118,7 @@ export function Search({
 								pick(shown[active]);
 							}
 						}}
-						placeholder="Pages, products, connectors"
+						placeholder="Pages, products, connections"
 						aria-label="Search"
 						className="h-11 flex-1 bg-transparent text-[14px] outline-none placeholder:text-text-3"
 					/>

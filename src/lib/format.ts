@@ -12,6 +12,18 @@ export const TimeZone = z.string().refine((timeZone) => {
 	}
 });
 
+// How often connections sync, as Settings and the connections list say it.
+export const cadenceLabel = (minutes: number) =>
+	minutes === 15
+		? "Every 15 minutes"
+		: minutes === 60
+			? "Every hour"
+			: minutes === 360
+				? "Every 6 hours"
+				: minutes >= 1440
+					? "Every day"
+					: `Every ${minutes} minutes`;
+
 export function money(
 	n: number,
 	opts: { cents?: boolean; currency?: string } = {},

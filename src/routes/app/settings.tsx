@@ -11,7 +11,7 @@ import {
 	SettingsSection,
 	Switch,
 } from "#/components/app/shell";
-import { CURRENCIES } from "#/lib/format";
+import { CURRENCIES, cadenceLabel } from "#/lib/format";
 import { CADENCES, PLANS, type Plan } from "#/lib/plans";
 import { openPortal, startCheckout } from "#/server/billing.functions";
 import {
@@ -21,23 +21,19 @@ import {
 } from "#/server/settings.functions";
 
 export const Route = createFileRoute("/app/settings")({
+	head: () => ({ meta: [{ title: "Settings · OpenProfit" }] }),
 	loader: () => getSettings(),
 	component: Settings,
 });
 
-const cadenceLabel = (m: number) =>
-	m === 15
-		? "Every 15 min"
-		: m === 60
-			? "Hourly"
-			: m === 360
-				? "Every 6 h"
-				: "Daily";
-
-const planLabel = (p: Plan) =>
-	PLANS[p].priceCents
-		? `${PLANS[p].name} · $${PLANS[p].priceCents / 100} / mo`
-		: PLANS[p].name;
+const usd = (cents: number) => `$${(cents / 100).toLocaleString("en-US")}`;
+const planLabel = (p: Plan) => {
+	const { name, priceCents, mrrCapCents } = PLANS[p];
+	const price = priceCents ? `, ${usd(priceCents)} a month` : "";
+	return mrrCapCents
+		? `${name}${price}, up to ${usd(mrrCapCents)} MRR`
+		: `${name}${price}`;
+};
 
 // Monday first; values are JavaScript's getDay() numbers.
 const DAYS: [number, string][] = [
@@ -107,7 +103,7 @@ function Settings() {
 				</SettingsRow>
 				<SettingsRow
 					label="Base currency"
-					description="We convert every amount to this currency."
+					description="Every amount converts at the European Central Bank rate for its day. Changing the currency converts past amounts again."
 					htmlFor="ws-currency"
 				>
 					<select
@@ -129,7 +125,7 @@ function Settings() {
 				</SettingsRow>
 				<SettingsRow
 					label="Sync"
-					description="We pull new data from your connections on this schedule."
+					description="How often OpenProfit reads new data from your connections."
 					htmlFor="ws-sync"
 				>
 					<select
@@ -169,7 +165,7 @@ function Settings() {
 			<SettingsSection title="Plan">
 				{s.cloud ? (
 					<SettingsRow
-						label="Plan"
+						label="Current plan"
 						description={
 							billingError ? (
 								<span className="text-negative">{billingError}</span>
@@ -180,12 +176,12 @@ function Settings() {
 					>
 						{s.plan === "free" && (
 							<Go onError={setBillingError} onClick={() => checkout("indie")}>
-								Indie, $19
+								Upgrade to Indie, $19/mo
 							</Go>
 						)}
 						{s.plan !== "pro" && (
 							<Go onError={setBillingError} onClick={() => checkout("pro")}>
-								Pro, $49
+								Upgrade to Pro, $49/mo
 							</Go>
 						)}
 						{s.plan !== "free" && (
@@ -195,7 +191,7 @@ function Settings() {
 						)}
 					</SettingsRow>
 				) : (
-					<SettingsRow label="Plan">
+					<SettingsRow label="Current plan">
 						<span className="text-[13px] text-text-2">Self-hosted</span>
 					</SettingsRow>
 				)}
@@ -204,7 +200,7 @@ function Settings() {
 			<SettingsSection title="Email">
 				<SettingsRow
 					label="Weekly email"
-					description="We email every member last week's revenue, costs and profit."
+					description="Every member gets last week's revenue, costs and profit."
 					htmlFor="weekly"
 				>
 					<Switch
@@ -233,7 +229,7 @@ function Settings() {
 						</SettingsRow>
 						<SettingsRow
 							label="Time"
-							description={`In ${s.timezone}`}
+							description={`Your time zone: ${s.timezone}`}
 							htmlFor="weekly-hour"
 						>
 							<select
@@ -260,7 +256,7 @@ function Settings() {
 					{posthog && (
 						<SettingsRow
 							label="Analytics"
-							description="We log your actions in the app and record your sessions there, with all text hidden."
+							description="Sends PostHog the actions you take in the dashboard and a replay of each session, with all text and inputs hidden."
 							htmlFor="analytics"
 						>
 							<Switch
@@ -273,7 +269,7 @@ function Settings() {
 					{!s.cloud && (
 						<SettingsRow
 							label="Usage ping"
-							description="Once a day we send the version and counts, nothing else."
+							description="Once a day, sends this instance's version and its workspace, product and connection counts."
 							htmlFor="telemetry"
 						>
 							<Switch
