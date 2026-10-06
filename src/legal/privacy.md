@@ -18,9 +18,13 @@ This policy explains what personal information OpenProfit collects, why, and wha
 
 **Usage and technical data.** Server logs with IP address, browser and request details, kept for 30 days for security and debugging. We send server logs, request timings and server errors to PostHog. They carry no user id.
 
-**Product analytics, only if you accept.** We ask before loading PostHog. If you accept, PostHog receives the pages you visit, the buttons you click, events such as "connection added" or "product created", your browser, device and approximate location from your IP address, and errors in the page. In the dashboard we link these to your user id and workspace id, never to your name or email. Session replays record the page layout and your mouse and scroll movements. They hide everything you type; in the dashboard they hide all text, and on the public site every digit. Replays leave out network request and response bodies and console output. If you decline, we load none of it.
+**Product analytics.** When you use the dashboard, our server records what you do in it: signing up, creating a workspace, adding or removing a connection, creating or removing a product, assigning costs to products, and starting or completing a checkout. We tie these events to your user id and workspace id, never to your name or email, and they contain no amounts, keys or data from your providers. Once a day we also record, for each workspace, its plan, base currency, creation date, and how many members, products and connections per provider it has. We send both to PostHog. You can switch off **Product analytics** in Settings, and we stop recording your events. The daily workspace counts continue, because they describe how the workspace is set up rather than what you do.
 
-**Cookies.** Cookies keep you signed in and remember your workspace, your theme and your analytics choice. Analytics cookies arrive only after you accept. The [Cookie Policy](/cookies) lists each one. No advertising or cross-site cookies.
+**Web analytics without cookies.** On every page, PostHog counts your visit without cookies or other storage on your device: the pages you view, the buttons you click but not their text, errors in the page, and your browser and device type. To count unique visitors, PostHog's servers combine your IP address and user agent with a random value that changes every day, and keep only the resulting hash. PostHog deletes each day's random value once it has processed that day's events. After that the hash can't be linked back to your IP address, and you count as a new visitor each day.
+
+**Cookies and session replay, only if you accept.** If you accept in the cookie banner, PostHog sets cookies that recognize your browser across visits, records session replays, and may derive your approximate location from your IP address. In the dashboard it also links your browser's activity to your user id. Session replays record the page layout and your mouse and scroll movements. They hide everything you type; in the dashboard they hide all text, and on the public site every digit. Replays leave out network request and response bodies and console output. If you decline, PostHog sets no cookies and records no replays.
+
+**Cookies.** Cookies keep you signed in and remember your workspace, your theme and your cookie choice. PostHog's cookies arrive only after you accept. The [Cookie Policy](/cookies) lists each one. No advertising or cross-site cookies.
 
 **Emails you send us.** Support messages and their content.
 
@@ -29,11 +33,11 @@ This policy explains what personal information OpenProfit collects, why, and wha
 - To run the Service: sign you in, sync your connections, compute figures, send alerts and the weekly email you asked for.
 - To bill paid plans through Polar.
 - To keep the Service secure and to debug problems.
-- If you accept analytics: to see which features people use and where they get stuck, so we know what to fix.
+- To see which features people use and where they get stuck, so we know what to fix. Session replays add to this only if you accept them.
 - To tell you about changes to the Service, these terms or pricing. These are service messages, not marketing. We do not send marketing email unless you opt in, and you can opt out at any time.
 - To produce aggregate statistics that do not identify anyone, such as how many workspaces use a given connector.
 
-Under the GDPR, our legal bases are performance of our contract with you, our legitimate interest in running and securing the Service, and consent where we ask for it.
+Under the GDPR, our legal bases are performance of our contract with you, our legitimate interest in running, securing and improving the Service, and consent where we ask for it. Product analytics and web analytics without cookies rely on our legitimate interest in improving the Service. You can switch off product analytics in Settings, and object to web analytics by emailing us. Cookies and session replay rely on your consent.
 
 ## 3. Who we share it with
 
@@ -44,7 +48,7 @@ We do not sell personal information and we do not share it with advertisers. We 
 | Railway | Hosting and database | United States |
 | Polar Software Inc. | Payments, invoices, tax, as merchant of record | United States and EU |
 | Resend | Sending sign-in links, alerts and the weekly email | United States |
-| PostHog Inc. | Product analytics and session replay if you accept them; server logs and error reports | United States |
+| PostHog Inc. | Product analytics, web analytics without cookies, and cookies and session replay if you accept them; server logs and error reports | United States |
 | Google, GitHub | Sign-in, if you choose them | United States |
 | Frankfurter (European Central Bank data) | Exchange rates; receives no personal data | EU |
 
@@ -80,7 +84,7 @@ Credentials are encrypted with AES-256-GCM. Traffic is encrypted in transit. Acc
 
 Depending on where you live, you may have the right to access, correct, export or delete your personal information, to object to or restrict some processing, to withdraw consent, and to complain to a supervisory authority. In Canada this includes rights under PIPEDA and Quebec's Act respecting the protection of personal information in the private sector; in the EEA and UK, rights under the GDPR; in California, rights under the CCPA.
 
-You can do most of this yourself: edit the workspace in Settings, remove connections and products, and delete the workspace. To withdraw analytics consent, use **Cookie settings** in the site footer or the **Analytics** row in Settings. For anything else, email hello@openprofit.dev. We respond within 30 days and may ask you to confirm your identity first.
+You can do most of this yourself: edit the workspace in Settings, remove connections and products, and delete the workspace. To withdraw consent to cookies and session replay, use **Cookie settings** in the site footer or the **Replay and cookies** row in Settings. To object to product analytics, switch off the **Product analytics** row in Settings. For anything else, email hello@openprofit.dev. We respond within 30 days and may ask you to confirm your identity first.
 
 Quebec residents: the person in charge of the protection of personal information is the operator named above, reachable at the same address.
 

@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db, schema } from "#/db";
 import type { Plan } from "#/lib/plans";
+import { capture } from "./analytics.server";
 import "./env";
 
 // Hosted mode: plans, Polar checkout and the webhook that moves a workspace
@@ -41,17 +42,17 @@ async function polar<T>(path: string, body: unknown): Promise<T> {
 export async function checkoutUrl(
 	ws: { id: string },
 	plan: Plan,
-	email: string,
+	user: { id: string; email: string },
 ) {
 	const product = productFor(plan);
 	if (!product) throw new Error(`No Polar product for ${plan}`);
 	const r = await polar<{ url: string }>("/v1/checkouts/", {
 		products: [product],
-		customer_email: email,
+		customer_email: user.email,
 		external_customer_id: ws.id,
-		// Polar fills in the id; Settings records the completed checkout.
-		success_url: `${process.env.APP_URL}/app/settings?checkout_id={CHECKOUT_ID}`,
-		metadata: { workspaceId: ws.id },
+		success_url: `${process.env.APP_URL}/app/settings`,
+		// Polar copies this to the subscription; the webhook reads it back.
+		metadata: { workspaceId: ws.id, userId: user.id },
 	});
 	return r.url;
 }
@@ -88,9 +89,10 @@ export function verifyWebhook(body: string, h: Headers) {
 }
 
 type Subscription = {
+	id?: string;
 	status: string;
 	product_id: string;
-	metadata?: { workspaceId?: string };
+	metadata?: { workspaceId?: string; userId?: string };
 	customer?: { external_id?: string | null };
 };
 
@@ -115,4 +117,13 @@ export async function applyWebhook(event: {
 		.update(schema.workspaces)
 		.set({ plan })
 		.where(eq(schema.workspaces.id, wsId));
+	// Polar creates the subscription once the checkout is paid.
+	if (event.type === "subscription.created" && s.metadata?.userId)
+		await capture(
+			s.metadata.userId,
+			wsId,
+			"checkout_completed",
+			{ plan },
+			s.id,
+		);
 }

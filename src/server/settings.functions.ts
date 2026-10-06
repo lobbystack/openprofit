@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { db, schema } from "#/db";
+import { authSchema, db, schema } from "#/db";
 import { PLANS } from "#/lib/plans";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
@@ -19,6 +19,8 @@ export type Settings = {
 	cadenceMinutes: number;
 	weeklyEmail: boolean;
 	telemetry: boolean;
+	// The signed-in user's product analytics switch.
+	analytics: boolean;
 	email: string;
 	// Hosted instance: billing rows show and the plan caps the cadence.
 	cloud: boolean;
@@ -27,9 +29,15 @@ export type Settings = {
 export const getSettings = createServerFn({ method: "GET" }).handler(
 	async (): Promise<Settings> => {
 		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
-		const conn = await db.query.connections.findFirst({
-			where: eq(schema.connections.workspaceId, ws.id),
-		});
+		const [conn, me] = await Promise.all([
+			db.query.connections.findFirst({
+				where: eq(schema.connections.workspaceId, ws.id),
+			}),
+			db.query.user.findFirst({
+				where: eq(authSchema.user.id, user.id),
+				columns: { analytics: true },
+			}),
+		]);
 		return {
 			name: ws.name,
 			currency: ws.baseCurrency,
@@ -38,6 +46,7 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 				conn?.cadenceMinutes ?? (isCloud ? PLANS[ws.plan].cadenceMinutes : 60),
 			weeklyEmail: ws.weeklyEmail,
 			telemetry: ws.telemetry,
+			analytics: me?.analytics ?? true,
 			email: user.email,
 			cloud: isCloud,
 		};
@@ -55,11 +64,17 @@ export const updateSettings = createServerFn({ method: "POST" })
 				.optional(),
 			weeklyEmail: z.boolean().optional(),
 			telemetry: z.boolean().optional(),
+			analytics: z.boolean().optional(),
 			currency: z.enum(CURRENCIES).optional(),
 		}),
 	)
 	.handler(async ({ data }) => {
-		const ws = await currentWorkspace();
+		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
+		if (data.analytics !== undefined)
+			await db
+				.update(authSchema.user)
+				.set({ analytics: data.analytics })
+				.where(eq(authSchema.user.id, user.id));
 		if (
 			data.name !== undefined ||
 			data.weeklyEmail !== undefined ||

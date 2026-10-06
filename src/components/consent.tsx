@@ -5,8 +5,9 @@ import { initAnalytics, setConsent } from "#/lib/analytics";
 const button =
 	"h-8 flex-1 rounded-md border border-line bg-paper text-[13px] hover:border-line-strong";
 
-// Cookie banner. Shows until the visitor picks, and again from the footer's
-// "Cookie settings". Renders nothing when PostHog is not configured.
+// Cookie banner for PostHog's cookies and session replay. Shows until the
+// visitor picks, and again from the footer's "Cookie settings". Renders
+// nothing when PostHog is not configured.
 export function Consent() {
 	const cfg = useLoaderData({ from: "__root__" });
 	const [open, setOpen] = useState(cfg.key !== null && cfg.consent === null);
@@ -26,8 +27,9 @@ export function Consent() {
 			className="chrome fixed inset-x-4 bottom-4 z-50 rounded-xl border border-line p-4 text-[13px] sm:right-auto sm:w-[340px]"
 		>
 			<p className="text-text-2">
-				We’d like to use analytics cookies to see how you use OpenProfit and to
-				replay sessions. Replays hide what you type and every amount.{" "}
+				May we set cookies to recognize your browser and replay your sessions?
+				Replays hide what you type and every amount. If you decline, we still
+				count your visit, without cookies.{" "}
 				<a href="/cookies" className="text-ink underline underline-offset-2">
 					Cookie policy
 				</a>
@@ -36,14 +38,14 @@ export function Consent() {
 				<button
 					type="button"
 					className={button}
-					onClick={() => setConsent(cfg, false)}
+					onClick={() => setConsent(false)}
 				>
 					Decline
 				</button>
 				<button
 					type="button"
 					className={button}
-					onClick={() => setConsent(cfg, true)}
+					onClick={() => setConsent(true)}
 				>
 					Accept
 				</button>

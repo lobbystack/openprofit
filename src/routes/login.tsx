@@ -33,7 +33,7 @@ function Login() {
 		const { error } = await authClient.signIn.magicLink({
 			email,
 			callbackURL: "/app",
-			newUserCallbackURL: "/onboarding?signup=1",
+			newUserCallbackURL: "/onboarding",
 		});
 		setState(error ? "error" : "sent");
 	}
@@ -68,7 +68,7 @@ function Login() {
 											authClient.signIn.social({
 												provider: p as "github" | "google",
 												callbackURL: "/app",
-												newUserCallbackURL: "/onboarding?signup=1",
+												newUserCallbackURL: "/onboarding",
 											})
 										}
 										className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-line bg-paper text-[13px] hover:border-line-strong"

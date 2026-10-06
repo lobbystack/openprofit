@@ -1,4 +1,6 @@
 import { Cron } from "croner";
+import { identifyWorkspaces } from "./analytics.server";
+import { isCloud } from "./billing.server";
 import { syncDue } from "./sync.server";
 import { sendTelemetry } from "./telemetry.server";
 import { sendWeeklyEmails } from "./weekly.server";
@@ -22,6 +24,11 @@ export function startScheduler() {
 	});
 	const telemetry = new Cron("30 3 * * *", { protect: true }, () => {
 		void sendTelemetry();
+		// Workspace counts for PostHog's workspace groups.
+		if (isCloud)
+			void identifyWorkspaces().catch((e) =>
+				console.error("[scheduler] workspace groups", e),
+			);
 	});
 	globalThis.__openprofitScheduler = { sync, weekly, telemetry };
 	return globalThis.__openprofitScheduler;

@@ -7,7 +7,6 @@ import {
 	type ProviderId,
 	ProviderLogo,
 } from "#/components/provider-logo";
-import { track } from "#/lib/analytics";
 import { money } from "#/lib/format";
 import {
 	deleteConnection,
@@ -54,18 +53,12 @@ function Connections() {
 		(id) => !connected.has(id),
 	);
 
-	const providerOf = (id: string) => rows.find((r) => r.id === id)?.provider;
-
 	async function sync(id: string) {
 		setBusy(id);
 		try {
 			await syncNow({ data: { id } });
 		} catch {
 			// The row shows the error after invalidate.
-			track("connection_sync_failed", {
-				provider: providerOf(id),
-				trigger: "manual",
-			});
 		} finally {
 			setBusy(null);
 			router.invalidate();
@@ -81,7 +74,6 @@ function Connections() {
 			return;
 		setBusy(id);
 		await deleteConnection({ data: { id } });
-		track("connection_removed", { provider: providerOf(id) });
 		setBusy(null);
 		router.invalidate();
 	}

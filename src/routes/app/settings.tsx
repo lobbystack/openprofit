@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader } from "#/components/app/shell";
-import { readConsent, setConsent, track } from "#/lib/analytics";
+import { readConsent, setConsent } from "#/lib/analytics";
 import { PLANS, type Plan } from "#/lib/plans";
 import { openPortal, startCheckout } from "#/server/billing.functions";
 import { CURRENCIES } from "#/server/onboarding.functions";
@@ -55,17 +55,7 @@ function Settings() {
 		return () => window.removeEventListener("op:consent", sync);
 	}, []);
 
-	// Polar sends the browser back here with ?checkout_id= after paying.
-	useEffect(() => {
-		if (!location.search.includes("checkout_id=")) return;
-		track("checkout_completed");
-		history.replaceState(null, "", location.pathname);
-	}, []);
-
-	function checkout(plan: "indie" | "pro") {
-		track("checkout_started", { plan });
-		return startCheckout({ data: { plan } });
-	}
+	const checkout = (plan: "indie" | "pro") => startCheckout({ data: { plan } });
 
 	async function save(patch: Parameters<typeof updateSettings>[0]["data"]) {
 		await updateSettings({ data: patch });
@@ -174,11 +164,27 @@ function Settings() {
 						<Row label="Plan">Self-hosted</Row>
 					)}
 					{analytics.key && (
-						<Row label="Analytics">
+						<Row label="Product analytics">
+							<button
+								type="button"
+								onClick={() => save({ analytics: !s.analytics })}
+								className="flex items-center gap-1.5 text-[13px] hover:text-ink"
+							>
+								<span
+									className={`h-1.5 w-1.5 rounded-full ${s.analytics ? "bg-positive" : "bg-surface-4"}`}
+								/>
+								{s.analytics
+									? "On: actions you take here, linked to your user id"
+									: "Off"}
+							</button>
+						</Row>
+					)}
+					{analytics.key && (
+						<Row label="Replay and cookies">
 							<button
 								type="button"
 								onClick={() => {
-									setConsent(analytics, !tracking);
+									setConsent(!tracking);
 									setTracking(!tracking);
 								}}
 								className="flex items-center gap-1.5 text-[13px] hover:text-ink"
@@ -187,7 +193,7 @@ function Settings() {
 									className={`h-1.5 w-1.5 rounded-full ${tracking ? "bg-positive" : "bg-surface-4"}`}
 								/>
 								{tracking
-									? "On in this browser: events and replays, amounts hidden"
+									? "On in this browser, amounts hidden"
 									: "Off in this browser"}
 							</button>
 						</Row>
