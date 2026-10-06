@@ -37,7 +37,7 @@ Revenue minus fees, refunds, AI bills and hosting, for every product you run. Th
 
 ### Every bill in one place
 
-OpenAI, Anthropic, Vercel, Cloudflare and Railway report what they charged you, by day and by project. Subscriptions without an API take ten seconds to add.
+OpenAI, Vercel, Neon, Resend and 10 more providers report what they charged you, by day or month and by project. Subscriptions without an API take ten seconds to add.
 
 - **Usage billing.** Per-token and per-GB charges come from the provider's own billing data.
 - **Flat subscriptions.** Supabase, domains, anything else. Enter the price once and it counts every month.

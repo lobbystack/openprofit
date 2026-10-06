@@ -25,7 +25,7 @@ The pending invoice changes as the month goes on. OpenProfit updates the lines i
 
 1. In Atlas, open **Identity & Access → Applications** for your organization and click **Add new → Service Account**. Give it the **Organization Billing Viewer** role only.
 2. Copy the client id and the client secret, which starts with `mdb_sa_sk_`. Atlas shows the secret once.
-3. Add an API access list entry for the server running OpenProfit. By default, Atlas rejects API calls from addresses not on the list. If your organization turned off **Require IP Access List for the Atlas Administration API**, you can leave the list empty instead.
+3. Add an API access list entry for each address OpenProfit calls Atlas from. On openprofit.dev, the connect page lists them. When you self-host, use your server's outbound IP addresses. By default, Atlas rejects API calls from addresses not on the list. If your organization turned off **Require IP Access List for the Atlas Administration API**, you can leave the list empty instead.
 4. In OpenProfit, open **Connections → MongoDB Atlas**, paste the client id and secret, and press **Test**. Add the organization id only if the service account can see more than one organization.
 5. Press **Connect**.
 

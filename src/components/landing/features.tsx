@@ -89,9 +89,9 @@ export function FeatureCosts() {
 					cta="How syncing works"
 					href="/docs/connectors"
 				>
-					OpenAI, Anthropic, Vercel, Cloudflare and Railway report what they
-					charged you, by day and by project. Subscriptions without an API take
-					ten seconds to add.
+					OpenAI, Vercel, Neon, Resend and 10 more providers report what they
+					charged you, by day or month and by project. Subscriptions without an
+					API take ten seconds to add.
 				</SectionHeader>
 				<div className="mt-14 grid gap-4 md:grid-cols-[1fr_320px]">
 					<div className="rounded-xl border border-line bg-card">

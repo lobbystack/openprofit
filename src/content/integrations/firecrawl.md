@@ -27,7 +27,9 @@ Each billing period gets two costs:
 - **Plan**: the monthly price, or a twelfth of the yearly price
 - **Extra credits**: credits used above the allotment, rounded up to whole $5 packs
 
-Both costs split across your API keys by their share of the period's credits. These figures are estimates, so your invoice can differ. Coupon and bought credits count as extra credits, and every past period uses your current plan.
+Both costs split across your API keys by their share of the period's credits. A period without usage puts the plan fee on the connection. These figures are estimates, so your invoice can differ. Coupon and bought credits count as extra credits.
+
+OpenProfit prices the current billing period at your current plan. A period keeps the cost it had when it closed, so a later plan change doesn't reprice it. History starts with the billing period you connect in, because OpenProfit can't tell which plan you had before.
 
 ## Connect it
 

@@ -17,7 +17,7 @@ OpenProfit calls the usage endpoint of xAI's Management API. For each day it rec
 - the amount in US dollars
 - the billing description, such as `Chat grok-4-0709` or an image model
 
-Credit purchases and auto top-ups don't count as costs: prepay $100, spend $40, and OpenProfit shows $40. The first sync goes back two years, and later syncs reread the last three days.
+Credit purchases and auto top-ups don't count as costs: prepay $100, spend $40, and OpenProfit shows $40. The first sync goes back two years, or to the oldest day xAI returns, and later syncs reread the last three days.
 
 ## Connect it
 

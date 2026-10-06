@@ -2,8 +2,8 @@
 title: Track Resend costs per sending domain
 name: Resend
 kind: cost
-summary: Monthly transactional email cost per sending domain.
-description: See what each sending domain costs on Resend per month, estimated from email volume and Resend's published prices, next to the revenue of the product it sends for.
+summary: Daily transactional email cost per sending domain, priced at your plan.
+description: See what each sending domain costs on Resend, estimated from email volume and Resend's published prices, next to the revenue of the product it sends for.
 ---
 
 # Track Resend costs per sending domain
@@ -12,7 +12,7 @@ Resend bills transactional email by monthly volume: a plan fee covers a set numb
 
 ## What it reads
 
-Resend's API reports email counts, not dollars. OpenProfit counts the emails Resend accepted from each sending domain per month, leaves out broadcasts, and prices the month at Resend's published rates:
+Resend's API reports email counts, not dollars. OpenProfit counts the emails Resend accepted from each sending domain per day, leaves out broadcasts, and prices them at the published rates of the plan you pick:
 
 | Plan | Price a month | Emails a month | Per 1,000 extra |
 | --- | --- | --- | --- |
@@ -26,9 +26,12 @@ Resend's API reports email counts, not dollars. OpenProfit counts the emails Res
 | Scale | $825 | 1,500,000 | $0.52 |
 | Scale | $1,150 | 2,500,000 | $0.46 |
 
-The month's cost splits across your domains by their share of its emails. These figures are estimates, so your invoice can differ.
+Each day gets two parts:
 
-With **Detect automatically**, OpenProfit prices each month at the cheapest plan that could have sent that volume. Free counts only when the month stayed under 3,000 emails and every day under 100. If you pay for a bigger plan than your volume needs, pick it under **Plan** and OpenProfit charges its fee every month, even months with no email.
+- **Plan fee**: the monthly price divided by the days in the month, so the current month shows the fee up to today. Months with no email still carry the fee
+- **Overage**: once the month's emails pass the plan's volume, the extra emails of each day at the plan's rate per 1,000
+
+A day's cost splits across your domains by their share of that day's emails. A day without email puts its fee on the connection. These figures are estimates, so your invoice can differ.
 
 These costs don't come through the API, so add them on the **Costs** page as flat amounts:
 
@@ -36,17 +39,17 @@ These costs don't come through the API, so add them on the **Costs** page as fla
 - Dedicated IPs, the domains add-on and single sign-on (SSO)
 - Enterprise contracts
 
-History goes back as far as your plan keeps data. Resend keeps 30 days on the Free plan, so OpenProfit skips any month that started before the oldest day Resend returns.
+History starts 30 days before you connect, because Resend keeps 30 days of data. OpenProfit keeps the days it already recorded after Resend drops them. When a month's first days fall out of those 30 days, its overage counts only the days Resend still returns, which matters only in a month that went over your plan's volume.
 
 ## Connect it
 
 1. In Resend, open **API Keys** and create a key with **Full access**. A sending access key can't read metrics. Resend has no read-only key, so this key can also send email.
 2. In OpenProfit, open **Connections → Resend** and paste it.
-3. Leave **Plan** on **Detect automatically**, or pick the plan you pay for.
+3. Under **Plan**, pick the plan you pay for. Resend's API doesn't report it.
 4. Press **Test**, then **Connect**.
 
 Resend updates its counts up to 15 minutes late, so the current month can trail your dashboard by that much.
 
 ## Costs per product
 
-Each sending domain appears on the connection's page. Assign it to a product and its email costs follow, past months included. Emails without a domain go to the product picked at the top of the same page.
+Each sending domain appears on the connection's page. Assign it to a product and its email costs follow, past days included. Emails without a domain go to the product picked at the top of the same page.

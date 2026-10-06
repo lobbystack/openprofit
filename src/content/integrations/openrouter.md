@@ -22,6 +22,8 @@ Bring-your-own-key (BYOK) usage stays out: your own provider bills it, and that 
 
 OpenRouter keeps activity for 30 days, so your history starts 30 days before you connect. Today shows up after the UTC day closes.
 
+To keep the number of requests down, OpenProfit reads per-key activity only for keys that spent this UTC month. Early in a month, a key that hasn't spent yet shows its spend from the end of last month without a key, until it spends again.
+
 ## The key it needs
 
 OpenRouter serves activity only to management keys, and offers no read-only variant. A management key can create, edit and delete the API keys on your account. OpenProfit only reads activity and the list of keys, and stores the key encrypted.

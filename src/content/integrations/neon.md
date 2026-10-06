@@ -28,6 +28,8 @@ A compute unit (CU) is one vCPU with 4 GB of RAM. Neon's paid plans have no mont
 
 Neon keeps monthly usage for one year, so the first sync reads at most the last 12 months. Every sync rereads the current month.
 
+Neon bills extra branches by the hour. OpenProfit reads branch hours per month and subtracts the month's allowance, so a project that goes over its branch allowance for a few days and stays under it the rest of the month can show less than Neon charges.
+
 On the Free plan Neon doesn't bill you and has no usage history. The connection tests fine and shows no costs until you upgrade.
 
 ## Connect it

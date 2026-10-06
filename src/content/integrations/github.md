@@ -22,7 +22,7 @@ The usage report exists only on GitHub's enhanced billing platform. Accounts sti
 
 ## Connect it
 
-1. On GitHub, open **Settings → Developer settings → Fine-grained tokens** and generate a new token.
+1. On GitHub, open **Settings → Developer settings → Fine-grained tokens** and generate a new token. GitHub's reference for the usage report endpoints lists fine-grained tokens with the permissions below; you don't need a classic token.
 2. For an organization, set the resource owner to the organization and give **Administration** read-only access under organization permissions. You must be an owner or billing manager of that organization.
 3. For your personal account, keep yourself as the resource owner and give **Plan** read-only access under account permissions.
 4. In OpenProfit, open **Connections → GitHub**, paste the token and, for an organization, its name. Press **Test**, then **Connect**.

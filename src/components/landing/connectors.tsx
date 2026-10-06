@@ -12,7 +12,7 @@ const TILES: ProviderId[] = [
 	"vercel",
 	"cloudflare",
 	"railway",
-	"supabase",
+	"neon",
 	"resend",
 ];
 

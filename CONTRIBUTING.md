@@ -48,14 +48,15 @@ A connector is one file in `src/connectors/` that reads money lines from one pro
 
 [`src/server/sync.server.ts`](src/server/sync.server.ts) runs each sync in this order:
 
-1. Decrypts the stored credentials and calls `fetchRevenue` and `fetchCosts` with a range of UTC days. The first sync asks for the last 730 days, or 365 on the free hosted plan. Later syncs ask for the last 3 days. **Sync now** on the connections page asks for 730 days.
+1. Decrypts the stored credentials and calls `fetchRevenue` and `fetchCosts` with a range of UTC days. The first sync and **Sync now** ask for the plan's history: 730 days, or 365 on the free hosted plan. Later syncs start 3 days before the last successful sync, so a range after an outage covers the days it missed. They never reach back further than the plan's history.
 2. Converts each line to the workspace's base currency at the European Central Bank rate for the line's date.
-3. Upserts each line by its `externalId`. On a conflict it overwrites the amounts and keeps everything else.
-4. Calls `fetchSnapshots` with today's date and upserts the result by connection, date and metric.
+3. Upserts each line by its `externalId`. On a conflict it overwrites every field: amounts, date, currency, `service`, sub-unit, label and product.
+4. Deletes stored lines the fetch no longer returned, inside the connector's `historyDays` window. See [History and deletion](#history-and-deletion).
+5. Calls `fetchSnapshots` with today's date, adds up values for the same day and metric, and upserts one value per connection, day and metric.
 
 A sync is due when the connection's cadence has passed: every 60 minutes on a self-hosted instance, or by plan on the hosted version. Saving a connection runs the first sync at once.
 
-If your connector throws, the sync stops, the connection's status becomes `error`, and the error message appears on the connections page. The scheduler skips connections in `error` until someone clicks **Sync now** and it succeeds, so retry transient failures inside the connector.
+If your connector throws, the sync stops, the connection's status becomes `error`, and the error message appears on the connections page. The scheduler retries an errored connection 1 hour after the failed attempt, then doubles the wait after each further failure, up to 24 hours. It stops retrying when the provider rejected the key: a 401, or a 403 without `Retry-After`. Those connections wait until someone clicks **Sync now**. A paused connection stays paused after **Sync now**, whether the sync succeeds or fails.
 
 ### Files to touch
 
@@ -64,7 +65,7 @@ Use `railway` as the reference: `grep -rn railway src README.md` finds every pla
 - [ ] `src/connectors/example.ts`: the connector, passed to `register()`
 - [ ] `src/connectors/index.ts`: add `import "./example";`. Importing the file registers it. The UI doesn't follow this order, but keep revenue providers before cost providers
 - [ ] `src/components/provider-logo.tsx`: add `example` to `PROVIDERS` with `v1: true`. The connections page builds its list of providers from this map, so without an entry users can't reach your connect form. If [Simple Icons](https://simpleicons.org) has the logo, import `siExample` and set `path: siExample.path`. Otherwise set `path` to a hand-drawn path on a 24 by 24 grid, or leave it out to show the name as a wordmark. If the entry already exists with `v1: false`, flip it to `true`
-- [ ] `src/routes/app/connections.$id.tsx`: if your sub-unit isn't called a project, add its name to `UNIT`, for example `example: "workspace"`
+- [ ] `src/routes/app/connections.$id.tsx`: if your connector sets sub-units, add their name to `UNIT`, for example `example: "workspace"`
 - [ ] `src/content/integrations/example.md`: the public integration page. Copy the front matter keys from `railway.md`: `title`, `name`, `kind`, `summary`, `description`. Cover what the connector reads, how to create the key, and how its lines map to products
 - [ ] `src/lib/content.ts`: add `"example"` to the slug list in `INTEGRATIONS`. A page missing from that list doesn't render. The sitemap and the markdown index read the same list
 - [ ] `src/docs/connectors.md`: add a row to the table in "What each connector reads", and a line under "Assign costs to products" if the connector sets sub-units
@@ -72,7 +73,7 @@ Use `railway` as the reference: `grep -rn railway src README.md` finds every pla
 - [ ] `src/components/landing/connectors.tsx`: add the id to `TILES` if the landing page should show it
 - [ ] `src/content/changelog.md`: add an entry under the release date
 
-Several pages list every provider by name in their copy. `grep -rln "Cloudflare and Railway" src README.md` finds them. Update those you can, or say in the pull request which ones you left.
+A few pages name providers in their copy: `src/content/home.md`, `src/components/landing/features.tsx`, `src/components/landing/changelog.tsx`, the description in `src/routes/integrations.index.tsx`, and the comparison pages in `src/content/compare/`. Update those you can, or say in the pull request which ones you left.
 
 ### A cost connector skeleton
 
@@ -165,8 +166,19 @@ Every line, revenue or cost, follows these rules:
 - **`date`**: `YYYY-MM-DD` in UTC. `dayOf()` converts a Unix timestamp in seconds. The date sets the exchange rate and the month the line counts toward
 - **`externalId`**: stable and unique within the connection. The sync upserts by it, so a re-sync replaces a line instead of adding a second one. Build it from the provider's own id, or from every dimension of an aggregate (`openai.ts` uses bucket start, project and line item). Changing the format later duplicates every past line
 - **Granularity**: return one line per day when the API allows it. If the API aggregates by month, return each month that overlaps the range, dated the first of the month, as `railway.ts` does. A 3-day tail then still refreshes the current month
+- **Zero amounts**: leave out lines of 0 cents. The sync deletes a stored line once the fetch stops returning it, so a share that drops to 0 disappears on its own
 
-On a conflict, the sync updates only the amounts. A line keeps its original date, currency, `service` and product. Lines that a later sync no longer returns stay in the database.
+On a conflict, the sync overwrites every field of the stored line, the product included.
+
+#### History and deletion
+
+After a fetch succeeds, the sync deletes the connection's stored lines that the fetch didn't return, but only lines dated inside the sync range and inside the connector's `historyDays`. Set `historyDays` to the number of days back your fetch returns complete results:
+
+- **Unset**: the API returns the whole range, as Stripe's balance transactions do
+- **A number**: the API keeps less history than the range asks for. `openrouter.ts` sets 30, because the activity endpoint covers the last 30 days. Lines older than that stay as they are
+- **`0`**: a fetch never proves a line is gone, so the sync deletes nothing. `lemonsqueezy.ts` sets it: a refund on an old order only shows up when the connector rereads that order
+
+A fetch that returns no lines at all deletes nothing, whatever the range. Providers sometimes answer an outage with an empty list, and a 2-year range would lose its history. The next fetch that returns lines cleans up.
 
 #### Revenue lines
 
@@ -185,18 +197,18 @@ The overview sums `netCents`. The sync stores the other amounts and `kind`, but 
 
 #### Sub-units and product mapping
 
-Set `subUnitId` when the provider groups costs by something a user would assign to a product: an OpenAI project, an Anthropic workspace, a Vercel project, a Railway project, a Cloudflare zone. Use the provider's id, which must stay the same across syncs.
+Set `subUnitId` when the provider groups money by something a user would assign to a product: a Paddle product, an OpenAI project, a Vercel project, a Cloudflare zone, a sending domain. Use the provider's id, which must stay the same across syncs. Revenue and cost lines both map this way.
 
-The connection page lists each sub-unit seen this month with its spend, and the user picks a product for each. Lines without a `subUnitId` go to the product picked at the top of that page. `subUnitLabel` is part of the type, but the sync doesn't store it yet, so the page shows the id. Set it anyway when the API returns a name.
-
-The connection page lists sub-units for cost connections only. Leave `subUnitId` unset in a revenue connector, because users have no way to map it.
+The connection page lists each sub-unit seen this month with its amount, and the user picks a product for each. Lines without a `subUnitId` go to the product picked at the top of that page. The sync stores `subUnitLabel`, and the page shows it next to the id, so set it when the API returns a name. Never put a secret in it: `firecrawl.ts` shows the last 4 characters of an API key.
 
 #### Snapshots
 
-`fetchSnapshots(creds, date)` returns point-in-time values for `date`, which is always today. It runs at the end of every sync. Return at most one of each metric:
+`fetchSnapshots(creds, date)` returns point-in-time values for `date`, which is always today. It runs at the end of every sync. It returns these metrics:
 
 - **`mrr_base_cents`**: monthly recurring revenue in cents, with `currency` set to the currency of the amount. Despite the name, return it in the provider's currency; the sync converts it. Without `currency`, the sync assumes the base currency
 - **`customers`**: the count of paying customers, with no currency
+
+Return one `mrr_base_cents` snapshot per currency. `mrrSnapshots()` in `types.ts` builds them from a map of currency to cents. The sync converts each one and adds up snapshots with the same metric, so several projects or currencies give one total.
 
 The sync stores one value per connection, day and metric, so a second sync on the same day overwrites the first. History starts on the day the connection is added. The overview takes the latest value in each month for each connection and adds the connections together.
 
@@ -206,13 +218,15 @@ The sync stores one value per connection, day and metric, so a second sync on th
 
 #### Errors
 
-Use `getJson()` for JSON requests. On a non-2xx response it throws a `ConnectorError` with the status code and the first 200 characters of the body. For other failures, throw `new ConnectorError(message, status)` yourself, as `railway.ts` does for GraphQL errors and a missing workspace. Users read these messages on the connect form and the connections page. Write them for the user: "No team on this token. Set a team id."
+Use `getJson()` for JSON requests. On a non-2xx response it throws a `ConnectorError` with the status code and the first 200 characters of the body. It sets `auth` on a 401, or a 403 without `Retry-After`, and the scheduler then stops retrying the connection. Error tracking leaves out `ConnectorError`, because its message holds the provider's response. For other failures, throw `new ConnectorError(message, status)` yourself, as `railway.ts` does for GraphQL errors and a missing workspace. Users read these messages on the connect form and the connections page. Write them for the user: "No team on this token. Set a team id."
 
 #### Pagination and rate limits
 
 Return every line in the range, across all pages. Each existing connector loops until the API reports no more pages: Stripe's `has_more` and `starting_after`, OpenAI's and Anthropic's `next_page`.
 
-A first sync covers two years, so split the range to fit the API's limits. `polar.ts` splits it into chunks of at most 366 days, and `openai.ts` and `anthropic.ts` into 31-day windows. `getJson()` doesn't retry. When the provider returns 429, wait for its `Retry-After` and retry inside your connector. Otherwise a long backfill fails halfway and leaves the connection in `error`.
+A first sync covers two years, so split the range to fit the API's limits. `polar.ts` splits it into chunks of at most 366 days, and `openai.ts` and `anthropic.ts` into 31-day windows.
+
+`getJson()` retries a 429, and a 403 that carries `Retry-After`, up to 4 times. It waits the seconds `Retry-After` gives, or 5 seconds doubling after each try, and never more than 30 seconds at once. Use it for every request so a long backfill survives rate limits.
 
 ### Credentials
 
@@ -222,6 +236,7 @@ Ask for the narrowest key the provider offers:
 - List in `scopes` the exact permission names users tick in the provider's dashboard, for example `Balance: read`. The connect form shows them under **Permissions**, next to the `createUrl` link
 - Mark API keys and tokens `secret: true` so the input masks them. Leave ids such as an account or team id unmasked
 - Mark a field `optional: true` only when the connector can work without it, for example by looking up the default account as `vercel.ts` and `cloudflare.ts` do. The form doesn't require optional fields, and an empty one arrives missing or as an empty string, so read it with `c.teamId?.trim()`
+- Give a field `options` to render a select, such as a plan the API can't report. The first option shows by default. On a required field, make the first option `{ value: "", label: "Pick your plan" }` so the form waits for a choice, as `resend.ts` does
 - The server trims every value, then encrypts the credential object with AES-GCM and `SECRET_KEY` before it stores it. Your connector receives the decrypted object
 
 Never log credentials, put them in a URL, or include them in an error message. Send them in headers.

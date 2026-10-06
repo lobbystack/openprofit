@@ -12,7 +12,9 @@ This page explains how connectors pull your revenue and costs and how to assign 
 
 A connector reads data from a provider with a read-only key that you create in the provider’s dashboard. In OpenProfit, open **Connections**, pick a provider, paste the key and click **Test**. The test calls the provider and shows the account name it found. Click **Connect** to save the key, encrypted with `SECRET_KEY`.
 
-The first sync pulls two years of history, or one year on the free hosted plan. Later syncs reread the last three days and replace what changed, so a provider’s late corrections update the earlier figure instead of adding a second one.
+The first sync pulls two years of history, or one year on the free hosted plan. Later syncs reread from three days before the last successful sync and replace what changed, so a provider’s late corrections update the earlier figure instead of adding a second one. After an outage, the next sync covers every day it missed. Lines the provider no longer reports are deleted, within the history its API returns.
+
+When a sync fails, OpenProfit retries it an hour later, then waits twice as long after each failure, up to a day. When the provider rejects the key, OpenProfit stops retrying until you click **Sync now** on the connection.
 
 ## What each connector reads
 
@@ -35,7 +37,7 @@ Each connector needs a key with specific permissions. The table lists what each 
 | [GitHub](/integrations/github) | Daily net usage cost per SKU and repository, for an organization or a personal account | Fine-grained token with Administration read access on the organization, or Plan read access on your account |
 | [Twilio](/integrations/twilio) | Daily total usage cost, subaccounts included | Restricted API key with `/twilio/billing/usage/read` |
 | [Firecrawl](/integrations/firecrawl) | Credits per API key per billing period, priced at Firecrawl’s published plan and extra-credit rates | Any API key on the team |
-| [Resend](/integrations/resend) | Transactional emails per sending domain per month, priced at Resend’s published plan and overage rates | API key with full access |
+| [Resend](/integrations/resend) | Transactional emails per sending domain per day, priced at the published fee and overage rates of the plan you pick | API key with full access |
 | [xAI](/integrations/xai) | Daily cost by billing description, such as a model | Management key |
 | [Neon](/integrations/neon) | Monthly compute, storage, transfer and branch usage per project, priced at Neon’s published rates | Organization API key |
 | [MongoDB Atlas](/integrations/mongodb) | Daily invoice line items per project and stock keeping unit (SKU), including the current month’s pending invoice | Service account with the Organization Billing Viewer role |
@@ -54,6 +56,8 @@ OpenProfit assigns a cost to a product through the provider’s own grouping. Th
 - **GitHub**: repositories
 - **Firecrawl**: API keys
 - **Resend**: sending domains
+- **Paddle** and **Lemon Squeezy**: products, for revenue
+- **RevenueCat**: projects, for revenue
 - **Neon**: projects
 - **MongoDB Atlas**: projects
 

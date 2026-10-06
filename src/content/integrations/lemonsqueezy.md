@@ -25,7 +25,9 @@ The first sync goes back two years. Amounts in other currencies convert to your 
 
 Lemon Squeezy's API doesn't report its fees, so OpenProfit records revenue before them. Your profit shows higher than what reaches your bank by the Lemon Squeezy fee on each sale. To count it, add an estimate as a flat monthly cost.
 
-Refunds only appear on the original order, and the API can't filter orders by date. Each sync rereads 30 days of orders and invoices, so it catches a refund issued within 30 days of the sale. A later refund doesn't show up.
+Refunds only appear on the original order, and the API can't filter orders by date. Each sync rereads 30 days of orders and invoices, and the first sync of each day rereads 180. A refund issued more than 180 days after the sale doesn't show up.
+
+An order with several items counts toward the product of its first item. The order list reports only that item, and reading the others takes one request per order.
 
 ## Connect it
 
@@ -37,4 +39,4 @@ A test mode key reads your test mode data instead.
 
 ## Revenue per product
 
-Lemon Squeezy revenue goes to the product you pick on the connection's page. If you run one Lemon Squeezy account per product, connect each one and point it at its product.
+Each Lemon Squeezy product appears on the connection's page. Assign it to a product and its revenue follows, past sales included. Revenue without a product goes to the product you pick at the top of the same page.

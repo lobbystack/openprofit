@@ -8,8 +8,8 @@ const ENTRIES = [
 	},
 	{
 		date: "Oct 6, 2026",
-		title: "Period picker and dark mode",
-		text: "Compare any period with the one before it. Dark mode follows your system.",
+		title: "Nine new cost connectors",
+		text: "OpenRouter, xAI, Neon, MongoDB Atlas, DigitalOcean, GitHub, Twilio, Firecrawl and Resend.",
 	},
 ];
 
