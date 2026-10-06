@@ -1,4 +1,4 @@
-import { Container, Section, SectionHeader } from "./primitives";
+import { Container, Href, Section, SectionHeader } from "./primitives";
 
 const ENTRIES = [
 	{
@@ -29,7 +29,7 @@ export function Changelog() {
 				</SectionHeader>
 				<div className="grid gap-3 md:grid-cols-2">
 					{ENTRIES.map((e) => (
-						<a
+						<Href
 							key={e.title}
 							href="/changelog"
 							className="rounded-xl border border-line bg-card p-6 transition-colors duration-150 hover:border-line-strong"
@@ -37,7 +37,7 @@ export function Changelog() {
 							<div className="label-mono">{e.date}</div>
 							<div className="mt-3 text-[15px]">{e.title}</div>
 							<p className="mt-2 text-[13px] text-text-2">{e.text}</p>
-						</a>
+						</Href>
 					))}
 				</div>
 			</Container>

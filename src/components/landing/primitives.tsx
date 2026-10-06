@@ -1,6 +1,18 @@
+import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 
 // Landing primitives. Measurements at 1280px.
+
+// Paths inside the site navigate in the app and preload on hover; anything
+// else is a plain link.
+export function Href({
+	href,
+	...props
+}: { href: string } & Omit<React.ComponentProps<"a">, "href">) {
+	if (!href.startsWith("/")) return <a href={href} {...props} />;
+	const [to, hash] = href.split("#");
+	return <Link to={to} hash={hash} {...props} />;
+}
 
 export function Container({
 	children,
@@ -52,9 +64,9 @@ export function Button({
 	const cls = `${base} ${sizes} ${variants} ${className}`;
 	if (href) {
 		return (
-			<a href={href} className={cls}>
+			<Href href={href} className={cls}>
 				{children}
-			</a>
+			</Href>
 		);
 	}
 	return (
@@ -150,13 +162,13 @@ export function Triplet({
 					<div className="text-[14px] font-medium">{it.title}</div>
 					<p className="mt-1 text-[14px] text-text-2">{it.text}</p>
 					{it.href && (
-						<a
+						<Href
 							href={it.href}
 							className="mt-2 inline-flex items-center gap-1 text-[14px] font-medium text-text-2 hover:text-ink"
 						>
 							Learn more
 							<ArrowRight size={14} />
-						</a>
+						</Href>
 					)}
 				</div>
 			))}

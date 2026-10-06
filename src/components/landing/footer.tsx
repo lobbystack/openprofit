@@ -1,6 +1,6 @@
 import { Logo } from "#/components/logo";
 import { GITHUB_URL } from "#/lib/app";
-import { Container } from "./primitives";
+import { Container, Href } from "./primitives";
 
 const COLUMNS: [string, [string, string][]][] = [
 	[
@@ -56,12 +56,12 @@ export function Footer() {
 							<ul className="mt-4 space-y-2.5">
 								{links.map(([label, href]) => (
 									<li key={label}>
-										<a
+										<Href
 											href={href}
 											className="text-[14px] text-text-2 hover:text-ink"
 										>
 											{label}
-										</a>
+										</Href>
 									</li>
 								))}
 							</ul>

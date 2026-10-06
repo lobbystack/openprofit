@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { siGithub } from "simple-icons";
 import { Logo } from "#/components/logo";
 import { GITHUB_URL } from "#/lib/app";
-import { Button, Container } from "./primitives";
+import { Button, Container, Href } from "./primitives";
 
 const LINKS = [
 	["Product", "/#product"],
@@ -28,14 +28,14 @@ export function Nav() {
 			}`}
 		>
 			<Container className="flex h-14 items-center justify-between">
-				<a href="/">
+				<Href href="/">
 					<Logo />
-				</a>
+				</Href>
 				<nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 text-[14px] text-text-2 md:flex">
 					{LINKS.map(([label, href]) => (
-						<a key={label} href={href} className="hover:text-ink">
+						<Href key={label} href={href} className="hover:text-ink">
 							{label}
-						</a>
+						</Href>
 					))}
 					<a
 						href={GITHUB_URL}

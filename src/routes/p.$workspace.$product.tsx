@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { Logo } from "#/components/logo";
 import { seo } from "#/lib/app";
@@ -94,13 +94,13 @@ function PublicPage() {
 					</div>
 				)}
 			</div>
-			<a
-				href="/"
+			<Link
+				to="/"
 				className="mt-6 inline-flex items-center gap-2 text-[12px] text-text-3 hover:text-ink"
 			>
 				<span className="h-1.5 w-1.5 rounded-full bg-brand" />
 				Built with <Logo size={13} />
-			</a>
+			</Link>
 		</main>
 	);
 }

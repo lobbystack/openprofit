@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { siGithub } from "simple-icons";
 import { Button } from "#/components/landing/primitives";
@@ -40,9 +40,9 @@ function Login() {
 
 	return (
 		<main className="flex min-h-screen flex-col items-center justify-center px-4">
-			<a href="/">
+			<Link to="/">
 				<Logo size={20} />
-			</a>
+			</Link>
 			<h1 className="mt-6 text-[20px]">Sign in or create an account</h1>
 			<div className="mt-6 w-full max-w-[360px] rounded-xl border border-line bg-card p-6">
 				{state === "sent" ? (

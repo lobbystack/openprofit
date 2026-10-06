@@ -1,5 +1,24 @@
 import "@tanstack/react-start/server-only";
-import { marked } from "marked";
+import { Marked } from "marked";
+
+// Headings get ids from their text, so links like
+// /docs/connectors#sales-tax-and-vat land on the section.
+const marked = new Marked({
+	renderer: {
+		heading({ tokens, depth, text }) {
+			const id = text
+				.toLowerCase()
+				.replace(/[^\w\s-]/g, "")
+				.trim()
+				.replace(/\s+/g, "-");
+			return `<h${depth} id="${id}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
+		},
+	},
+});
+
+export function toHtml(md: string) {
+	return marked.parse(md, { async: false }) as string;
+}
 
 // Markdown pages with a small front matter block: `key: value` lines
 // between two `---` fences.
@@ -24,7 +43,7 @@ export function parse(slug: string, raw: string): Page {
 		slug,
 		title: meta.title ?? slug,
 		description: meta.description ?? "",
-		html: marked.parse(m?.[2] ?? raw, { async: false }) as string,
+		html: toHtml(m?.[2] ?? raw),
 		body: (m?.[2] ?? raw).trim(),
 		meta,
 	};
