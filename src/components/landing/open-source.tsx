@@ -19,7 +19,7 @@ export function OpenSource() {
 					cta="Read the source"
 					href={GITHUB_URL}
 				>
-					One Docker image, SQLite by default, Postgres if you want it. Your
+					One Docker image with Postgres built in, or bring your own. Your
 					Stripe keys never leave your server.
 				</SectionHeader>
 				<div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line">

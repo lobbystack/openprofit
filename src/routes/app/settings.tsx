@@ -74,9 +74,6 @@ function Settings() {
 								</option>
 							))}
 						</select>
-						<span className="text-[12px] text-text-3">
-							Stored lines are converted at their date's rate.
-						</span>
 					</Row>
 					<Row label="Sync">
 						<select

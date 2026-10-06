@@ -152,9 +152,6 @@ function Connect() {
 							</ul>
 						</>
 					)}
-					<p className="mt-5 text-[12px] text-text-3">
-						Stored encrypted. Read-only access is enough.
-					</p>
 				</div>
 			</form>
 			<Link
