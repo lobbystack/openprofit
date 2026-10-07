@@ -2,6 +2,7 @@ import { and, eq, gte, isNull, sql } from "drizzle-orm";
 import { authSchema, db, schema } from "#/db";
 import { RULE_NAMES } from "#/lib/alerts";
 import { describeError } from "#/lib/errors";
+import { money as formatMoney } from "#/lib/format";
 import { providerName } from "#/lib/providers";
 import { sendEmail } from "./email.server";
 import type { Workspace } from "./workspace.server";
@@ -142,11 +143,7 @@ async function emailAlerts(ws: Workspace, rules: Rule[], opened: Finding[]) {
 type Rule = typeof schema.alertRules.$inferSelect;
 
 const money = (cents: number, currency: string) =>
-	new Intl.NumberFormat("en-US", {
-		style: "currency",
-		currency,
-		maximumFractionDigits: 0,
-	}).format(cents / 100);
+	formatMoney(cents / 100, { currency });
 
 // Yesterday's spend per provider against the previous seven-day average.
 async function costSpikes(ws: Workspace, rule: Rule): Promise<Finding[]> {

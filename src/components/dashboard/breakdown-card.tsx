@@ -20,7 +20,9 @@ export function BreakdownCard({
 	total?: number;
 	formatter?: (n: number) => string;
 }) {
-	const max = Math.max(...rows.map((r) => r.value));
+	// Bars scale by size, so losses (negative profit) get bars too and never
+	// grow past the card.
+	const max = Math.max(...rows.map((r) => Math.abs(r.value)));
 	return (
 		<Card>
 			<CardHeader>
@@ -50,7 +52,7 @@ export function BreakdownCard({
 					>
 						<span
 							className="absolute inset-y-1 left-0 rounded-md bg-surface-2"
-							style={{ width: `${(r.value / max) * 100}%` }}
+							style={{ width: `${max ? (Math.abs(r.value) / max) * 100 : 0}%` }}
 						/>
 						<span className="relative flex items-center gap-2 text-[13px]">
 							{r.label}
