@@ -41,8 +41,8 @@ const buttonVariants = cva(
 		},
 		// Bordered controls sit a little tighter than filled buttons.
 		compoundVariants: [
-			{ variant: "outline", size: "sm", class: "px-2.5" },
-			{ variant: "ghost", size: "sm", class: "px-2" },
+			{ variant: "outline", size: "sm", weight: "regular", class: "px-2.5" },
+			{ variant: "ghost", size: "sm", weight: "regular", class: "px-2" },
 		],
 		defaultVariants: {
 			variant: "default",

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { siGithub } from "simple-icons";
 import { Logo } from "#/components/logo";
+import { buttonVariants } from "#/components/ui/button";
 import { GITHUB_URL } from "#/lib/app";
-import { Button, Container, Href } from "./primitives";
+import { Container, Href } from "./primitives";
 
 const LINKS = [
 	["Product", "/#product"],
@@ -55,12 +56,22 @@ export function Nav() {
 					</a>
 				</nav>
 				<div className="flex items-center gap-2">
-					<Button variant="secondary" size="sm" href="/login">
+					<Href
+						href="/login"
+						className={buttonVariants({
+							variant: "outline",
+							size: "sm",
+							weight: "medium",
+						})}
+					>
 						Sign in
-					</Button>
-					<Button size="sm" href="/login">
+					</Href>
+					<Href
+						href="/login"
+						className={buttonVariants({ size: "sm", weight: "medium" })}
+					>
 						Start free
-					</Button>
+					</Href>
 				</div>
 			</Container>
 		</header>

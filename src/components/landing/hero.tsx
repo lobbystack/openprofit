@@ -1,7 +1,8 @@
 import { ArrowRight } from "lucide-react";
+import { buttonVariants } from "#/components/ui/button";
 import { GITHUB_URL } from "#/lib/app";
 import { DashboardPreview } from "../dashboard/dashboard-preview";
-import { Button, Container } from "./primitives";
+import { Container, Href } from "./primitives";
 
 const CHIPS = [
 	["Revenue", "bg-ink"],
@@ -44,10 +45,22 @@ export function Hero() {
 						className="rise mt-8 flex gap-3"
 						style={{ "--rise-delay": "180ms" } as React.CSSProperties}
 					>
-						<Button href="/login">Start for free</Button>
-						<Button variant="secondary" href="/docs/self-host">
+						<Href
+							href="/login"
+							className={buttonVariants({ size: "lg", weight: "medium" })}
+						>
+							Start for free
+						</Href>
+						<Href
+							href="/docs/self-host"
+							className={buttonVariants({
+								variant: "outline",
+								size: "lg",
+								weight: "medium",
+							})}
+						>
 							Self-host
-						</Button>
+						</Href>
 					</div>
 				</Container>
 			</section>

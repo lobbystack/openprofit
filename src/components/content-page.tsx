@@ -1,6 +1,7 @@
 import { Footer } from "#/components/landing/footer";
 import { Nav } from "#/components/landing/nav";
-import { Button } from "#/components/landing/primitives";
+import { Href } from "#/components/landing/primitives";
+import { buttonVariants } from "#/components/ui/button";
 
 // Marketing article: nav, rendered markdown, a closing call to action.
 export function ContentPage({
@@ -25,10 +26,22 @@ export function ContentPage({
 				<div className="mt-14 flex flex-col items-start gap-4 rounded-xl border border-line bg-card p-6">
 					<p className="text-[15px]">{cta}</p>
 					<div className="flex gap-3">
-						<Button href="/login">Start for free</Button>
-						<Button variant="secondary" href="/docs/self-host">
+						<Href
+							href="/login"
+							className={buttonVariants({ size: "lg", weight: "medium" })}
+						>
+							Start for free
+						</Href>
+						<Href
+							href="/docs/self-host"
+							className={buttonVariants({
+								variant: "outline",
+								size: "lg",
+								weight: "medium",
+							})}
+						>
 							Self-host
-						</Button>
+						</Href>
 					</div>
 				</div>
 			</main>

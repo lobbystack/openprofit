@@ -1,4 +1,5 @@
-import { Button, Container } from "./primitives";
+import { buttonVariants } from "#/components/ui/button";
+import { Container, Href } from "./primitives";
 
 // Dark band, centered 48px heading, 20px paragraph at 560px, two buttons.
 export function Cta() {
@@ -12,12 +13,26 @@ export function Cta() {
 					Connect in two minutes. Free under $2,500 MRR.
 				</p>
 				<div className="mt-8 flex gap-3">
-					<Button variant="paper" href="/login">
+					<Href
+						href="/login"
+						className={buttonVariants({
+							variant: "paper",
+							size: "lg",
+							weight: "medium",
+						})}
+					>
 						Start for free
-					</Button>
-					<Button variant="translucent" href="/docs/self-host">
+					</Href>
+					<Href
+						href="/docs/self-host"
+						className={buttonVariants({
+							variant: "translucent",
+							size: "lg",
+							weight: "medium",
+						})}
+					>
 						Self-host
-					</Button>
+					</Href>
 				</div>
 			</Container>
 		</section>

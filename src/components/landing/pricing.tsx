@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
-import { Button, Container, Section, SectionHeader } from "./primitives";
+import { buttonVariants } from "#/components/ui/button";
+import { Container, Href, Section, SectionHeader } from "./primitives";
 
 const PLANS = [
 	{
@@ -71,13 +72,17 @@ export function Pricing() {
 								))}
 							</ul>
 							<div className="mt-8">
-								<Button
-									variant={p.primary ? "primary" : "secondary"}
+								<Href
 									href="/login"
-									className="w-full"
+									className={buttonVariants({
+										variant: p.primary ? "default" : "outline",
+										size: "lg",
+										weight: "medium",
+										className: "w-full",
+									})}
 								>
 									{p.cta}
-								</Button>
+								</Href>
 							</div>
 						</div>
 					))}

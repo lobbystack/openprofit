@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useConfirm } from "#/components/app/confirm";
 import { PageHeader } from "#/components/app/shell";
 import { AreaChart } from "#/components/dashboard/area-chart";
-import { Button } from "#/components/ui/button";
+import { Button, buttonVariants } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
 import { Input } from "#/components/ui/input";
 import {
@@ -157,22 +157,18 @@ function Products() {
 													</NativeSelectOption>
 												</NativeSelect>
 												{p.publicPage !== "off" && (
-													<Button
-														variant="quiet"
-														size="icon-sm"
-														nativeButton={false}
-														render={
-															// biome-ignore lint/a11y/useAnchorContent: Button puts the icon inside
-															<a
-																href={`/p/${data.workspaceSlug}/${p.slug}`}
-																target="_blank"
-																rel="noreferrer"
-																title="Open page"
-															/>
-														}
+													<a
+														href={`/p/${data.workspaceSlug}/${p.slug}`}
+														target="_blank"
+														rel="noreferrer"
+														title="Open page"
+														className={buttonVariants({
+															variant: "quiet",
+															size: "icon-sm",
+														})}
 													>
 														<ArrowUpRight size={13} />
-													</Button>
+													</a>
 												)}
 											</span>
 										)}

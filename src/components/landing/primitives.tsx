@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
+import { buttonVariants } from "#/components/ui/button";
 
 // Landing primitives. Measurements at 1280px.
 
@@ -30,49 +31,6 @@ export function Container({
 		>
 			{children}
 		</div>
-	);
-}
-
-export function Button({
-	children,
-	variant = "primary",
-	size = "md",
-	href,
-	className = "",
-	type = "submit",
-}: {
-	children: React.ReactNode;
-	variant?: "primary" | "secondary" | "paper" | "translucent";
-	size?: "sm" | "md";
-	href?: string;
-	className?: string;
-	// Without href the button sits in a form, so it submits by default.
-	type?: "submit" | "button";
-}) {
-	const base =
-		"pressable inline-flex items-center justify-center gap-1.5 rounded-md whitespace-nowrap font-medium";
-	const sizes =
-		size === "sm" ? "h-8 px-3 text-[13px]" : "h-[38px] px-5 text-[14px]";
-	const variants = {
-		primary: "bg-ink text-paper hover:bg-ink-2",
-		secondary: "border border-line bg-paper text-ink hover:border-line-strong",
-		paper:
-			"bg-paper text-ink hover:bg-surface-2 dark:bg-ink dark:text-paper dark:hover:bg-ink-2",
-		translucent:
-			"bg-paper/20 text-paper hover:bg-paper/30 dark:bg-ink/10 dark:text-ink dark:hover:bg-ink/15",
-	}[variant];
-	const cls = `${base} ${sizes} ${variants} ${className}`;
-	if (href) {
-		return (
-			<Href href={href} className={cls}>
-				{children}
-			</Href>
-		);
-	}
-	return (
-		<button type={type} className={cls}>
-			{children}
-		</button>
 	);
 }
 
@@ -132,11 +90,18 @@ export function SectionHeader({
 			{children && (
 				<p className="prose-landing mt-5 max-w-[576px]">{children}</p>
 			)}
-			{cta && (
+			{cta && href && (
 				<div className="mt-6">
-					<Button variant="secondary" href={href}>
+					<Href
+						href={href}
+						className={buttonVariants({
+							variant: "outline",
+							size: "lg",
+							weight: "medium",
+						})}
+					>
 						{cta}
-					</Button>
+					</Href>
 				</div>
 			)}
 		</div>

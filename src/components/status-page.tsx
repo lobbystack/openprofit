@@ -4,7 +4,7 @@ import {
 	useLocation,
 	useRouter,
 } from "@tanstack/react-router";
-import { Button } from "#/components/ui/button";
+import { Button, buttonVariants } from "#/components/ui/button";
 
 function Status({
 	title,
@@ -44,13 +44,12 @@ export function NotFound() {
 					: "Check the address or start from the home page."
 			}
 		>
-			<Button
-				weight="medium"
-				nativeButton={false}
-				render={<Link to={inApp ? "/app" : "/"} />}
+			<Link
+				to={inApp ? "/app" : "/"}
+				className={buttonVariants({ weight: "medium" })}
 			>
 				{inApp ? "Go to overview" : "Go to the home page"}
-			</Button>
+			</Link>
 		</Status>
 	);
 }
