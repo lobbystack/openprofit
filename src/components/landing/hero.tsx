@@ -59,7 +59,7 @@ export function Hero() {
 								weight: "medium",
 							})}
 						>
-							Try the live demo
+							Test live demo
 						</Href>
 					</div>
 				</Container>

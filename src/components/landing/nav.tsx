@@ -30,7 +30,7 @@ export function Nav() {
 		>
 			<Container className="flex h-14 items-center justify-between">
 				<Href href="/">
-					<Logo mark />
+					<Logo />
 				</Href>
 				<nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 text-[14px] text-text-2 md:flex">
 					{LINKS.map(([label, href]) => (
