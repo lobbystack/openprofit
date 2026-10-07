@@ -20,6 +20,8 @@ export type Settings = {
 	weeklyHour: number;
 	timezone: string;
 	telemetry: boolean;
+	// Hosted: the workspace's figures go into the benchmark cohorts.
+	benchmarks: boolean;
 	// The signed-in user's analytics switch: product events and replay.
 	analytics: boolean;
 	// Hosted instance: billing rows show and the plan caps the cadence.
@@ -51,6 +53,7 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 			weeklyHour: ws.weeklyHour,
 			timezone: ws.timezone,
 			telemetry: ws.telemetry,
+			benchmarks: ws.benchmarks,
 			analytics: me?.analytics ?? true,
 			cloud: isCloud,
 			posthog: !!process.env.POSTHOG_KEY,
@@ -70,6 +73,7 @@ export const updateSettings = createServerFn({ method: "POST" })
 			weeklyHour: z.number().int().min(0).max(23).optional(),
 			timezone: TimeZone.optional(),
 			telemetry: z.boolean().optional(),
+			benchmarks: z.boolean().optional(),
 			analytics: z.boolean().optional(),
 			currency: z.enum(CURRENCIES).optional(),
 		}),
@@ -89,6 +93,7 @@ export const updateSettings = createServerFn({ method: "POST" })
 			weeklyHour: data.weeklyHour,
 			timezone: data.timezone,
 			telemetry: data.telemetry,
+			benchmarks: data.benchmarks,
 		};
 		if (Object.values(patch).some((v) => v !== undefined))
 			await db
