@@ -227,6 +227,7 @@ export const neon = register({
 	},
 	// Monthly history reaches back a year, from the first full month.
 	historyDays: 330,
+	monthly: true,
 	async fetchCosts(c, range: SyncRange) {
 		const o = await org(c);
 		// The Free plan has no bill and no consumption history.

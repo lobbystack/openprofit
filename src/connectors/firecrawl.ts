@@ -202,6 +202,7 @@ export const firecrawl = register({
 	// periods keep the figures they had when they closed: they are neither
 	// repriced nor deleted.
 	historyDays: 0,
+	monthly: true,
 	async fetchCosts(c, range) {
 		const usage = await creditUsage(c);
 		const plan = planFor(c, usage.planCredits);

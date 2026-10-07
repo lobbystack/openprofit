@@ -63,6 +63,7 @@ export const digitalocean = register({
 	id: "digitalocean",
 	name: "DigitalOcean",
 	kind: "cost",
+	monthly: true,
 	auth: {
 		kind: "key",
 		fields: [

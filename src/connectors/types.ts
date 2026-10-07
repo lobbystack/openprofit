@@ -66,6 +66,10 @@ export type Connector = {
 	// lines the fetch no longer returns only within this window (and the sync
 	// range). Unset: the whole range is complete. 0: never delete.
 	historyDays?: number;
+	// The provider reports one total per month (or billing period), dated its
+	// first day. The last-30-days numbers then count only the part of it that
+	// falls inside those 30 days. Unset: each line is one day's amount.
+	monthly?: boolean;
 	// The provider files and pays the tax it collects (merchant of record,
 	// app stores). Unset: the seller owes the tax on their own lines.
 	remitsTax?: boolean;

@@ -211,4 +211,5 @@ export const railway = register({
 	},
 	// Never delete: a plan minimum is only returned the week its period closes.
 	historyDays: 0,
+	monthly: true,
 });
