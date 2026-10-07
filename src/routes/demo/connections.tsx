@@ -6,7 +6,7 @@ import { getConnections } from "#/server/connections.functions";
 
 export const Route = createFileRoute("/demo/connections")({
 	head: () => ({ meta: [{ title: "Connections · OpenProfit demo" }] }),
-	loader: () => getConnections({ data: { demo: true } }),
+	loader: () => getConnections({ data: { demo: true, period: "30d" } }),
 	component: DemoConnections,
 });
 

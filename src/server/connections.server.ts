@@ -1,12 +1,19 @@
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, lt, sql } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
 import { connector } from "#/connectors";
 import type { Credentials } from "#/connectors/types";
 import { db, schema } from "#/db";
 import { encrypt } from "#/lib/crypto";
+import type { PeriodKey } from "#/lib/overview";
 import { PLANS } from "#/lib/plans";
 import { isCloud } from "./billing.server";
-import { lastMonths } from "./overview.server";
+import {
+	daysAgo,
+	monthlyCost,
+	monthlyRevenue,
+	periodSpan,
+	share,
+} from "./overview.server";
 import type { Workspace } from "./workspace.server";
 
 export type ConnectionRow = {
@@ -19,7 +26,7 @@ export type ConnectionRow = {
 	cadenceMinutes: number;
 	lastSyncedAt: number | null;
 	productId: string | null;
-	// This month, base currency, whole units. Negative for costs.
+	// The period's amount, base currency, whole units. Negative for costs.
 	amount: number;
 };
 
@@ -29,8 +36,16 @@ export type ConnectionRow = {
 export async function connectionRows(
 	ws: Workspace,
 	productId: string | null = null,
+	periodKey: PeriodKey = "this-month",
 ): Promise<ConnectionRow[]> {
-	const from = `${lastMonths(1)[0]}-01`;
+	const span = periodSpan(periodKey);
+	const rl = schema.revenueLines;
+	const cl = schema.costLines;
+	// Lines a span can reach: a monthly line starts up to a month before it.
+	const scan = (col: PgColumn) =>
+		span.byDay
+			? gte(col, daysAgo(61))
+			: and(gte(col, span.from), lt(col, span.to));
 	const only = (col: PgColumn) => (productId ? eq(col, productId) : undefined);
 	const [conns, rev, cost, mapped] = await Promise.all([
 		db.query.connections.findMany({
@@ -39,32 +54,20 @@ export async function connectionRows(
 		}),
 		db
 			.select({
-				id: schema.revenueLines.connectionId,
-				v: sql<number>`sum(${schema.revenueLines.netBaseCents})`,
+				id: rl.connectionId,
+				v: sql<number>`sum(${share(rl.netBaseCents, rl.date, span.byDay ? monthlyRevenue() : sql`false`, span.from, span.to)})`,
 			})
-			.from(schema.revenueLines)
-			.where(
-				and(
-					eq(schema.revenueLines.workspaceId, ws.id),
-					gte(schema.revenueLines.date, from),
-					only(schema.revenueLines.productId),
-				),
-			)
-			.groupBy(schema.revenueLines.connectionId),
+			.from(rl)
+			.where(and(eq(rl.workspaceId, ws.id), scan(rl.date), only(rl.productId)))
+			.groupBy(rl.connectionId),
 		db
 			.select({
-				id: schema.costLines.connectionId,
-				v: sql<number>`sum(${schema.costLines.amountBaseCents})`,
+				id: cl.connectionId,
+				v: sql<number>`sum(${share(cl.amountBaseCents, cl.date, span.byDay ? monthlyCost() : sql`false`, span.from, span.to)})`,
 			})
-			.from(schema.costLines)
-			.where(
-				and(
-					eq(schema.costLines.workspaceId, ws.id),
-					gte(schema.costLines.date, from),
-					only(schema.costLines.productId),
-				),
-			)
-			.groupBy(schema.costLines.connectionId),
+			.from(cl)
+			.where(and(eq(cl.workspaceId, ws.id), scan(cl.date), only(cl.productId)))
+			.groupBy(cl.connectionId),
 		productId
 			? db
 					.selectDistinct({ id: schema.productMappings.connectionId })
@@ -78,8 +81,9 @@ export async function connectionRows(
 			: [],
 	]);
 	const totals = new Map<string | null, number>();
-	for (const r of rev) totals.set(r.id, Number(r.v));
-	for (const c of cost) totals.set(c.id, -Number(c.v));
+	// The 30-day scan reads lines outside the period, which sum to zero.
+	for (const r of rev) if (Number(r.v)) totals.set(r.id, Number(r.v));
+	for (const c of cost) if (Number(c.v)) totals.set(c.id, -Number(c.v));
 	const feeds = new Set(mapped.map((m) => m.id));
 	const shown = productId
 		? conns.filter(

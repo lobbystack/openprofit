@@ -1,10 +1,16 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	useNavigate,
+	useRouter,
+} from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { RefreshCw, X } from "lucide-react";
 import { useState } from "react";
 import { useConfirm } from "#/components/app/confirm";
 import { ConnectionItem } from "#/components/app/connection-item";
 import { PageHeader } from "#/components/app/shell";
+import { PeriodSelect } from "#/components/dashboard/period-select";
 import {
 	PROVIDERS,
 	type ProviderId,
@@ -12,6 +18,7 @@ import {
 } from "#/components/provider-logo";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
+import { type PeriodKey, periodSchema } from "#/lib/overview";
 import {
 	deleteConnection,
 	getConnections,
@@ -21,12 +28,16 @@ import {
 
 export const Route = createFileRoute("/app/connections/")({
 	head: () => ({ meta: [{ title: "Connections · OpenProfit" }] }),
-	loader: async () => {
+	validateSearch: (s: Record<string, unknown>): { period?: PeriodKey } => ({
+		period: periodSchema.catch("this-month").parse(s.period),
+	}),
+	loaderDeps: ({ search }) => ({ period: search.period ?? "this-month" }),
+	loader: async ({ deps }) => {
 		const [rows, available] = await Promise.all([
-			getConnections(),
+			getConnections({ data: { period: deps.period } }),
 			listConnectors(),
 		]);
-		return { rows, available };
+		return { rows, available, period: deps.period };
 	},
 	component: Connections,
 });
@@ -39,8 +50,9 @@ const ALTERNATIVE: Record<string, { label: string; to: string }> = {
 };
 
 function Connections() {
-	const { rows, available } = Route.useLoaderData();
+	const { rows, available, period } = Route.useLoaderData();
 	const router = useRouter();
+	const navigate = useNavigate();
 	const syncFn = useServerFn(syncNow);
 	const del = useServerFn(deleteConnection);
 	const [confirm, confirmDialog] = useConfirm();
@@ -80,7 +92,16 @@ function Connections() {
 	return (
 		<>
 			{confirmDialog}
-			<PageHeader title="Connections" meta={`${rows.length}`} />
+			<PageHeader title="Connections" meta={`${rows.length}`}>
+				{rows.length > 0 && (
+					<PeriodSelect
+						value={period}
+						onChange={(p) =>
+							navigate({ to: "/app/connections", search: { period: p } })
+						}
+					/>
+				)}
+			</PageHeader>
 
 			{rows.length === 0 && (
 				<p className="mt-4 max-w-[560px] text-[13px] text-text-2">
