@@ -22,7 +22,12 @@ const PLANS = [
 		name: "Indie",
 		price: "$19",
 		note: "Up to $25,000 MRR",
-		features: ["Everything in Free", "Sync every hour", "24 months of history"],
+		features: [
+			"Everything in Free",
+			"Sync every hour",
+			"24 months of history",
+			"SMS alerts, 30 a month",
+		],
 		cta: "Start free, upgrade later",
 		primary: true,
 	},

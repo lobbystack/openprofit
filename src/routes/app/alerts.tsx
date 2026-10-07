@@ -1,14 +1,19 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { AlertChannels } from "#/components/app/alert-channels";
 import { PageHeader } from "#/components/app/shell";
 import { Card } from "#/components/ui/card";
 import { Switch } from "#/components/ui/switch";
 import { RULE_NAMES, ruleScope } from "#/lib/alerts";
 import { getAlerts, setRuleEnabled } from "#/server/alerts.functions";
+import { getChannels } from "#/server/channels.functions";
 
 export const Route = createFileRoute("/app/alerts")({
 	head: () => ({ meta: [{ title: "Alerts · OpenProfit" }] }),
-	loader: () => getAlerts(),
+	loader: async () => {
+		const [data, channels] = await Promise.all([getAlerts(), getChannels()]);
+		return { ...data, channels };
+	},
 	component: Alerts,
 });
 
@@ -21,7 +26,7 @@ const when = (ts: number) => {
 };
 
 function Alerts() {
-	const { alerts, rules } = Route.useLoaderData();
+	const { alerts, rules, channels } = Route.useLoaderData();
 	const router = useRouter();
 	const setEnabled = useServerFn(setRuleEnabled);
 	const open = alerts.filter((a) => !a.resolvedAt).length;
@@ -83,8 +88,8 @@ function Alerts() {
 
 			<div className="label-mono mt-8">Rules</div>
 			<p className="mt-2 text-[12px] text-text-2">
-				A rule that's on opens an alert here and emails every member once per
-				alert. Off stops both.
+				A rule that's on opens an alert here, then emails every member and posts
+				to each channel below, once per alert. Off stops all of it.
 			</p>
 			<Card className="mt-3 overflow-hidden">
 				<ul className="divide-y divide-line">
@@ -103,7 +108,7 @@ function Alerts() {
 								{ruleScope(r.kind, r.threshold)}
 							</span>
 							<span className="w-24 text-right text-[12px] text-text-2">
-								{r.enabled ? "Email on" : "Off"}
+								{r.enabled ? "On" : "Off"}
 							</span>
 							<Switch
 								id={`rule-${r.id}`}
@@ -114,6 +119,8 @@ function Alerts() {
 					))}
 				</ul>
 			</Card>
+
+			<AlertChannels channels={channels} />
 		</>
 	);
 }
