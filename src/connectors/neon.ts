@@ -79,6 +79,32 @@ async function org(c: Credentials): Promise<Org> {
 	return pick;
 }
 
+// Project names for the mapping page. Deleted projects aren't listed and
+// keep showing their id.
+// https://api-docs.neon.tech/reference/listprojects (read 2026-10-06)
+// Names are only labels, so a failed lookup must not fail the cost sync.
+async function projectNames(c: Credentials, orgId: string) {
+	const names = new Map<string, string>();
+	let cursor = "";
+	try {
+		for (;;) {
+			const r = await getJson<{
+				projects: { id: string; name: string }[];
+				pagination?: { cursor?: string };
+			}>(
+				`${BASE}/projects?org_id=${orgId}&limit=400${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
+				{ headers: headers(c) },
+			);
+			for (const p of r.projects ?? []) names.set(p.id, p.name);
+			cursor = r.pagination?.cursor ?? "";
+			if (!cursor || (r.projects ?? []).length < 400) break;
+		}
+	} catch {
+		// Keep whatever names arrived.
+	}
+	return names;
+}
+
 const monthStart = (d: Date) =>
 	new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
 const nextMonth = (d: Date) =>
@@ -229,6 +255,10 @@ export const neon = register({
 			cursor = r.pagination?.cursor;
 			if (!cursor || (r.projects ?? []).length < 100) break;
 		}
-		return priceConsumption(projects);
+		const names = await projectNames(c, o.id);
+		return priceConsumption(projects).map((l) => ({
+			...l,
+			subUnitLabel: names.get(l.subUnitId ?? ""),
+		}));
 	},
 });
