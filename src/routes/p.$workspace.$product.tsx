@@ -152,7 +152,7 @@ function PublicPage() {
 					{d.shared.amount !== null && (
 						<span className="num">{fmt(d.shared.amount)} in </span>
 					)}
-					shared costs the owner hasn't assigned to a product.
+					costs the owner hasn't assigned to a product.
 				</p>
 			)}
 			{d.owner && (

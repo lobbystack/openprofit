@@ -36,4 +36,4 @@ OpenRouter serves activity only to management keys, and offers no read-only vari
 
 ## Costs per product
 
-Each API key with spend appears on the connection's page under the hash OpenRouter's API uses to identify it. Assign a key to a product and its costs follow, past days included. Activity without a key stays in the shared bucket.
+Each API key with spend appears on the connection's page under the hash OpenRouter's API uses to identify it. Assign a key to a product and its costs follow, past days included. Activity without a key stays under Unassigned.

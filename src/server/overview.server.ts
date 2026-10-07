@@ -1,4 +1,4 @@
-import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
 import { connectors } from "#/connectors";
 import { db, schema } from "#/db";
@@ -62,9 +62,11 @@ export function flatMonthlyCents(
 	return f.interval === "year" ? Math.round(cents / 12) : cents;
 }
 
+// `productId`: the product picked in the switcher. Null is All.
 export async function overview(
 	ws: Workspace,
 	periodKey: PeriodKey = "this-month",
+	productId: string | null = null,
 ): Promise<OverviewData> {
 	const period = periodMonths(periodKey);
 	const end = period[period.length - 1];
@@ -79,6 +81,8 @@ export async function overview(
 	const inRange = (col: PgColumn) => and(gte(col, rangeFrom), lt(col, rangeTo));
 	const wsId = ws.id;
 	const month = (col: unknown) => sql<string>`substr(${col}, 1, 7)`;
+	// Narrows a query to the picked product; no condition for All.
+	const only = (col: PgColumn) => (productId ? eq(col, productId) : undefined);
 
 	const [
 		rev,
@@ -103,6 +107,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.revenueLines.workspaceId, wsId),
+					only(schema.revenueLines.productId),
 					gte(schema.revenueLines.date, from),
 				),
 			)
@@ -116,21 +121,47 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.costLines.workspaceId, wsId),
+					only(schema.costLines.productId),
 					gte(schema.costLines.date, from),
 				),
 			)
 			.groupBy(month(schema.costLines.date)),
 		db.query.flatCosts.findMany({
-			where: eq(schema.flatCosts.workspaceId, wsId),
+			where: and(
+				eq(schema.flatCosts.workspaceId, wsId),
+				only(schema.flatCosts.productId),
+			),
 		}),
 		db.query.metricSnapshots.findMany({
 			where: and(
 				eq(schema.metricSnapshots.workspaceId, wsId),
 				gte(schema.metricSnapshots.date, from),
+				// A connection's MRR and subscriptions count toward the product
+				// it's assigned to.
+				// ponytail: a revenue account shared by several products counts
+				// for its default product only; split snapshots by sub-unit if
+				// that matters.
+				productId
+					? inArray(
+							schema.metricSnapshots.connectionId,
+							db
+								.select({ id: schema.connections.id })
+								.from(schema.connections)
+								.where(
+									and(
+										eq(schema.connections.workspaceId, wsId),
+										eq(schema.connections.productId, productId),
+									),
+								),
+						)
+					: undefined,
 			),
 		}),
 		db.query.products.findMany({
-			where: eq(schema.products.workspaceId, wsId),
+			where: and(
+				eq(schema.products.workspaceId, wsId),
+				only(schema.products.id),
+			),
 			orderBy: (p, { asc }) => asc(p.createdAt),
 		}),
 		db
@@ -142,6 +173,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.revenueLines.workspaceId, wsId),
+					only(schema.revenueLines.productId),
 					inRange(schema.revenueLines.date),
 				),
 			)
@@ -155,6 +187,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.costLines.workspaceId, wsId),
+					only(schema.costLines.productId),
 					inRange(schema.costLines.date),
 				),
 			)
@@ -173,6 +206,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.revenueLines.workspaceId, wsId),
+					only(schema.revenueLines.productId),
 					inRange(schema.revenueLines.date),
 				),
 			)
@@ -186,6 +220,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.costLines.workspaceId, wsId),
+					only(schema.costLines.productId),
 					inRange(schema.costLines.date),
 				),
 			)
@@ -202,6 +237,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.revenueLines.workspaceId, wsId),
+					only(schema.revenueLines.productId),
 					gte(schema.revenueLines.date, `${months[0]}-01`),
 					lt(schema.revenueLines.date, rangeTo),
 				),
@@ -217,6 +253,7 @@ export async function overview(
 			.where(
 				and(
 					eq(schema.costLines.workspaceId, wsId),
+					only(schema.costLines.productId),
 					gte(schema.costLines.date, `${months[0]}-01`),
 					lt(schema.costLines.date, rangeTo),
 				),
@@ -331,16 +368,17 @@ export async function overview(
 		costs: units((cp.get(p.id) ?? 0) + (flatByProduct.get(p.id) ?? 0)),
 		profit: profitSeries(p.id),
 	}));
-	const sharedRev = rp.get(null) ?? 0;
-	const sharedCost = (cp.get(null) ?? 0) + (flatByProduct.get(null) ?? 0);
-	if (sharedRev || sharedCost) {
+	// Lines and flat costs assigned to no product.
+	const unassignedRev = rp.get(null) ?? 0;
+	const unassignedCost = (cp.get(null) ?? 0) + (flatByProduct.get(null) ?? 0);
+	if (unassignedRev || unassignedCost) {
 		byProduct.push({
-			id: "shared",
-			name: "Shared",
-			slug: "shared",
+			id: "unassigned",
+			name: "Unassigned",
+			slug: "unassigned",
 			publicPage: "off" as const,
-			revenue: units(sharedRev),
-			costs: units(sharedCost),
+			revenue: units(unassignedRev),
+			costs: units(unassignedCost),
 			profit: profitSeries(null),
 		});
 	}
@@ -374,6 +412,12 @@ export async function overview(
 	return {
 		currency: ws.baseCurrency,
 		workspaceSlug: ws.slug,
+		snapshots: !productId || snaps.length > 0,
+		product: productId
+			? (prods
+					.filter((p) => p.id === productId)
+					.map((p) => ({ id: p.id, name: p.name }))[0] ?? null)
+			: null,
 		months,
 		series: pick((v) => v.slice(12)),
 		previousSeries: pick((v) => v.slice(0, 12)),

@@ -1,4 +1,5 @@
 import { and, eq, gte, sql } from "drizzle-orm";
+import type { PgColumn } from "drizzle-orm/pg-core";
 import { connector } from "#/connectors";
 import type { Credentials } from "#/connectors/types";
 import { db, schema } from "#/db";
@@ -22,9 +23,16 @@ export type ConnectionRow = {
 	amount: number;
 };
 
-export async function connectionRows(ws: Workspace): Promise<ConnectionRow[]> {
+// `productId`: the switcher's product. Then only connections that feed it
+// (its default product, a mapped sub-unit, or lines this month), with
+// that product's share of their amount.
+export async function connectionRows(
+	ws: Workspace,
+	productId: string | null = null,
+): Promise<ConnectionRow[]> {
 	const from = `${lastMonths(1)[0]}-01`;
-	const [conns, rev, cost] = await Promise.all([
+	const only = (col: PgColumn) => (productId ? eq(col, productId) : undefined);
+	const [conns, rev, cost, mapped] = await Promise.all([
 		db.query.connections.findMany({
 			where: eq(schema.connections.workspaceId, ws.id),
 			orderBy: (c, { asc }) => [asc(c.kind), asc(c.createdAt)],
@@ -39,6 +47,7 @@ export async function connectionRows(ws: Workspace): Promise<ConnectionRow[]> {
 				and(
 					eq(schema.revenueLines.workspaceId, ws.id),
 					gte(schema.revenueLines.date, from),
+					only(schema.revenueLines.productId),
 				),
 			)
 			.groupBy(schema.revenueLines.connectionId),
@@ -52,14 +61,32 @@ export async function connectionRows(ws: Workspace): Promise<ConnectionRow[]> {
 				and(
 					eq(schema.costLines.workspaceId, ws.id),
 					gte(schema.costLines.date, from),
+					only(schema.costLines.productId),
 				),
 			)
 			.groupBy(schema.costLines.connectionId),
+		productId
+			? db
+					.selectDistinct({ id: schema.productMappings.connectionId })
+					.from(schema.productMappings)
+					.where(
+						and(
+							eq(schema.productMappings.workspaceId, ws.id),
+							eq(schema.productMappings.productId, productId),
+						),
+					)
+			: [],
 	]);
 	const totals = new Map<string | null, number>();
 	for (const r of rev) totals.set(r.id, Number(r.v));
 	for (const c of cost) totals.set(c.id, -Number(c.v));
-	return conns.map((c) => ({
+	const feeds = new Set(mapped.map((m) => m.id));
+	const shown = productId
+		? conns.filter(
+				(c) => c.productId === productId || feeds.has(c.id) || totals.has(c.id),
+			)
+		: conns;
+	return shown.map((c) => ({
 		id: c.id,
 		provider: c.provider,
 		kind: c.kind,

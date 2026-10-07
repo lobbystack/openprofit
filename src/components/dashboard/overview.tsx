@@ -17,7 +17,12 @@ export function OverviewCard({
 	interactive?: boolean;
 	chartHeight?: number;
 }) {
-	const [metric, setMetric] = useState<MetricKey>("profit");
+	const [picked, setMetric] = useState<MetricKey>("profit");
+	// A product without MRR and subscriptions falls back to profit.
+	const metric =
+		!data.snapshots && (picked === "mrr" || picked === "customers")
+			? "profit"
+			: picked;
 	const series = data.series[metric];
 	const previous = data.previousSeries[metric];
 	const tone =

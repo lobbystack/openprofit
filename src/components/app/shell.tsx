@@ -32,6 +32,7 @@ import { money } from "#/lib/format";
 import { PLANS } from "#/lib/plans";
 import { toggleTheme } from "#/lib/theme";
 import {
+	switchProduct,
 	switchWorkspace,
 	type WorkspaceSummary,
 } from "#/server/workspace.functions";
@@ -74,22 +75,31 @@ export function Shell({
 }) {
 	const path = useRouterState({ select: (s) => s.location.pathname });
 	const nav = demo ? DEMO_NAV : NAV;
+	const picked =
+		workspace.products.find((p) => p.id === workspace.productId)?.name ?? "All";
 	return (
 		<div className="flex min-h-screen">
 			<aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-line bg-paper p-3 md:flex">
 				<DropdownMenu disabled={demo}>
-					<DropdownMenuTrigger className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2 data-disabled:hover:bg-transparent">
+					<DropdownMenuTrigger className="flex h-11 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2 data-disabled:hover:bg-transparent">
 						<span className="flex min-w-0 items-center gap-2">
-							<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
-								{workspace.name[0]}
+							<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px] bg-ink text-[11px] text-paper">
+								{picked[0]}
 							</span>
-							<span className="truncate">{workspace.name}</span>
+							<span className="flex min-w-0 flex-col items-start leading-tight">
+								<span className="max-w-full truncate">{picked}</span>
+								<span className="max-w-full truncate text-[11px] text-text-3">
+									{workspace.name}
+								</span>
+							</span>
 						</span>
 						{!demo && (
 							<ChevronsUpDown size={14} className="shrink-0 text-text-3" />
 						)}
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
+						<ProductItems workspace={workspace} />
+						<DropdownMenuSeparator />
 						<WorkspaceItems workspace={workspace} />
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -125,23 +135,6 @@ export function Shell({
 						})}
 					</ul>
 				</nav>
-
-				<div className="label-mono mt-6 px-2">Products</div>
-				<ul className="mt-2 space-y-px">
-					{workspace.products.map((p) => (
-						<li key={p.id}>
-							<Link
-								to={demo ? "/demo/products" : "/app/products"}
-								className="flex h-8 items-center justify-between rounded-md px-2 text-[13px] text-text-2 hover:bg-surface-1 hover:text-ink"
-							>
-								<span>{p.name}</span>
-								<span className="num text-[11px] text-text-3">
-									{money(p.profit, { currency: workspace.currency })}
-								</span>
-							</Link>
-						</li>
-					))}
-				</ul>
 
 				{!demo && (
 					<div className="mt-auto">
@@ -189,6 +182,8 @@ export function Shell({
 									sideOffset={8}
 									className="w-56"
 								>
+									<ProductItems workspace={workspace} />
+									<DropdownMenuSeparator />
 									<WorkspaceItems workspace={workspace} />
 									<DropdownMenuSeparator />
 									<DropdownMenuGroup>
@@ -307,12 +302,39 @@ export function SettingsRow({
 }
 
 // The workspace list with a check on the current one, then "New workspace".
+// All, then each product: the app narrows to the one picked.
+function ProductItems({ workspace }: { workspace: WorkspaceSummary }) {
+	const router = useRouter();
+	const pick = useServerFn(switchProduct);
+	const choose = async (id: string | null) => {
+		if (id === workspace.productId) return;
+		await pick({ data: { id } });
+		await router.invalidate({ sync: true });
+	};
+	return (
+		<DropdownMenuGroup>
+			<DropdownMenuLabel>Products</DropdownMenuLabel>
+			<DropdownMenuItem onClick={() => choose(null)}>
+				<span className="flex-1 truncate">All</span>
+				{workspace.productId === null && <Check size={14} />}
+			</DropdownMenuItem>
+			{workspace.products.map((p) => (
+				<DropdownMenuItem key={p.id} onClick={() => choose(p.id)}>
+					<span className="flex-1 truncate">{p.name}</span>
+					{p.id === workspace.productId && <Check size={14} />}
+				</DropdownMenuItem>
+			))}
+		</DropdownMenuGroup>
+	);
+}
+
 function WorkspaceItems({ workspace }: { workspace: WorkspaceSummary }) {
 	const router = useRouter();
 	const switchTo = useServerFn(switchWorkspace);
 	return (
 		<>
 			<DropdownMenuGroup>
+				<DropdownMenuLabel>Workspaces</DropdownMenuLabel>
 				{workspace.workspaces.map((w) => (
 					<DropdownMenuItem
 						key={w.id}

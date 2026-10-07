@@ -3,16 +3,23 @@ import { z } from "zod";
 import { periodSchema } from "#/lib/overview";
 import { demoWorkspace } from "./demo.server";
 import { overview } from "./overview.server";
-import { currentWorkspace } from "./workspace.server";
+import { currentProduct, currentWorkspace } from "./workspace.server";
 
-// `demo` reads the public demo workspace instead of the user's.
+// `demo` reads the public demo workspace instead of the user's. The
+// switcher's product narrows it unless `all` is set (the Products page).
 export const getOverview = createServerFn({ method: "GET" })
 	.validator(
 		z
-			.object({ period: periodSchema, demo: z.boolean().optional() })
+			.object({
+				period: periodSchema,
+				demo: z.boolean().optional(),
+				all: z.boolean().optional(),
+			})
 			.default({ period: "this-month" }),
 	)
 	.handler(async ({ data }) => {
-		const ws = data.demo ? await demoWorkspace() : await currentWorkspace();
-		return overview(ws, data.period);
+		if (data.demo) return overview(await demoWorkspace(), data.period);
+		const ws = await currentWorkspace();
+		const product = data.all ? null : await currentProduct(ws);
+		return overview(ws, data.period, product?.id ?? null);
 	});

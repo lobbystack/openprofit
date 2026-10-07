@@ -426,8 +426,8 @@ export function pageMarkdown(p: PublicPage) {
 		out.push(
 			"",
 			p.shared.amount !== null
-				? `Excludes ${fmt(p.shared.amount)} in shared costs.`
-				: "Excludes shared costs.",
+				? `Excludes ${fmt(p.shared.amount)} in unassigned costs.`
+				: "Excludes unassigned costs.",
 		);
 	return out.join("\n");
 }

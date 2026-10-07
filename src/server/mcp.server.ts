@@ -94,7 +94,8 @@ type LineQuery = {
 	offset: number;
 };
 
-// Revenue or cost lines, newest first. product_id "shared" picks lines
+// Revenue or cost lines, newest first. product_id "unassigned" (or the
+// old "shared") picks lines
 // assigned to no product.
 async function lines(ws: Caller["ws"], q: LineQuery) {
 	const names = new Map(
@@ -112,7 +113,7 @@ async function lines(ws: Caller["ws"], q: LineQuery) {
 		if (q.connection_id) where.push(eq(t.connectionId, q.connection_id));
 		if (q.product_id)
 			where.push(
-				q.product_id === "shared"
+				q.product_id === "unassigned" || q.product_id === "shared"
 					? isNull(t.productId)
 					: eq(t.productId, q.product_id),
 			);
@@ -149,7 +150,7 @@ async function lines(ws: Caller["ws"], q: LineQuery) {
 	if (q.connection_id) where.push(eq(t.connectionId, q.connection_id));
 	if (q.product_id)
 		where.push(
-			q.product_id === "shared"
+			q.product_id === "unassigned" || q.product_id === "shared"
 				? isNull(t.productId)
 				: eq(t.productId, q.product_id),
 		);
@@ -277,7 +278,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		{
 			title: "List products",
 			description:
-				'Products with revenue, costs, profit and margin for a period, and their public page mode and URL. "shared" holds lines assigned to no product.',
+				'Products with revenue, costs, profit and margin for a period, and their public page mode and URL. "unassigned" holds lines assigned to no product.',
 			inputSchema: z.object({ period: Period.optional() }),
 			annotations: READ,
 		},
@@ -287,7 +288,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			return json(
 				o.byProduct.map((p) => {
 					const profit = Math.round((p.revenue - p.costs) * 100) / 100;
-					const shared = p.id === "shared";
+					const shared = p.id === "unassigned";
 					return {
 						id: p.id,
 						name: p.name,
@@ -467,7 +468,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		product_id: z
 			.string()
 			.optional()
-			.describe('A product id, or "shared" for lines with no product'),
+			.describe('A product id, or "unassigned" for lines with no product'),
 		connection_id: z.string().optional(),
 	};
 
@@ -627,7 +628,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		{
 			title: "Delete product",
 			description:
-				"Deletes a product and its sub-unit mappings, and takes its public page offline. Its revenue, costs and flat costs move to Shared; synced lines stay. Can't be undone.",
+				"Deletes a product and its sub-unit mappings, and takes its public page offline. Its revenue, costs and flat costs move to Unassigned; synced lines stay. Can't be undone.",
 			inputSchema: z.object({ product_id: Id("Product") }),
 			annotations: DESTRUCTIVE,
 		},
@@ -736,7 +737,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		{
 			title: "Set connection product",
 			description:
-				"Sets the product for a connection's lines that have no mapped sub-unit, past lines included. null moves them to Shared.",
+				"Sets the product for a connection's lines that have no mapped sub-unit, past lines included. null moves them to Unassigned.",
 			inputSchema: z.object({
 				connection_id: Id("Connection"),
 				product_id: z.string().nullable(),
@@ -787,7 +788,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		{
 			title: "Unmap sub-unit",
 			description:
-				"Removes a sub-unit's product. Its lines go back to the connection's default product, or Shared.",
+				"Removes a sub-unit's product. Its lines go back to the connection's default product, or Unassigned.",
 			inputSchema: z.object({
 				connection_id: Id("Connection"),
 				sub_unit_id: z.string(),
@@ -817,7 +818,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			.string()
 			.nullable()
 			.optional()
-			.describe("null or absent: Shared"),
+			.describe("null or absent: Unassigned"),
 	};
 	const saveFlat = async (f: {
 		name: string;

@@ -33,7 +33,7 @@ The numbers cover the last 30 days, and growth compares them with the 30 days be
 
 ## Show visitors where the numbers come from
 
-The cost list names each source assigned to the product, with its logo. Costs you add under **Costs** › **Flat costs** carry a “Self-reported” label. Costs you haven’t assigned to a product stay off the page, and the page says it excludes shared costs, with their total in Full mode.
+The cost list names each source assigned to the product, with its logo. Costs you add under **Costs** › **Flat costs** carry a “Self-reported” label. Costs you haven’t assigned to a product stay off the page, and the page says it excludes unassigned costs, with their total in Full mode.
 
 On openprofit.dev, each page also carries a **Verified** mark and names the providers it read: OpenProfit pulls those amounts from the providers’ APIs, and you can’t edit them. Self-hosted pages don’t show the mark.
 

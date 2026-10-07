@@ -29,7 +29,7 @@ The usage report exists only on GitHub's enhanced billing platform. Accounts sti
 
 ## Costs per product
 
-Each repository with charges appears on the connection's page. Assign it to a product and its costs follow, past days included. Charges GitHub doesn't tie to a repository stay in the shared bucket.
+Each repository with charges appears on the connection's page. Assign it to a product and its costs follow, past days included. Charges GitHub doesn't tie to a repository stay under Unassigned.
 
 ## Common questions
 

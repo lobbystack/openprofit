@@ -7,6 +7,8 @@ import { requireUser } from "./auth.server";
 export type Workspace = typeof schema.workspaces.$inferSelect;
 
 const COOKIE = "op_ws";
+// The product picked in the switcher; absent means All.
+const PRODUCT_COOKIE = "op_product";
 
 export function rememberWorkspace(id: string) {
 	setCookie(COOKIE, id, {
@@ -16,6 +18,30 @@ export function rememberWorkspace(id: string) {
 		secure: process.env.NODE_ENV === "production",
 		maxAge: 60 * 60 * 24 * 365,
 	});
+}
+
+export function rememberProduct(id: string | null) {
+	setCookie(PRODUCT_COOKIE, id ?? "", {
+		path: "/",
+		httpOnly: true,
+		sameSite: "lax",
+		secure: process.env.NODE_ENV === "production",
+		maxAge: id ? 60 * 60 * 24 * 365 : 0,
+	});
+}
+
+// The switcher's product in this workspace, or null for All. A product from
+// another workspace, or one since deleted, counts as All.
+export async function currentProduct(ws: Workspace) {
+	const id = getCookie(PRODUCT_COOKIE);
+	if (!id) return null;
+	const p = await db.query.products.findFirst({
+		where: and(
+			eq(schema.products.id, id),
+			eq(schema.products.workspaceId, ws.id),
+		),
+	});
+	return p ?? null;
 }
 
 export async function userWorkspaces(userId: string) {

@@ -5,7 +5,7 @@ import { db, schema } from "#/db";
 import { FlatCostInput } from "#/lib/costs";
 import { flatValues } from "./costs.server";
 import { demoWorkspace } from "./demo.server";
-import { currentWorkspace } from "./workspace.server";
+import { currentProduct, currentWorkspace } from "./workspace.server";
 
 export type FlatCostRow = {
 	id: string;
@@ -30,9 +30,14 @@ export const getFlatCosts = createServerFn({ method: "GET" })
 	.validator(z.object({ demo: z.boolean() }).optional())
 	.handler(async ({ data }): Promise<FlatCosts> => {
 		const ws = data?.demo ? await demoWorkspace() : await currentWorkspace();
+		// The switcher's product shows its own flat costs only.
+		const product = data?.demo ? null : await currentProduct(ws);
 		const [flats, products] = await Promise.all([
 			db.query.flatCosts.findMany({
-				where: eq(schema.flatCosts.workspaceId, ws.id),
+				where: and(
+					eq(schema.flatCosts.workspaceId, ws.id),
+					product ? eq(schema.flatCosts.productId, product.id) : undefined,
+				),
 				orderBy: (f, { desc }) => desc(f.amountCents),
 			}),
 			db.query.products.findMany({

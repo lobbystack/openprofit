@@ -32,7 +32,7 @@ The key is stored encrypted and used only to read the cost report.
 
 ## Costs per product
 
-Workspaces are how Anthropic groups usage, so they're how OpenProfit maps it. Give each product its own workspace and its own API key, then assign the workspace to the product on the connection's page. Unassigned workspaces stay in a shared bucket.
+Workspaces are how Anthropic groups usage, so they're how OpenProfit maps it. Give each product its own workspace and its own API key, then assign the workspace to the product on the connection's page. Unassigned workspaces stay under Unassigned.
 
 ## Common questions
 

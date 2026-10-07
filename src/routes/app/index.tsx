@@ -52,7 +52,7 @@ function Overview() {
 	}
 	return (
 		<>
-			<PageHeader title="Overview" meta="All products">
+			<PageHeader title="Overview" meta={data.product?.name ?? "All products"}>
 				<PeriodSelect
 					value={data.period.key}
 					onChange={(period) => navigate({ to: "/app", search: { period } })}

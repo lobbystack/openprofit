@@ -11,6 +11,11 @@ export function MetricRow({
 	selected: MetricKey;
 	onSelect?: (k: MetricKey) => void;
 }) {
+	// Without MRR and subscriptions (a product sharing its revenue account),
+	// those two tiles go rather than show zero.
+	const metrics = METRICS.filter(
+		(m) => data.snapshots || (m.key !== "mrr" && m.key !== "customers"),
+	);
 	return (
 		<ToggleGroup
 			variant="tile"
@@ -20,9 +25,12 @@ export function MetricRow({
 			value={[selected]}
 			// Picking the selected tile again keeps it selected.
 			onValueChange={(v) => v[0] && onSelect?.(v[0] as MetricKey)}
-			className="grid w-auto grid-cols-[repeat(5,minmax(132px,1fr))] divide-x divide-line overflow-x-auto"
+			className="grid w-auto divide-x divide-line overflow-x-auto"
+			style={{
+				gridTemplateColumns: `repeat(${metrics.length}, minmax(132px, 1fr))`,
+			}}
 		>
-			{METRICS.map((m) => {
+			{metrics.map((m) => {
 				const value = data.period.totals[m.key];
 				const prev = data.period.previous[m.key];
 				const d = prev ? ((value - prev) / prev) * 100 : 0;

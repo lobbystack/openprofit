@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { db, schema } from "#/db";
 import { PLANS } from "#/lib/plans";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
@@ -8,7 +10,9 @@ import { demoWorkspace } from "./demo.server";
 import { convert } from "./fx.server";
 import { overview } from "./overview.server";
 import {
+	currentProduct,
 	currentWorkspace,
+	rememberProduct,
 	rememberWorkspace,
 	userWorkspaces,
 } from "./workspace.server";
@@ -26,13 +30,18 @@ export type WorkspaceSummary = {
 	analytics: boolean;
 	workspaces: { id: string; name: string }[];
 	products: { id: string; name: string; profit: number }[];
+	// The switcher's product; null is All.
+	productId: string | null;
 };
 
 export const getWorkspace = createServerFn({ method: "GET" }).handler(
 	async (): Promise<WorkspaceSummary> => {
 		boot();
 		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
-		const data = await overview(ws);
+		const [data, product] = await Promise.all([
+			overview(ws),
+			currentProduct(ws),
+		]);
 		const cap = PLANS[ws.plan].mrrCapCents;
 		// Plan limits are in US dollars; MRR is in the workspace's currency.
 		const mrr =
@@ -55,8 +64,9 @@ export const getWorkspace = createServerFn({ method: "GET" }).handler(
 			analytics: user.analytics,
 			workspaces: await userWorkspaces(user.id),
 			products: data.byProduct
-				.filter((p) => p.id !== "shared")
+				.filter((p) => p.id !== "unassigned")
 				.map((p) => ({ id: p.id, name: p.name, profit: p.revenue - p.costs })),
+			productId: product?.id ?? null,
 		};
 	},
 );
@@ -77,8 +87,9 @@ export const getDemoWorkspace = createServerFn({ method: "GET" }).handler(
 			analytics: false,
 			workspaces: [],
 			products: data.byProduct
-				.filter((p) => p.id !== "shared")
+				.filter((p) => p.id !== "unassigned")
 				.map((p) => ({ id: p.id, name: p.name, profit: p.revenue - p.costs })),
+			productId: null,
 		};
 	},
 );
@@ -90,5 +101,25 @@ export const switchWorkspace = createServerFn({ method: "POST" })
 		const mine = await userWorkspaces(user.id);
 		if (!mine.some((w) => w.id === data.id)) throw new Error("Not found");
 		rememberWorkspace(data.id);
+		// A product belongs to one workspace, so the new one starts on All.
+		rememberProduct(null);
+		return { ok: true };
+	});
+
+// Picks the product the app narrows to, or All with null.
+export const switchProduct = createServerFn({ method: "POST" })
+	.validator(z.object({ id: z.string().nullable() }))
+	.handler(async ({ data }) => {
+		const ws = await currentWorkspace();
+		if (data.id) {
+			const owned = await db.query.products.findFirst({
+				where: and(
+					eq(schema.products.id, data.id),
+					eq(schema.products.workspaceId, ws.id),
+				),
+			});
+			if (!owned) throw new Error("Not found");
+		}
+		rememberProduct(data.id);
 		return { ok: true };
 	});
