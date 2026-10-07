@@ -49,9 +49,7 @@ function Connection() {
 	const map = useServerFn(setMapping);
 	const setProduct = useServerFn(setConnectionProduct);
 	const p = PROVIDERS[c.provider];
-	// Where lines of a sub-unit without its own product go.
-	const fallback =
-		c.products.find((pr) => pr.id === c.productId)?.name ?? "Unassigned";
+	const unit = UNIT[c.provider] ?? "project";
 
 	async function assign(subUnitId: string, productId: string | null) {
 		await map({ data: { connectionId: c.id, subUnitId, productId } });
@@ -63,10 +61,10 @@ function Connection() {
 		router.invalidate();
 	}
 
+	// Assigned to a product, or Unassigned: unassigned lines count in All.
 	const select = (
 		value: string | null,
 		onChange: (v: string | null) => void,
-		empty = "Unassigned",
 	) => (
 		<NativeSelect
 			size="xs"
@@ -74,7 +72,7 @@ function Connection() {
 			value={value ?? ""}
 			onChange={(e) => onChange(e.target.value || null)}
 		>
-			<NativeSelectOption value="">{empty}</NativeSelectOption>
+			<NativeSelectOption value="">Unassigned</NativeSelectOption>
 			{c.products.map((pr) => (
 				<NativeSelectOption key={pr.id} value={pr.id}>
 					{pr.name}
@@ -83,26 +81,22 @@ function Connection() {
 		</NativeSelect>
 	);
 
+	const kind = c.kind === "cost" ? "Costs" : "Revenue";
+
 	return (
 		<>
 			<PageHeader title={p?.name ?? c.provider} meta={c.label ?? undefined} />
-			<Card className="mt-4 flex h-11 items-center justify-between px-4 text-[13px]">
-				<span>
-					{`${c.kind === "revenue" ? "Revenue" : "Costs"} ${
-						c.subUnits.length > 0
-							? "not assigned below"
-							: "from this connection"
-					} ${c.kind === "revenue" ? "goes" : "go"} to`}
-				</span>
-				{select(c.productId, assignConnection)}
-			</Card>
-			{c.subUnits.length > 0 && (
+			{c.subUnits.length === 0 ? (
+				<Card className="mt-4 flex h-11 items-center justify-between px-4 text-[13px]">
+					<span>{kind} from this connection</span>
+					{select(c.productId, assignConnection)}
+				</Card>
+			) : (
 				<Card className="mt-4 overflow-hidden">
 					<CardHeader className="py-3">
 						<CardTitle>
 							{p && <ProviderLogo id={c.provider as ProviderId} size={14} />}
-							{c.kind === "cost" ? "Costs by" : "Revenue by"}{" "}
-							{UNIT[c.provider] ?? "project"}
+							{kind} by {unit}
 						</CardTitle>
 						<span className="label-mono">This month</span>
 					</CardHeader>
@@ -121,13 +115,20 @@ function Connection() {
 									)}
 								</span>
 								<span className="num w-24 text-right">{money(u.amount)}</span>
-								{select(
-									u.productId,
-									(v) => assign(u.id, v),
-									`Default (${fallback})`,
-								)}
+								{select(u.productId, (v) => assign(u.id, v))}
 							</li>
 						))}
+						{c.withoutSubUnit && (
+							<li className="flex h-11 items-center gap-3 px-4 text-[13px]">
+								<span className="flex-1 truncate text-text-2">
+									Not in a {unit}
+								</span>
+								<span className="num w-24 text-right">
+									{money(c.withoutSubUnit.amount)}
+								</span>
+								{select(c.productId, assignConnection)}
+							</li>
+						)}
 					</ul>
 				</Card>
 			)}

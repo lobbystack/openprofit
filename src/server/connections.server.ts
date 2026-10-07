@@ -24,7 +24,7 @@ export type ConnectionRow = {
 };
 
 // `productId`: the switcher's product. Then only connections that feed it
-// (its default product, a mapped sub-unit, or lines this month), with
+// (its own product, a mapped sub-unit, or lines this month), with
 // that product's share of their amount.
 export async function connectionRows(
 	ws: Workspace,

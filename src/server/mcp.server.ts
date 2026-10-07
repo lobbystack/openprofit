@@ -367,7 +367,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		{
 			title: "List connections",
 			description:
-				"Revenue and cost connections with their status, last sync, last error, default product and this month's amount (negative for costs).",
+				"Revenue and cost connections with their status, last sync, last error, product (for lines without a sub-unit) and this month's amount (negative for costs).",
 			annotations: READ,
 		},
 		async () =>
@@ -386,7 +386,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		{
 			title: "List sub-units",
 			description:
-				"The sub-units a connection reports (OpenAI or Vercel projects, Anthropic workspaces, Cloudflare zones, Stripe products), this month's amount for each, and the product each is mapped to. Unmapped sub-units follow the connection's default product.",
+				"The sub-units a connection reports (OpenAI or Vercel projects, Anthropic workspaces, Cloudflare zones, Stripe products), this month's amount for each, and the product each is mapped to. An unmapped sub-unit is unassigned.",
 			inputSchema: z.object({ connection_id: Id("Connection") }),
 			annotations: READ,
 		},
@@ -401,7 +401,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		{
 			title: "List mappings",
 			description:
-				"Every sub-unit mapped to a product, and every connection's default product for lines with no mapped sub-unit.",
+				"Every sub-unit mapped to a product, and each connection's product for lines without a sub-unit.",
 			annotations: READ,
 		},
 		async () => {
@@ -737,7 +737,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		{
 			title: "Set connection product",
 			description:
-				"Sets the product for a connection's lines that have no mapped sub-unit, past lines included. null moves them to Unassigned.",
+				"Sets the product for a connection's lines that belong to no sub-unit (every line, for providers without sub-units), past lines included. null leaves them unassigned. Assign sub-units with map_sub_unit.",
 			inputSchema: z.object({
 				connection_id: Id("Connection"),
 				product_id: z.string().nullable(),
@@ -787,8 +787,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		"unmap_sub_unit",
 		{
 			title: "Unmap sub-unit",
-			description:
-				"Removes a sub-unit's product. Its lines go back to the connection's default product, or Unassigned.",
+			description: "Removes a sub-unit's product. Its lines become unassigned.",
 			inputSchema: z.object({
 				connection_id: Id("Connection"),
 				sub_unit_id: z.string(),
@@ -986,7 +985,9 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 				product_id: z
 					.string()
 					.optional()
-					.describe("Product for the connection's lines"),
+					.describe(
+						"Product for the connection. Its first sync assigns every line to it",
+					),
 			}),
 			annotations: { ...WRITE, openWorldHint: true },
 		},

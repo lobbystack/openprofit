@@ -1,13 +1,4 @@
-import {
-	and,
-	eq,
-	gte,
-	isNotNull,
-	isNull,
-	notInArray,
-	or,
-	sql,
-} from "drizzle-orm";
+import { and, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
 import { db, schema } from "#/db";
 import { lastMonths } from "./overview.server";
 import type { Workspace } from "./workspace.server";
@@ -25,7 +16,11 @@ export type ConnectionDetail = {
 	provider: string;
 	kind: "revenue" | "cost";
 	label: string | null;
+	// The product of lines without a sub-unit; for providers without
+	// sub-units, of every line.
 	productId: string | null;
+	// Lines without a sub-unit, when a provider with sub-units has any.
+	withoutSubUnit: { amount: number } | null;
 	subUnits: SubUnit[];
 	products: { id: string; name: string }[];
 };
@@ -87,6 +82,15 @@ export async function connectionDetail(
 			),
 		)
 		.groupBy(table.subUnitId);
+	// Lines that belong to no sub-unit: whether there are any, and this
+	// month's amount. They follow the connection's own product.
+	const [loose] = await db
+		.select({
+			n: sql<number>`count(*)`,
+			v: sql<number>`coalesce(sum(${amountCol}) filter (where ${table.date} >= ${from}), 0)`,
+		})
+		.from(table)
+		.where(and(eq(table.connectionId, conn.id), isNull(table.subUnitId)));
 	const [mappings, products] = await Promise.all([
 		db.query.productMappings.findMany({
 			where: eq(schema.productMappings.connectionId, conn.id),
@@ -103,6 +107,10 @@ export async function connectionDetail(
 		kind: conn.kind,
 		label: conn.label,
 		productId: conn.productId,
+		withoutSubUnit:
+			Number(loose?.n ?? 0) > 0
+				? { amount: Math.round(Number(loose.v)) / 100 }
+				: null,
 		subUnits: rows
 			.filter((r) => r.id)
 			.map((r) => ({
@@ -151,17 +159,17 @@ export async function assignSubUnit(
 				),
 			);
 	}
-	// Unassigned lines follow the connection's product.
-	const productId = data.productId ?? conn.productId;
+	// An unassigned sub-unit's lines belong to no product.
 	for (const t of [schema.revenueLines, schema.costLines])
 		await db
 			.update(t)
-			.set({ productId })
+			.set({ productId: data.productId })
 			.where(and(eq(t.connectionId, conn.id), eq(t.subUnitId, data.subUnitId)));
 	return conn;
 }
 
-// Product for the connection's lines that have no sub-unit mapping.
+// Product for the connection's lines that belong to no sub-unit: all of
+// them for providers without sub-units (Stripe, Twilio).
 export async function assignConnection(
 	ws: Workspace,
 	data: { connectionId: string; productId: string | null },
@@ -172,20 +180,10 @@ export async function assignConnection(
 		.update(schema.connections)
 		.set({ productId: data.productId })
 		.where(eq(schema.connections.id, conn.id));
-	// Every line without a mapped sub-unit, as the sync assigns them.
-	const mapped = db
-		.select({ id: schema.productMappings.subUnitId })
-		.from(schema.productMappings)
-		.where(eq(schema.productMappings.connectionId, conn.id));
 	for (const t of [schema.revenueLines, schema.costLines])
 		await db
 			.update(t)
 			.set({ productId: data.productId })
-			.where(
-				and(
-					eq(t.connectionId, conn.id),
-					or(isNull(t.subUnitId), notInArray(t.subUnitId, mapped)),
-				),
-			);
+			.where(and(eq(t.connectionId, conn.id), isNull(t.subUnitId)));
 	return conn;
 }

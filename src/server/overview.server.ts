@@ -139,7 +139,7 @@ export async function overview(
 				// A connection's MRR and subscriptions count toward the product
 				// it's assigned to.
 				// ponytail: a revenue account shared by several products counts
-				// for its default product only; split snapshots by sub-unit if
+				// for the connection's own product only; split snapshots by sub-unit if
 				// that matters.
 				productId
 					? inArray(

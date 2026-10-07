@@ -31,4 +31,4 @@ The pending invoice changes as the month goes on. OpenProfit updates the lines i
 
 ## Costs per product
 
-Each Atlas project appears on the connection's page. Assign it to a product and its costs follow, past months included. Line items without a project go to the product you pick at the top of the page.
+Each Atlas project appears on the connection's page. Assign it to a product and its costs follow, past months included. Line items without a project get their own row on the same page.
