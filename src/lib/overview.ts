@@ -43,14 +43,21 @@ export const METRICS: {
 	},
 ];
 
-export type PeriodKey = "this-month" | "last-month" | "3m" | "12m" | "ytd";
+export type PeriodKey =
+	| "this-month"
+	| "30d"
+	| "last-month"
+	| "3m"
+	| "12m"
+	| "ytd";
 
 export const periodSchema = z
-	.enum(["this-month", "last-month", "3m", "12m", "ytd"])
+	.enum(["this-month", "30d", "last-month", "3m", "12m", "ytd"])
 	.default("this-month");
 
 export const PERIODS: { key: PeriodKey; label: string }[] = [
 	{ key: "this-month", label: "This month" },
+	{ key: "30d", label: "Last 30 days" },
 	{ key: "last-month", label: "Last month" },
 	{ key: "3m", label: "Last 3 months" },
 	{ key: "12m", label: "Last 12 months" },
