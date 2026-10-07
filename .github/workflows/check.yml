@@ -19,3 +19,4 @@ jobs:
       - run: pnpm check
       - run: npx tsc --noEmit
       - run: pnpm build
+      - run: pnpm --dir packages/cli build && pnpm --dir packages/cli test
