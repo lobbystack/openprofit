@@ -56,9 +56,12 @@ export const FIRECRAWL_PLANS: Record<
 };
 const PACK_CENTS = 500;
 
+// The docs type both dates as strings, but accounts on the Free plan get
+// periods with null dates (seen 2026-10-07): a null end is a period still
+// running, a period without a start is skipped.
 export type FirecrawlPeriod = {
-	startDate: string;
-	endDate: string;
+	startDate: string | null;
+	endDate: string | null;
 	apiKey: string | null;
 	totalCredits: number;
 };
@@ -98,6 +101,7 @@ export function firecrawlLines(
 ): CostLine[] {
 	const byPeriod = new Map<string, Map<string, number>>();
 	for (const p of periods) {
+		if (!p.startDate) continue;
 		const day = p.startDate.slice(0, 10);
 		const keys = byPeriod.get(day) ?? new Map<string, number>();
 		const key = p.apiKey ? keyLabel(p.apiKey) : "";
@@ -146,11 +150,15 @@ export function currentPeriod(
 	const start =
 		billingPeriodStart?.slice(0, 10) ??
 		periods
-			.map((p) => p.startDate.slice(0, 10))
+			.flatMap((p) => (p.startDate ? [p.startDate.slice(0, 10)] : []))
 			.filter((d) => d <= today)
 			.sort()
 			.at(-1);
-	return start ? periods.filter((p) => p.endDate.slice(0, 10) > start) : [];
+	return start
+		? periods.filter(
+				(p) => p.startDate && (!p.endDate || p.endDate.slice(0, 10) > start),
+			)
+		: [];
 }
 
 export const firecrawl = register({
