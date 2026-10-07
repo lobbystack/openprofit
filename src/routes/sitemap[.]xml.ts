@@ -11,6 +11,7 @@ const STATIC = [
 	...COMPARISONS.map((p) => `/compare/${p.slug}`),
 	...DOCS.map((d) => `/docs/${d.slug}`),
 	"/changelog",
+	"/data",
 	"/privacy",
 	"/terms",
 	"/cookies",
