@@ -43,6 +43,13 @@
       "when": 1791319672936,
       "tag": "0005_alert_keys_flat_base",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791334641644,
+      "tag": "0006_moat",
+      "breakpoints": true
     }
   ]
 }
