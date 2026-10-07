@@ -66,10 +66,12 @@ export const preflight = () =>
 
 // RFC 9728 protected resource metadata, served at
 // /.well-known/oauth-protected-resource and at the /mcp-suffixed path
-// (RFC 9728 §3.1). `resource` is the URL users add, which Claude requires.
-function resourceMetadata(iss: string) {
+// (RFC 9728 §3.1). `resource` matches the path it's served for (§3.3): the
+// origin at the root, and at /mcp the URL users add, which Claude requires.
+// The 401 from /mcp points clients at the /mcp document.
+function resourceMetadata(iss: string, resource: string) {
 	return {
-		resource: `${iss}/mcp`,
+		resource,
 		authorization_servers: [iss],
 		scopes_supported: SCOPES,
 		bearer_methods_supported: ["header"],
@@ -106,12 +108,13 @@ function serverMetadata(iss: string) {
 export function wellKnown(request: Request, path: string) {
 	const iss = issuer(request);
 	const doc =
-		path === "oauth-protected-resource" ||
-		path === "oauth-protected-resource/mcp"
-			? resourceMetadata(iss)
-			: path === "oauth-authorization-server"
-				? serverMetadata(iss)
-				: null;
+		path === "oauth-protected-resource"
+			? resourceMetadata(iss, iss)
+			: path === "oauth-protected-resource/mcp"
+				? resourceMetadata(iss, `${iss}/mcp`)
+				: path === "oauth-authorization-server"
+					? serverMetadata(iss)
+					: null;
 	// Shared caches may keep the document only when APP_URL fixes the issuer.
 	// Without it the issuer comes from the Host header, and a cache that
 	// ignores Host could hand one host's document to another.
