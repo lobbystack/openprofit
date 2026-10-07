@@ -1,4 +1,15 @@
-import { and, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm";
+import {
+	and,
+	desc,
+	eq,
+	gte,
+	inArray,
+	isNotNull,
+	lte,
+	ne,
+	or,
+	sql,
+} from "drizzle-orm";
 import { connector, connectors } from "#/connectors";
 import {
 	ConnectorError,
@@ -220,6 +231,11 @@ export async function syncConnection(
 			.update(schema.syncRuns)
 			.set({ finishedAt: Date.now(), status: "ok", linesWritten: written })
 			.where(eq(schema.syncRuns.id, run.id));
+		// Analytics must not turn a finished sync into a failed one.
+		if (!conn.lastSyncedAt)
+			await recordFirstSync(conn, written).catch((err) =>
+				console.error("[analytics]", err),
+			);
 		return { written };
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
@@ -252,6 +268,36 @@ export async function syncConnection(
 		});
 		throw err;
 	}
+}
+
+// A connection's first successful sync, and the workspace's activation: the
+// first time it has a revenue connection and a cost connection that have both
+// synced, which is when the overview first shows a profit.
+async function recordFirstSync(conn: Connection, written: number) {
+	captureForWorkspace(conn.workspaceId, "connection_synced", {
+		provider: conn.provider,
+		kind: conn.kind,
+		lines: written,
+	});
+	const others = await db
+		.select({ kind: schema.connections.kind })
+		.from(schema.connections)
+		.where(
+			and(
+				eq(schema.connections.workspaceId, conn.workspaceId),
+				ne(schema.connections.id, conn.id),
+				isNotNull(schema.connections.lastSyncedAt),
+			),
+		);
+	const kinds = new Set(others.map((o) => o.kind));
+	if (
+		!kinds.has(conn.kind) &&
+		kinds.has(conn.kind === "cost" ? "revenue" : "cost")
+	)
+		captureForWorkspace(conn.workspaceId, "workspace_activated", {
+			provider: conn.provider,
+			kind: conn.kind,
+		});
 }
 
 // The days whose stored lines a fetch can delete: the sync range, cut to the
