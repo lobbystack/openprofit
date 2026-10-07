@@ -7,7 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Pencil, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useConfirm } from "#/components/app/confirm";
-import { CostsCharts, FlatCostItem } from "#/components/app/costs";
+import { CostsCharts, ExportCsv, FlatCostItem } from "#/components/app/costs";
 import { PageHeader } from "#/components/app/shell";
 import { PeriodSelect } from "#/components/dashboard/period-select";
 import { Button } from "#/components/ui/button";
@@ -85,6 +85,7 @@ function Costs() {
 					<Plus size={13} />
 					Add flat cost
 				</Button>
+				<ExportCsv />
 			</PageHeader>
 
 			<CostsCharts overview={overview} />

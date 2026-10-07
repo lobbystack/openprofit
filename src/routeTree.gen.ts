@@ -21,6 +21,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ApiExportDotcsvRouteImport } from './routes/api/export[.]csv'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppAlertsRouteImport } from './routes/app/alerts'
@@ -102,6 +103,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExportDotcsvRoute = ApiExportDotcsvRouteImport.update({
+  id: '/api/export.csv',
+  path: '/api/export.csv',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTelemetryRoute = ApiTelemetryRouteImport.update({
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/api/export.csv': typeof ApiExportDotcsvRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/api/export.csv': typeof ApiExportDotcsvRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/api/export.csv': typeof ApiExportDotcsvRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
@@ -336,6 +345,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/api/export.csv'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
@@ -369,6 +379,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/api/export.csv'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
@@ -405,6 +416,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/api/export.csv'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
@@ -442,6 +454,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  ApiExportDotcsvRoute: typeof ApiExportDotcsvRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CompareSlugRoute: typeof CompareSlugRoute
   IngestSplatRoute: typeof IngestSplatRoute
@@ -536,6 +549,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/export.csv': {
+      id: '/api/export.csv'
+      path: '/api/export.csv'
+      fullPath: '/api/export.csv'
+      preLoaderRoute: typeof ApiExportDotcsvRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/telemetry': {
@@ -760,6 +780,7 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  ApiExportDotcsvRoute: ApiExportDotcsvRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
   CompareSlugRoute: CompareSlugRoute,
   IngestSplatRoute: IngestSplatRoute,
