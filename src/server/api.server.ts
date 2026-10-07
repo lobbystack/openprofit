@@ -76,11 +76,21 @@ export const unauthorized = () =>
 		{ status: 401, headers: { "WWW-Authenticate": "Bearer" } },
 	);
 
-// Provider error messages sometimes quote what they were sent.
-export const redact = (message: string, secrets: Record<string, string>) =>
-	Object.values(secrets)
-		.filter((v) => v.length >= 4)
-		.reduce((m, v) => m.split(v).join("[redacted]"), message);
+// Provider error messages sometimes quote what they were sent, whole or
+// masked (Stripe: `rk_test_****abcd`). Keeps the provider's own message when
+// the body is JSON, then drops any 8 characters of a secret and any masked
+// run, so an agent reading the error learns nothing about the key.
+export function redact(message: string, secrets: Record<string, string>) {
+	const inner = message.match(/"message":\s*"((?:[^"\\]|\\.)*)"/)?.[1];
+	let m = inner ?? message;
+	for (const v of Object.values(secrets)) {
+		for (let i = 0; i + 8 <= v.length; i++) {
+			m = m.split(v.slice(i, i + 8)).join("[redacted]");
+		}
+		if (v.length >= 4) m = m.split(v).join("[redacted]");
+	}
+	return m.replace(/(\[redacted\])?\*{3,}\w*/g, "[redacted]");
+}
 
 export async function audit(
 	caller: { ws: { id: string }; token: { id: string } },
