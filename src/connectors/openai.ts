@@ -25,6 +25,33 @@ type CostsPage = {
 	next_page: string | null;
 };
 
+// Project names for the mapping page, archived projects included so older
+// costs keep their name.
+// https://platform.openai.com/docs/api-reference/projects/list
+// Names are only labels, so a failed lookup must not fail the cost sync.
+async function projectNames(c: Credentials) {
+	const names = new Map<string, string>();
+	let after = "";
+	try {
+		for (;;) {
+			const r = await getJson<{
+				data: { id: string; name: string }[];
+				has_more: boolean;
+				last_id: string;
+			}>(
+				`${BASE}/projects?limit=100&include_archived=true${after ? `&after=${after}` : ""}`,
+				{ headers: headers(c) },
+			);
+			for (const p of r.data) names.set(p.id, p.name);
+			if (!r.has_more) break;
+			after = r.last_id;
+		}
+	} catch {
+		// Keep whatever names arrived.
+	}
+	return names;
+}
+
 export const openai = register({
 	id: "openai",
 	name: "OpenAI",
@@ -52,6 +79,7 @@ export const openai = register({
 		return { label: r.data[0]?.name ?? "OpenAI" };
 	},
 	async fetchCosts(c, range: SyncRange) {
+		const names = await projectNames(c);
 		const out: CostLine[] = [];
 		// 31-day windows keep each request inside the documented bucket limits.
 		for (
@@ -77,6 +105,7 @@ export const openai = register({
 							amountCents: toCents(r.amount.value),
 							service: r.line_item ?? undefined,
 							subUnitId: project,
+							subUnitLabel: names.get(project),
 						});
 					}
 				}

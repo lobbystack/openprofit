@@ -32,6 +32,8 @@ export function money(
 		style: "currency",
 		currency: opts.currency ?? "USD",
 		maximumFractionDigits: opts.cents ? 2 : 0,
+		// A loss that rounds to zero reads $0, not -$0.
+		signDisplay: "negative",
 	}).format(n);
 }
 

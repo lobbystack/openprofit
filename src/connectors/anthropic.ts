@@ -27,6 +27,33 @@ const addDays = (d: string, n: number) =>
 		.toISOString()
 		.slice(0, 10);
 
+// Workspace names for the mapping page, archived workspaces included so older
+// costs keep their name. The Default workspace has no id in the cost report.
+// https://platform.claude.com/docs/en/api/beta/organization/workspaces/list
+// Names are only labels, so a failed lookup must not fail the cost sync.
+async function workspaceNames(c: Credentials) {
+	const names = new Map<string, string>();
+	let after = "";
+	try {
+		for (;;) {
+			const r = await getJson<{
+				data: { id: string; name: string }[];
+				has_more: boolean;
+				last_id: string | null;
+			}>(
+				`${BASE}/workspaces?limit=1000&include_archived=true${after ? `&after_id=${after}` : ""}`,
+				{ headers: headers(c) },
+			);
+			for (const w of r.data) names.set(w.id, w.name);
+			if (!r.has_more || !r.last_id) break;
+			after = r.last_id;
+		}
+	} catch {
+		// Keep whatever names arrived.
+	}
+	return names;
+}
+
 export const anthropic = register({
 	id: "anthropic",
 	name: "Anthropic",
@@ -51,6 +78,7 @@ export const anthropic = register({
 		return { label: me.name };
 	},
 	async fetchCosts(c, range: SyncRange) {
+		const names = await workspaceNames(c);
 		const out: CostLine[] = [];
 		// 31 buckets per request is the documented maximum.
 		for (let from = range.from; from <= range.to; from = addDays(from, 31)) {
@@ -73,6 +101,7 @@ export const anthropic = register({
 							amountCents: cents,
 							service: r.description ?? undefined,
 							subUnitId: ws,
+							subUnitLabel: names.get(ws),
 						});
 					}
 				}
