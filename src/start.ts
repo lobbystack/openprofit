@@ -33,7 +33,7 @@ const edge = createMiddleware({ type: "request" }).server(
 		const res = result.response;
 		const noStore =
 			handlerType === "serverFn" ||
-			/^\/(app|onboarding)(\/|$)/.test(url.pathname);
+			/^\/(app|onboarding|cli|connect|api|mcp)(\/|$)/.test(url.pathname);
 		// Start turns a redirect thrown by a server function into its RPC
 		// response after this middleware, so the redirect object must pass
 		// through as is; a copy reaches the browser as a bare 307.

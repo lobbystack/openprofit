@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { ApiTokens } from "#/components/app/api-tokens";
 import {
 	PageHeader,
 	SettingsRow,
@@ -250,6 +251,8 @@ function Settings() {
 					</>
 				)}
 			</SettingsSection>
+
+			<ApiTokens />
 
 			{(s.posthog || !s.cloud) && (
 				<SettingsSection title="Privacy">
