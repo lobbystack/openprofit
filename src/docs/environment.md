@@ -36,6 +36,16 @@ Without these, sign-in links print to the server log and only email sign-in is o
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | None | Adds sign-in with GitHub. Use `your_app_url/api/auth/callback/github` as the callback URL |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | None | Adds sign-in with Google. Use `your_app_url/api/auth/callback/google` as the redirect URI |
 
+## SMS alerts
+
+OpenProfit sends SMS alerts through Twilio. Until you set all three variables, the **SMS** channel doesn't show on the **Alerts** page. A self-hosted instance has no monthly SMS limit. The [alerts guide](/docs/alerts#text-alerts-by-sms) covers phone verification:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `TWILIO_ACCOUNT_SID` | None | Your Twilio account SID, starting with `AC` |
+| `TWILIO_AUTH_TOKEN` | None | The auth token for that account |
+| `TWILIO_FROM` | None | The sender: a Twilio number in E.164 format, such as `+14155550100`, or a Messaging Service SID starting with `MG` |
+
 ## Background jobs
 
 OpenProfit runs its scheduled jobs inside the server process:
