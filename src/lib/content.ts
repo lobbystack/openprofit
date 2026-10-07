@@ -1,5 +1,6 @@
 import "@tanstack/react-start/server-only";
 import { Marked } from "marked";
+import data from "../content/data.md?raw";
 
 // Headings get ids from their text, so links like
 // /docs/connectors#sales-tax-and-vat land on the section.
@@ -103,3 +104,6 @@ export const CHANGELOG = load(
 		eager: true,
 	}) as Record<string, string>,
 )[0];
+
+// The /data page: downloads, license and methods.
+export const DATA = parse("data", data);

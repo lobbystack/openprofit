@@ -25,6 +25,14 @@ OpenProfit uses an embedded Postgres database unless you give it a server:
 | --- | --- | --- |
 | `DATABASE_URL` | `./data/openprofit` | A `postgres://` connection string, or a directory path for the embedded database |
 
+## Reverse proxy
+
+Sign-in from the CLI and agent sign-up are rate-limited per IP address. Behind a reverse proxy (nginx, Caddy, Traefik, a load balancer), every request seems to come from the proxy unless you set this:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `TRUST_PROXY` | None | The number of proxies in front of the instance, usually `1`. OpenProfit then reads the client's address from `X-Forwarded-For`. Leave it unset when nothing sits in front, or clients can fake their address. Not needed on Railway |
+
 ## Email and sign-in
 
 Without these, sign-in links print to the server log and only email sign-in is offered:
@@ -36,6 +44,16 @@ Without these, sign-in links print to the server log and only email sign-in is o
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | None | Adds sign-in with GitHub. Use `your_app_url/api/auth/callback/github` as the callback URL |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | None | Adds sign-in with Google. Use `your_app_url/api/auth/callback/google` as the redirect URI |
 
+## SMS alerts
+
+OpenProfit sends SMS alerts through Twilio. Until you set all three variables, the **SMS** channel doesn't show on the **Alerts** page. A self-hosted instance has no monthly SMS limit. The [alerts guide](/docs/alerts#text-alerts-by-sms) covers phone verification:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `TWILIO_ACCOUNT_SID` | None | Your Twilio account SID, starting with `AC` |
+| `TWILIO_AUTH_TOKEN` | None | The auth token for that account |
+| `TWILIO_FROM` | None | The sender: a Twilio number in E.164 format, such as `+14155550100`, or a Messaging Service SID starting with `MG` |
+
 ## Background jobs
 
 OpenProfit runs its scheduled jobs inside the server process:
@@ -44,13 +62,21 @@ OpenProfit runs its scheduled jobs inside the server process:
 | --- | --- | --- |
 | `SYNC_SCHEDULER` | `on` | Set to `off` to stop the sync, weekly email and usage ping jobs, for example on a second instance that shares the database. The weekly email job runs hourly and sends to each workspace at the day and hour picked in **Settings**, in that workspace’s time zone |
 
+## Public demo
+
+The demo at `/demo` shows the dashboard with sample numbers. Anyone can open it without signing in, and nobody can change it:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `DEMO` | `off`, or `on` with `APP_MODE=cloud` | Set to `on` to serve the demo. The instance keeps one demo workspace with no members and rebuilds it every hour, so its twelve months end in the current month. While it's off, `/demo` redirects to `https://openprofit.dev/demo` |
+
 ## Hosted mode
 
 These variables apply only to the hosted version at openprofit.dev. A self-hosted instance leaves them unset:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `APP_MODE` | `selfhost` | `cloud` turns on plans, billing and the sync cadence limits |
+| `APP_MODE` | `selfhost` | `cloud` turns on plans, billing, the sync cadence limits and the benchmarks at `/data` |
 | `POLAR_ACCESS_TOKEN` | None | Polar organization token used to create checkouts and open the billing portal |
 | `POLAR_PRODUCT_INDIE`, `POLAR_PRODUCT_PRO` | None | Polar product ids for the two paid plans |
 | `POLAR_WEBHOOK_SECRET` | None | Secret that verifies subscription events sent to `/api/polar/webhook` |

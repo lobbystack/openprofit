@@ -32,7 +32,15 @@ export const Route = createFileRoute("/sitemap.xml")({
 						eq(schema.workspaces.id, schema.products.workspaceId),
 					)
 					.where(ne(schema.products.publicPage, "off"));
-				const paths = [...STATIC, ...pub.map((r) => `/p/${r.ws}/${r.p}`)];
+				const cloud = process.env.APP_MODE === "cloud";
+				const paths = [
+					...STATIC,
+					// The leaderboard and the benchmarks exist on the hosted
+					// instance only; the demo there or with DEMO=on.
+					...(cloud ? ["/open", "/data"] : []),
+					...(cloud || process.env.DEMO === "on" ? ["/demo"] : []),
+					...pub.map((r) => `/p/${r.ws}/${r.p}`),
+				];
 				return new Response(
 					`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${SITE_URL}${p}</loc></url>`).join("\n")}\n</urlset>\n`,
 					{

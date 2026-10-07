@@ -12,15 +12,23 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as ChangelogRouteImport } from './routes/changelog'
+import { Route as CliRouteImport } from './routes/cli'
 import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as OpenRouteImport } from './routes/open'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as DotwellKnownSplatRouteImport } from './routes/[.]well-known/$'
+import { Route as ApiConnectionsRouteImport } from './routes/api/connections'
+import { Route as ApiExportDotcsvRouteImport } from './routes/api/export[.]csv'
+import { Route as ApiProvidersRouteImport } from './routes/api/providers'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppAlertsRouteImport } from './routes/app/alerts'
@@ -28,17 +36,33 @@ import { Route as AppCostsRouteImport } from './routes/app/costs'
 import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as CompareSlugRouteImport } from './routes/compare.$slug'
+import { Route as ConnectTokenRouteImport } from './routes/connect.$token'
+import { Route as DataIndexRouteImport } from './routes/data.index'
+import { Route as DataFileRouteImport } from './routes/data.$file'
+import { Route as DemoIndexRouteImport } from './routes/demo/index'
+import { Route as DemoConnectionsRouteImport } from './routes/demo/connections'
+import { Route as DemoCostsRouteImport } from './routes/demo/costs'
+import { Route as DemoProductsRouteImport } from './routes/demo/products'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IngestSplatRouteImport } from './routes/ingest.$'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
 import { Route as IntegrationsSlugRouteImport } from './routes/integrations.$slug'
+import { Route as OauthAuthorizeRouteImport } from './routes/oauth/authorize'
+import { Route as OauthConsentRouteImport } from './routes/oauth/consent'
+import { Route as OauthRegisterRouteImport } from './routes/oauth/register'
+import { Route as OauthRevokeRouteImport } from './routes/oauth/revoke'
+import { Route as OauthTokenRouteImport } from './routes/oauth/token'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiCliLoginRouteImport } from './routes/api/cli/login'
 import { Route as ApiPolarWebhookRouteImport } from './routes/api/polar/webhook'
 import { Route as AppConnectProviderRouteImport } from './routes/app/connect.$provider'
 import { Route as AppConnectionsIndexRouteImport } from './routes/app/connections.index'
 import { Route as AppConnectionsIdRouteImport } from './routes/app/connections.$id'
 import { Route as PWorkspaceProductRouteImport } from './routes/p.$workspace.$product'
+import { Route as ApiCliLoginPollRouteImport } from './routes/api/cli/login/poll'
+import { Route as PWorkspaceProductBadgeDotsvgRouteImport } from './routes/p.$workspace.$product_.badge[.]svg'
+import { Route as PWorkspaceProductOgDotpngRouteImport } from './routes/p.$workspace.$product_.og[.]png'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -55,9 +79,19 @@ const ChangelogRoute = ChangelogRouteImport.update({
   path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CliRoute = CliRouteImport.update({
+  id: '/cli',
+  path: '/cli',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CookiesRoute = CookiesRouteImport.update({
   id: '/cookies',
   path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -70,9 +104,19 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpenRoute = OpenRouteImport.update({
+  id: '/open',
+  path: '/open',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -98,6 +142,26 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DotwellKnownSplatRoute = DotwellKnownSplatRouteImport.update({
+  id: '/.well-known/$',
+  path: '/.well-known/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiConnectionsRoute = ApiConnectionsRouteImport.update({
+  id: '/api/connections',
+  path: '/api/connections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExportDotcsvRoute = ApiExportDotcsvRouteImport.update({
+  id: '/api/export.csv',
+  path: '/api/export.csv',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProvidersRoute = ApiProvidersRouteImport.update({
+  id: '/api/providers',
+  path: '/api/providers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTelemetryRoute = ApiTelemetryRouteImport.update({
@@ -135,6 +199,41 @@ const CompareSlugRoute = CompareSlugRouteImport.update({
   path: '/compare/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConnectTokenRoute = ConnectTokenRouteImport.update({
+  id: '/connect/$token',
+  path: '/connect/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataIndexRoute = DataIndexRouteImport.update({
+  id: '/data/',
+  path: '/data/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataFileRoute = DataFileRouteImport.update({
+  id: '/data/$file',
+  path: '/data/$file',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoIndexRoute = DemoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoConnectionsRoute = DemoConnectionsRouteImport.update({
+  id: '/connections',
+  path: '/connections',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoCostsRoute = DemoCostsRouteImport.update({
+  id: '/costs',
+  path: '/costs',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoProductsRoute = DemoProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => DemoRoute,
+} as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -160,9 +259,39 @@ const IntegrationsSlugRoute = IntegrationsSlugRouteImport.update({
   path: '/integrations/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OauthAuthorizeRoute = OauthAuthorizeRouteImport.update({
+  id: '/oauth/authorize',
+  path: '/oauth/authorize',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthConsentRoute = OauthConsentRouteImport.update({
+  id: '/oauth/consent',
+  path: '/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthRegisterRoute = OauthRegisterRouteImport.update({
+  id: '/oauth/register',
+  path: '/oauth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthRevokeRoute = OauthRevokeRouteImport.update({
+  id: '/oauth/revoke',
+  path: '/oauth/revoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthTokenRoute = OauthTokenRouteImport.update({
+  id: '/oauth/token',
+  path: '/oauth/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCliLoginRoute = ApiCliLoginRouteImport.update({
+  id: '/api/cli/login',
+  path: '/api/cli/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPolarWebhookRoute = ApiPolarWebhookRouteImport.update({
@@ -190,101 +319,189 @@ const PWorkspaceProductRoute = PWorkspaceProductRouteImport.update({
   path: '/p/$workspace/$product',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCliLoginPollRoute = ApiCliLoginPollRouteImport.update({
+  id: '/poll',
+  path: '/poll',
+  getParentRoute: () => ApiCliLoginRoute,
+} as any)
+const PWorkspaceProductBadgeDotsvgRoute =
+  PWorkspaceProductBadgeDotsvgRouteImport.update({
+    id: '/p/$workspace/$product_/badge.svg',
+    path: '/p/$workspace/$product/badge.svg',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const PWorkspaceProductOgDotpngRoute =
+  PWorkspaceProductOgDotpngRouteImport.update({
+    id: '/p/$workspace/$product_/og.png',
+    path: '/p/$workspace/$product/og.png',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/changelog': typeof ChangelogRoute
+  '/cli': typeof CliRoute
   '/cookies': typeof CookiesRoute
+  '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
+  '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/$': typeof DotwellKnownSplatRoute
+  '/api/connections': typeof ApiConnectionsRoute
+  '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/connect/$token': typeof ConnectTokenRoute
+  '/data/$file': typeof DataFileRoute
+  '/demo/connections': typeof DemoConnectionsRoute
+  '/demo/costs': typeof DemoCostsRoute
+  '/demo/products': typeof DemoProductsRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
+  '/oauth/authorize': typeof OauthAuthorizeRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/oauth/register': typeof OauthRegisterRoute
+  '/oauth/revoke': typeof OauthRevokeRoute
+  '/oauth/token': typeof OauthTokenRoute
   '/app/': typeof AppIndexRoute
+  '/data/': typeof DataIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cli/login': typeof ApiCliLoginRouteWithChildren
   '/api/polar/webhook': typeof ApiPolarWebhookRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
   '/app/connections/': typeof AppConnectionsIndexRoute
+  '/api/cli/login/poll': typeof ApiCliLoginPollRoute
+  '/p/$workspace/$product/badge.svg': typeof PWorkspaceProductBadgeDotsvgRoute
+  '/p/$workspace/$product/og.png': typeof PWorkspaceProductOgDotpngRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
+  '/cli': typeof CliRoute
   '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
+  '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/$': typeof DotwellKnownSplatRoute
+  '/api/connections': typeof ApiConnectionsRoute
+  '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/connect/$token': typeof ConnectTokenRoute
+  '/data/$file': typeof DataFileRoute
+  '/demo/connections': typeof DemoConnectionsRoute
+  '/demo/costs': typeof DemoCostsRoute
+  '/demo/products': typeof DemoProductsRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
+  '/oauth/authorize': typeof OauthAuthorizeRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/oauth/register': typeof OauthRegisterRoute
+  '/oauth/revoke': typeof OauthRevokeRoute
+  '/oauth/token': typeof OauthTokenRoute
   '/app': typeof AppIndexRoute
+  '/data': typeof DataIndexRoute
+  '/demo': typeof DemoIndexRoute
   '/docs': typeof DocsIndexRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cli/login': typeof ApiCliLoginRouteWithChildren
   '/api/polar/webhook': typeof ApiPolarWebhookRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
   '/app/connections': typeof AppConnectionsIndexRoute
+  '/api/cli/login/poll': typeof ApiCliLoginPollRoute
+  '/p/$workspace/$product/badge.svg': typeof PWorkspaceProductBadgeDotsvgRoute
+  '/p/$workspace/$product/og.png': typeof PWorkspaceProductOgDotpngRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/changelog': typeof ChangelogRoute
+  '/cli': typeof CliRoute
   '/cookies': typeof CookiesRoute
+  '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
+  '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/$': typeof DotwellKnownSplatRoute
+  '/api/connections': typeof ApiConnectionsRoute
+  '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/connect/$token': typeof ConnectTokenRoute
+  '/data/$file': typeof DataFileRoute
+  '/demo/connections': typeof DemoConnectionsRoute
+  '/demo/costs': typeof DemoCostsRoute
+  '/demo/products': typeof DemoProductsRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
+  '/oauth/authorize': typeof OauthAuthorizeRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/oauth/register': typeof OauthRegisterRoute
+  '/oauth/revoke': typeof OauthRevokeRoute
+  '/oauth/token': typeof OauthTokenRoute
   '/app/': typeof AppIndexRoute
+  '/data/': typeof DataIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cli/login': typeof ApiCliLoginRouteWithChildren
   '/api/polar/webhook': typeof ApiPolarWebhookRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
   '/app/connections/': typeof AppConnectionsIndexRoute
+  '/api/cli/login/poll': typeof ApiCliLoginPollRoute
+  '/p/$workspace/$product_/badge.svg': typeof PWorkspaceProductBadgeDotsvgRoute
+  '/p/$workspace/$product_/og.png': typeof PWorkspaceProductOgDotpngRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -292,118 +509,208 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/changelog'
+    | '/cli'
     | '/cookies'
+    | '/demo'
     | '/docs'
     | '/login'
+    | '/mcp'
     | '/onboarding'
+    | '/open'
     | '/privacy'
     | '/robots.txt'
     | '/security'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/$'
+    | '/api/connections'
+    | '/api/export.csv'
+    | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/connect/$token'
+    | '/data/$file'
+    | '/demo/connections'
+    | '/demo/costs'
+    | '/demo/products'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
+    | '/oauth/authorize'
+    | '/oauth/consent'
+    | '/oauth/register'
+    | '/oauth/revoke'
+    | '/oauth/token'
     | '/app/'
+    | '/data/'
+    | '/demo/'
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
+    | '/api/cli/login'
     | '/api/polar/webhook'
     | '/app/connect/$provider'
     | '/app/connections/$id'
     | '/p/$workspace/$product'
     | '/app/connections/'
+    | '/api/cli/login/poll'
+    | '/p/$workspace/$product/badge.svg'
+    | '/p/$workspace/$product/og.png'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/changelog'
+    | '/cli'
     | '/cookies'
     | '/login'
+    | '/mcp'
     | '/onboarding'
+    | '/open'
     | '/privacy'
     | '/robots.txt'
     | '/security'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/$'
+    | '/api/connections'
+    | '/api/export.csv'
+    | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/connect/$token'
+    | '/data/$file'
+    | '/demo/connections'
+    | '/demo/costs'
+    | '/demo/products'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
+    | '/oauth/authorize'
+    | '/oauth/consent'
+    | '/oauth/register'
+    | '/oauth/revoke'
+    | '/oauth/token'
     | '/app'
+    | '/data'
+    | '/demo'
     | '/docs'
     | '/integrations'
     | '/api/auth/$'
+    | '/api/cli/login'
     | '/api/polar/webhook'
     | '/app/connect/$provider'
     | '/app/connections/$id'
     | '/p/$workspace/$product'
     | '/app/connections'
+    | '/api/cli/login/poll'
+    | '/p/$workspace/$product/badge.svg'
+    | '/p/$workspace/$product/og.png'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/changelog'
+    | '/cli'
     | '/cookies'
+    | '/demo'
     | '/docs'
     | '/login'
+    | '/mcp'
     | '/onboarding'
+    | '/open'
     | '/privacy'
     | '/robots.txt'
     | '/security'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/$'
+    | '/api/connections'
+    | '/api/export.csv'
+    | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/connect/$token'
+    | '/data/$file'
+    | '/demo/connections'
+    | '/demo/costs'
+    | '/demo/products'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
+    | '/oauth/authorize'
+    | '/oauth/consent'
+    | '/oauth/register'
+    | '/oauth/revoke'
+    | '/oauth/token'
     | '/app/'
+    | '/data/'
+    | '/demo/'
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
+    | '/api/cli/login'
     | '/api/polar/webhook'
     | '/app/connect/$provider'
     | '/app/connections/$id'
     | '/p/$workspace/$product'
     | '/app/connections/'
+    | '/api/cli/login/poll'
+    | '/p/$workspace/$product_/badge.svg'
+    | '/p/$workspace/$product_/og.png'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   ChangelogRoute: typeof ChangelogRoute
+  CliRoute: typeof CliRoute
   CookiesRoute: typeof CookiesRoute
+  DemoRoute: typeof DemoRouteWithChildren
   DocsRoute: typeof DocsRouteWithChildren
   LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
   OnboardingRoute: typeof OnboardingRoute
+  OpenRoute: typeof OpenRoute
   PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
+  ApiConnectionsRoute: typeof ApiConnectionsRoute
+  ApiExportDotcsvRoute: typeof ApiExportDotcsvRoute
+  ApiProvidersRoute: typeof ApiProvidersRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CompareSlugRoute: typeof CompareSlugRoute
+  ConnectTokenRoute: typeof ConnectTokenRoute
+  DataFileRoute: typeof DataFileRoute
   IngestSplatRoute: typeof IngestSplatRoute
   IntegrationsSlugRoute: typeof IntegrationsSlugRoute
+  OauthAuthorizeRoute: typeof OauthAuthorizeRoute
+  OauthConsentRoute: typeof OauthConsentRoute
+  OauthRegisterRoute: typeof OauthRegisterRoute
+  OauthRevokeRoute: typeof OauthRevokeRoute
+  OauthTokenRoute: typeof OauthTokenRoute
+  DataIndexRoute: typeof DataIndexRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCliLoginRoute: typeof ApiCliLoginRouteWithChildren
   ApiPolarWebhookRoute: typeof ApiPolarWebhookRoute
   PWorkspaceProductRoute: typeof PWorkspaceProductRoute
+  PWorkspaceProductBadgeDotsvgRoute: typeof PWorkspaceProductBadgeDotsvgRoute
+  PWorkspaceProductOgDotpngRoute: typeof PWorkspaceProductOgDotpngRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -429,11 +736,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cli': {
+      id: '/cli'
+      path: '/cli'
+      fullPath: '/cli'
+      preLoaderRoute: typeof CliRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cookies': {
       id: '/cookies'
       path: '/cookies'
       fullPath: '/cookies'
       preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -450,11 +771,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/open': {
+      id: '/open'
+      path: '/open'
+      fullPath: '/open'
+      preLoaderRoute: typeof OpenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -490,6 +825,34 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/$': {
+      id: '/.well-known/$'
+      path: '/.well-known/$'
+      fullPath: '/.well-known/$'
+      preLoaderRoute: typeof DotwellKnownSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/connections': {
+      id: '/api/connections'
+      path: '/api/connections'
+      fullPath: '/api/connections'
+      preLoaderRoute: typeof ApiConnectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/export.csv': {
+      id: '/api/export.csv'
+      path: '/api/export.csv'
+      fullPath: '/api/export.csv'
+      preLoaderRoute: typeof ApiExportDotcsvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/providers': {
+      id: '/api/providers'
+      path: '/api/providers'
+      fullPath: '/api/providers'
+      preLoaderRoute: typeof ApiProvidersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/telemetry': {
@@ -541,6 +904,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompareSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/connect/$token': {
+      id: '/connect/$token'
+      path: '/connect/$token'
+      fullPath: '/connect/$token'
+      preLoaderRoute: typeof ConnectTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data/': {
+      id: '/data/'
+      path: '/data'
+      fullPath: '/data/'
+      preLoaderRoute: typeof DataIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data/$file': {
+      id: '/data/$file'
+      path: '/data/$file'
+      fullPath: '/data/$file'
+      preLoaderRoute: typeof DataFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/': {
+      id: '/demo/'
+      path: '/'
+      fullPath: '/demo/'
+      preLoaderRoute: typeof DemoIndexRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/connections': {
+      id: '/demo/connections'
+      path: '/connections'
+      fullPath: '/demo/connections'
+      preLoaderRoute: typeof DemoConnectionsRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/costs': {
+      id: '/demo/costs'
+      path: '/costs'
+      fullPath: '/demo/costs'
+      preLoaderRoute: typeof DemoCostsRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/products': {
+      id: '/demo/products'
+      path: '/products'
+      fullPath: '/demo/products'
+      preLoaderRoute: typeof DemoProductsRouteImport
+      parentRoute: typeof DemoRoute
+    }
     '/docs/': {
       id: '/docs/'
       path: '/'
@@ -576,11 +988,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntegrationsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oauth/authorize': {
+      id: '/oauth/authorize'
+      path: '/oauth/authorize'
+      fullPath: '/oauth/authorize'
+      preLoaderRoute: typeof OauthAuthorizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/consent': {
+      id: '/oauth/consent'
+      path: '/oauth/consent'
+      fullPath: '/oauth/consent'
+      preLoaderRoute: typeof OauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/register': {
+      id: '/oauth/register'
+      path: '/oauth/register'
+      fullPath: '/oauth/register'
+      preLoaderRoute: typeof OauthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/revoke': {
+      id: '/oauth/revoke'
+      path: '/oauth/revoke'
+      fullPath: '/oauth/revoke'
+      preLoaderRoute: typeof OauthRevokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/token': {
+      id: '/oauth/token'
+      path: '/oauth/token'
+      fullPath: '/oauth/token'
+      preLoaderRoute: typeof OauthTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cli/login': {
+      id: '/api/cli/login'
+      path: '/api/cli/login'
+      fullPath: '/api/cli/login'
+      preLoaderRoute: typeof ApiCliLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/polar/webhook': {
@@ -618,6 +1072,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PWorkspaceProductRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cli/login/poll': {
+      id: '/api/cli/login/poll'
+      path: '/poll'
+      fullPath: '/api/cli/login/poll'
+      preLoaderRoute: typeof ApiCliLoginPollRouteImport
+      parentRoute: typeof ApiCliLoginRoute
+    }
+    '/p/$workspace/$product_/badge.svg': {
+      id: '/p/$workspace/$product_/badge.svg'
+      path: '/p/$workspace/$product/badge.svg'
+      fullPath: '/p/$workspace/$product/badge.svg'
+      preLoaderRoute: typeof PWorkspaceProductBadgeDotsvgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$workspace/$product_/og.png': {
+      id: '/p/$workspace/$product_/og.png'
+      path: '/p/$workspace/$product/og.png'
+      fullPath: '/p/$workspace/$product/og.png'
+      preLoaderRoute: typeof PWorkspaceProductOgDotpngRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -645,6 +1120,22 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface DemoRouteChildren {
+  DemoConnectionsRoute: typeof DemoConnectionsRoute
+  DemoCostsRoute: typeof DemoCostsRoute
+  DemoProductsRoute: typeof DemoProductsRoute
+  DemoIndexRoute: typeof DemoIndexRoute
+}
+
+const DemoRouteChildren: DemoRouteChildren = {
+  DemoConnectionsRoute: DemoConnectionsRoute,
+  DemoCostsRoute: DemoCostsRoute,
+  DemoProductsRoute: DemoProductsRoute,
+  DemoIndexRoute: DemoIndexRoute,
+}
+
+const DemoRouteWithChildren = DemoRoute._addFileChildren(DemoRouteChildren)
+
 interface DocsRouteChildren {
   DocsSlugRoute: typeof DocsSlugRoute
   DocsIndexRoute: typeof DocsIndexRoute
@@ -657,27 +1148,58 @@ const DocsRouteChildren: DocsRouteChildren = {
 
 const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
 
+interface ApiCliLoginRouteChildren {
+  ApiCliLoginPollRoute: typeof ApiCliLoginPollRoute
+}
+
+const ApiCliLoginRouteChildren: ApiCliLoginRouteChildren = {
+  ApiCliLoginPollRoute: ApiCliLoginPollRoute,
+}
+
+const ApiCliLoginRouteWithChildren = ApiCliLoginRoute._addFileChildren(
+  ApiCliLoginRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   ChangelogRoute: ChangelogRoute,
+  CliRoute: CliRoute,
   CookiesRoute: CookiesRoute,
+  DemoRoute: DemoRouteWithChildren,
   DocsRoute: DocsRouteWithChildren,
   LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
   OnboardingRoute: OnboardingRoute,
+  OpenRoute: OpenRoute,
   PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  DotwellKnownSplatRoute: DotwellKnownSplatRoute,
+  ApiConnectionsRoute: ApiConnectionsRoute,
+  ApiExportDotcsvRoute: ApiExportDotcsvRoute,
+  ApiProvidersRoute: ApiProvidersRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
   CompareSlugRoute: CompareSlugRoute,
+  ConnectTokenRoute: ConnectTokenRoute,
+  DataFileRoute: DataFileRoute,
   IngestSplatRoute: IngestSplatRoute,
   IntegrationsSlugRoute: IntegrationsSlugRoute,
+  OauthAuthorizeRoute: OauthAuthorizeRoute,
+  OauthConsentRoute: OauthConsentRoute,
+  OauthRegisterRoute: OauthRegisterRoute,
+  OauthRevokeRoute: OauthRevokeRoute,
+  OauthTokenRoute: OauthTokenRoute,
+  DataIndexRoute: DataIndexRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCliLoginRoute: ApiCliLoginRouteWithChildren,
   ApiPolarWebhookRoute: ApiPolarWebhookRoute,
   PWorkspaceProductRoute: PWorkspaceProductRoute,
+  PWorkspaceProductBadgeDotsvgRoute: PWorkspaceProductBadgeDotsvgRoute,
+  PWorkspaceProductOgDotpngRoute: PWorkspaceProductOgDotpngRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

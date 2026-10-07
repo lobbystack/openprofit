@@ -4,6 +4,7 @@ import { RULE_NAMES } from "#/lib/alerts";
 import { describeError } from "#/lib/errors";
 import { money as formatMoney } from "#/lib/format";
 import { providerName } from "#/lib/providers";
+import { sendToChannels } from "./channels.server";
 import { sendEmail } from "./email.server";
 import type { Workspace } from "./workspace.server";
 
@@ -19,8 +20,8 @@ type Finding = {
 };
 
 // Evaluates every enabled rule for a workspace. Opens alerts for new
-// findings, emails the members once per new alert, and resolves the alerts
-// whose condition cleared.
+// findings, emails the members and posts to the workspace's channels once
+// per new alert, and resolves the alerts whose condition cleared.
 export async function evaluateAlerts(workspaceId: string) {
 	const [rules, ws] = await Promise.all([
 		db.query.alertRules.findMany({
@@ -61,7 +62,7 @@ export async function evaluateAlerts(workspaceId: string) {
 	const head = (title: string) => title.split(" ")[0].toLowerCase();
 	const quiet = new Set(legacy.map((a) => `${a.ruleId}:${head(a.title)}`));
 	const now = Date.now();
-	const opened: Finding[] = [];
+	const opened: (Finding & { id: string })[] = [];
 
 	for (const f of findings) {
 		const existing = openByKey.get(f.key);
@@ -91,7 +92,7 @@ export async function evaluateAlerts(workspaceId: string) {
 			.onConflictDoNothing()
 			.returning({ id: schema.alerts.id });
 		if (inserted.length && !quiet.has(`${f.ruleId}:${head(f.title)}`))
-			opened.push(f);
+			opened.push({ ...f, id: inserted[0].id });
 	}
 	// Whatever is still open and not found again has cleared.
 	for (const stale of [...openByKey.values(), ...legacy]) {
@@ -100,10 +101,30 @@ export async function evaluateAlerts(workspaceId: string) {
 			.set({ resolvedAt: now })
 			.where(eq(schema.alerts.id, stale.id));
 	}
-	if (opened.length)
-		await emailAlerts(ws, rules, opened).catch((err) =>
-			console.error(`[alerts] email for workspace ${workspaceId} failed:`, err),
-		);
+	if (opened.length) {
+		const kinds = new Map(rules.map((r) => [r.id, r.kind]));
+		await Promise.all([
+			emailAlerts(ws, rules, opened).catch((err) =>
+				console.error(
+					`[alerts] email for workspace ${workspaceId} failed:`,
+					err,
+				),
+			),
+			sendToChannels(
+				ws,
+				opened.map((f) => ({
+					...f,
+					kind: kinds.get(f.ruleId) ?? "",
+					openedAt: now,
+				})),
+			).catch((err) =>
+				console.error(
+					`[alerts] channels for workspace ${workspaceId} failed:`,
+					err,
+				),
+			),
+		]);
+	}
 	return findings.length;
 }
 

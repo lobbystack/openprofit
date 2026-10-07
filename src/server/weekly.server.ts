@@ -2,6 +2,7 @@ import { and, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
 import { authSchema, db, schema } from "#/db";
 import { money } from "#/lib/format";
 import { providerName } from "#/lib/providers";
+import { agentChanges } from "./api.server";
 import { sendEmail } from "./email.server";
 
 const day = (offset: number) =>
@@ -80,6 +81,9 @@ export async function weeklySummary(workspaceId: string) {
 			`Biggest change: ${name}, ${mover.delta > 0 ? "up" : "down"} ${Math.abs(Math.round(mover.pct))}% (${fmt(Math.abs(mover.delta), cur)}).`,
 		);
 	}
+	const changes = await agentChanges(ws.id, Date.now() - 7 * 86_400_000);
+	if (changes.length)
+		lines.push("", "Changed by agents and the CLI:", ...changes);
 	const url = process.env.APP_URL ?? "";
 	lines.push(
 		"",

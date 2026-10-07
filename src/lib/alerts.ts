@@ -14,3 +14,6 @@ export function ruleScope(kind: RuleKind, threshold: number | null) {
 		return `Any product under ${Math.round((threshold ?? 0.6) * 100)}% margin over the last 7 days`;
 	return "Any connection whose sync fails";
 }
+
+// Hosted plans with SMS (Indie, Pro) send at most this many a month.
+export const SMS_CAP = 30;

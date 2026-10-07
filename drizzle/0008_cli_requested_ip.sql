@@ -1,0 +1,1 @@
+ALTER TABLE "cli_logins" ADD COLUMN "requested_ip" text;

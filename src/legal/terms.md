@@ -50,7 +50,7 @@ If a payment fails, Polar will retry. If it keeps failing we may move your works
 
 ## 6. Your data
 
-You own the data you connect and the data we read from providers on your behalf. You grant us a license to store, process, display and transmit it as needed to run the Service, including to the subprocessors listed in the Privacy Policy, and to produce the aggregate, non-identifying statistics described there.
+You own the data you connect and the data we read from providers on your behalf. You grant us a license to store, process, display and transmit it as needed to run the Service, including to the subprocessors listed in the Privacy Policy, and to produce and publish the aggregate, non-identifying statistics described there, including the benchmarks.
 
 Public pages show only what you choose on the Products page. You are responsible for what you make public.
 

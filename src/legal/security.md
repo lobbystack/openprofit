@@ -10,12 +10,19 @@ When you press **Test**, OpenProfit calls the provider once to check the key wor
 - **Decrypted only to sync.** The server decrypts a key when it syncs that connection. It never sends a key back to your browser, and the connection page doesn't show it after you save.
 - **Used only to read.** Every request OpenProfit sends a provider reads billing or usage data. OpenProfit never creates, changes, refunds or deletes anything at a provider.
 - **Deleted with the connection.** Removing a connection deletes its key and every line it synced. Revoke the key at the provider as well.
+- **Kept out of AI chats.** An agent connecting a provider for you never sees the key. Either you type it on a one-time OpenProfit page, or the `openprofit` CLI reads it from your env file and sends it straight to OpenProfit. See [Agents and MCP](/docs/agents).
 
 ## What OpenProfit stores
 
 For each line a provider reports, OpenProfit keeps the date, the amount and currency, fees, refunds and tax, the provider's id for the line, and the project or workspace it belongs to. From revenue sources it also keeps daily MRR and subscription counts.
 
 It doesn't store your customers' names, emails or card details.
+
+For agents and alerts it also keeps:
+
+- API tokens, OAuth grants and CLI sign-ins as SHA-256 hashes, never the tokens themselves. A token stops working when you revoke it in **Settings** or when the person who created it leaves the workspace.
+- A log of changes made through MCP or the CLI, for 90 days. The weekly email lists them.
+- Slack and webhook addresses, encrypted like keys, and the phone number you verify for SMS alerts.
 
 ## The key each provider needs
 

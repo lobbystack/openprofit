@@ -1,26 +1,26 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowUpRight, Plus, X } from "lucide-react";
+import { ArrowUpRight, Code, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useConfirm } from "#/components/app/confirm";
+import { ProductsTable } from "#/components/app/products-table";
 import { PageHeader } from "#/components/app/shell";
-import { AreaChart } from "#/components/dashboard/area-chart";
+import { BadgeEmbed } from "#/components/badge-embed";
 import { Button, buttonVariants } from "#/components/ui/button";
-import { Card } from "#/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import {
 	NativeSelect,
 	NativeSelectOption,
 } from "#/components/ui/native-select";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "#/components/ui/table";
-import { money } from "#/lib/format";
+import { TableCell, TableRow } from "#/components/ui/table";
 import { getOverview } from "#/server/overview.functions";
 import { createProduct, deleteProduct } from "#/server/products.functions";
 import { setPublicPage } from "#/server/public.functions";
@@ -40,9 +40,7 @@ function Products() {
 	const setPage = useServerFn(setPublicPage);
 	const [adding, setAdding] = useState(false);
 	const [name, setName] = useState("");
-	const fmt = (n: number) => money(n, { currency: data.currency });
 	const products = data.byProduct.filter((p) => p.id !== "shared");
-	const shared = data.byProduct.find((p) => p.id === "shared");
 
 	async function add(e: React.FormEvent) {
 		e.preventDefault();
@@ -74,154 +72,117 @@ function Products() {
 					Add product
 				</Button>
 			</PageHeader>
-			<Card className="mt-4 overflow-hidden">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Product</TableHead>
-							<TableHead className="text-right">Revenue</TableHead>
-							<TableHead className="text-right">Costs</TableHead>
-							<TableHead className="text-right">Profit</TableHead>
-							<TableHead className="text-right">Margin</TableHead>
-							<TableHead className="w-40" />
-							<TableHead className="w-36">Public</TableHead>
-							<TableHead className="w-10 px-2" />
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{[...products, ...(shared ? [shared] : [])].map((p) => {
-							const profit = p.revenue - p.costs;
-							const isShared = p.id === "shared";
-							return (
-								<TableRow
-									key={p.id}
-									className={isShared ? "text-text-2" : undefined}
+			<ProductsTable
+				data={data}
+				publicPage={(p) => (
+					<span className="flex items-center gap-1">
+						<NativeSelect
+							size="xs"
+							className="w-auto"
+							value={p.publicPage}
+							onChange={async (e) => {
+								await setPage({
+									data: {
+										id: p.id,
+										mode: e.target.value as
+											| "off"
+											| "full"
+											| "revenue"
+											| "percent",
+									},
+								});
+								router.invalidate();
+							}}
+						>
+							<NativeSelectOption value="off">Off</NativeSelectOption>
+							<NativeSelectOption value="full">Full</NativeSelectOption>
+							<NativeSelectOption value="revenue">Revenue</NativeSelectOption>
+							<NativeSelectOption value="percent">
+								Growth and margin
+							</NativeSelectOption>
+						</NativeSelect>
+						{p.publicPage !== "off" && (
+							<>
+								<a
+									href={`/p/${data.workspaceSlug}/${p.slug}`}
+									target="_blank"
+									rel="noreferrer"
+									title="Open page"
+									className={buttonVariants({
+										variant: "quiet",
+										size: "icon-sm",
+									})}
 								>
-									<TableCell className="h-12">{p.name}</TableCell>
-									<TableCell className="num text-right">
-										{fmt(p.revenue)}
-									</TableCell>
-									<TableCell className="num text-right text-negative">
-										{fmt(p.costs)}
-									</TableCell>
-									<TableCell className="num text-right">
-										{fmt(profit)}
-									</TableCell>
-									<TableCell className="num text-right text-text-2">
-										{p.revenue
-											? `${Math.round((profit / p.revenue) * 100)}%`
-											: ""}
-									</TableCell>
-									<TableCell className="py-2">
-										{p.profit.some((v) => v !== 0) && (
-											<AreaChart
-												data={p.profit}
-												height={28}
-												tone="positive"
-												compact
-											/>
-										)}
-									</TableCell>
-									<TableCell>
-										{!isShared && (
-											<span className="flex items-center gap-1">
-												<NativeSelect
-													size="xs"
-													className="w-auto"
-													value={p.publicPage}
-													onChange={async (e) => {
-														await setPage({
-															data: {
-																id: p.id,
-																mode: e.target.value as
-																	| "off"
-																	| "full"
-																	| "revenue"
-																	| "percent",
-															},
-														});
-														router.invalidate();
-													}}
-												>
-													<NativeSelectOption value="off">
-														Off
-													</NativeSelectOption>
-													<NativeSelectOption value="full">
-														Full
-													</NativeSelectOption>
-													<NativeSelectOption value="revenue">
-														Revenue
-													</NativeSelectOption>
-													<NativeSelectOption value="percent">
-														Growth and margin
-													</NativeSelectOption>
-												</NativeSelect>
-												{p.publicPage !== "off" && (
-													<a
-														href={`/p/${data.workspaceSlug}/${p.slug}`}
-														target="_blank"
-														rel="noreferrer"
-														title="Open page"
-														className={buttonVariants({
-															variant: "quiet",
-															size: "icon-sm",
-														})}
-													>
-														<ArrowUpRight size={13} />
-													</a>
-												)}
-											</span>
-										)}
-									</TableCell>
-									<TableCell className="px-2">
-										{!isShared && (
-											<Button
-												variant="quiet-destructive"
-												size="icon-sm"
-												title="Remove"
-												onClick={() => remove(p.id, p.name)}
-											>
-												<X size={13} />
-											</Button>
-										)}
-									</TableCell>
-								</TableRow>
-							);
-						})}
-						{products.length === 0 && !adding && (
-							<TableRow>
-								<TableCell colSpan={8} className="py-4 text-text-2">
-									No products yet. Add one for each app or site you sell, then
-									assign its costs and revenue on each connection's page.
-								</TableCell>
-							</TableRow>
-						)}
-						{adding && (
-							<TableRow>
-								<TableCell colSpan={8} className="py-2">
-									<form onSubmit={add} className="flex items-center gap-2">
-										<Input
-											size="sm"
-											className="w-64"
-											value={name}
-											onChange={(e) => setName(e.target.value)}
-											placeholder="Product name"
+									<ArrowUpRight size={13} />
+								</a>
+								<Dialog>
+									<DialogTrigger
+										render={
+											<Button variant="quiet" size="icon-sm" title="Badge" />
+										}
+									>
+										<Code size={13} />
+									</DialogTrigger>
+									<DialogContent className="sm:max-w-md">
+										<DialogHeader>
+											<DialogTitle>{p.name} badge</DialogTitle>
+											<DialogDescription>
+												Shows what the public page shows and links to it.
+											</DialogDescription>
+										</DialogHeader>
+										<BadgeEmbed
+											page={`/p/${data.workspaceSlug}/${p.slug}`}
+											product={p.name}
 										/>
-										<Button type="submit">Add</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											onClick={() => setAdding(false)}
-										>
-											Cancel
-										</Button>
-									</form>
-								</TableCell>
-							</TableRow>
+									</DialogContent>
+								</Dialog>
+							</>
 						)}
-					</TableBody>
-				</Table>
-			</Card>
+					</span>
+				)}
+				remove={(p) => (
+					<Button
+						variant="quiet-destructive"
+						size="icon-sm"
+						title="Remove"
+						onClick={() => remove(p.id, p.name)}
+					>
+						<X size={13} />
+					</Button>
+				)}
+			>
+				{products.length === 0 && !adding && (
+					<TableRow>
+						<TableCell colSpan={8} className="py-4 text-text-2">
+							No products yet. Add one for each app or site you sell, then
+							assign its costs and revenue on each connection's page.
+						</TableCell>
+					</TableRow>
+				)}
+				{adding && (
+					<TableRow>
+						<TableCell colSpan={8} className="py-2">
+							<form onSubmit={add} className="flex items-center gap-2">
+								<Input
+									size="sm"
+									className="w-64"
+									value={name}
+									onChange={(e) => setName(e.target.value)}
+									placeholder="Product name"
+								/>
+								<Button type="submit">Add</Button>
+								<Button
+									type="button"
+									variant="ghost"
+									onClick={() => setAdding(false)}
+								>
+									Cancel
+								</Button>
+							</form>
+						</TableCell>
+					</TableRow>
+				)}
+			</ProductsTable>
 		</>
 	);
 }

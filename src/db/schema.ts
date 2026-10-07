@@ -5,6 +5,7 @@ import {
 	doublePrecision,
 	index,
 	integer,
+	jsonb,
 	pgTable,
 	primaryKey,
 	text,
@@ -45,6 +46,12 @@ export const workspaces = pgTable("workspaces", {
 	weeklySentAt: ms("weekly_sent_at"),
 	// Self-host: send a daily anonymous usage ping. Off until switched on.
 	telemetry: boolean("telemetry").notNull().default(false),
+	// Hosted: include this workspace's numbers, anonymized, in the benchmark
+	// cohorts. Opt-out.
+	benchmarks: boolean("benchmarks").notNull().default(true),
+	// The public read-only demo served at /demo. Left out of /open and the
+	// benchmarks.
+	demo: boolean("demo").notNull().default(false),
 	createdAt: createdAt(),
 });
 
@@ -278,6 +285,8 @@ export const alertRules = pgTable("alert_rules", {
 		enum: ["cost_spike", "margin_floor", "sync_failure"],
 	}).notNull(),
 	threshold: doublePrecision("threshold"),
+	// Always email. Other channels are set per workspace in `alert_channels`
+	// and receive every alert in addition to email.
 	channel: text("channel", { enum: ["email"] })
 		.notNull()
 		.default("email"),
@@ -311,6 +320,211 @@ export const alerts = pgTable(
 		uniqueIndex("alerts_ws_open_key")
 			.on(t.workspaceId, t.key)
 			.where(sql`${t.resolvedAt} is null`),
+	],
+);
+
+// Where alerts go besides email. One row per workspace; a channel is on
+// while it is configured (SMS once the number is verified).
+export const alertChannels = pgTable("alert_channels", {
+	workspaceId: text("workspace_id")
+		.primaryKey()
+		.references(() => workspaces.id, { onDelete: "cascade" }),
+	// Ciphertext (lib/crypto.ts) of the Slack incoming-webhook URL.
+	slackWebhook: text("slack_webhook"),
+	// Ciphertext of the endpoint URL and of its Standard Webhooks signing
+	// secret (`whsec_...`).
+	webhookUrl: text("webhook_url"),
+	webhookSecret: text("webhook_secret"),
+	// E.164 number. Receives SMS only once `sms_verified_at` is set.
+	smsPhone: text("sms_phone"),
+	// SHA-256 of the pending verification code, and when it stops working.
+	smsCodeHash: text("sms_code_hash"),
+	smsCodeExpiresAt: ms("sms_code_expires_at"),
+	smsVerifiedAt: ms("sms_verified_at"),
+	// SMS sent in `sms_month` (YYYY-MM), for the hosted monthly cap. A new
+	// month resets the count.
+	smsMonth: text("sms_month"),
+	smsCount: integer("sms_count").notNull().default(0),
+});
+
+// Tokens for the MCP endpoint and the CLI. Only the SHA-256 of the token is
+// stored; `prefix` is its first characters, shown in the UI to tell tokens
+// apart.
+export const apiTokens = pgTable(
+	"api_tokens",
+	{
+		id: id(),
+		workspaceId: text("workspace_id")
+			.notNull()
+			.references(() => workspaces.id, { onDelete: "cascade" }),
+		// The user who created it.
+		userId: text("user_id").notNull(),
+		name: text("name").notNull(),
+		scope: text("scope", { enum: ["read", "write"] })
+			.notNull()
+			.default("read"),
+		tokenHash: text("token_hash").notNull(),
+		prefix: text("prefix").notNull(),
+		lastUsedAt: ms("last_used_at"),
+		revokedAt: ms("revoked_at"),
+		// Tokens issued over OAuth (/oauth/token): the client's id, when the
+		// access token expires, and the SHA-256 of the refresh token. A refresh
+		// replaces both hashes on this row, so one connection stays one row.
+		oauthClientId: text("oauth_client_id"),
+		expiresAt: ms("expires_at"),
+		refreshHash: text("refresh_hash"),
+		createdAt: createdAt(),
+	},
+	(t) => [
+		uniqueIndex("api_tokens_hash").on(t.tokenHash),
+		uniqueIndex("api_tokens_refresh").on(t.refreshHash),
+	],
+);
+
+// OAuth clients from Dynamic Client Registration (/oauth/register). Clients
+// that use a Client ID Metadata Document aren't stored. Registration comes
+// before anyone signs in, so there is no workspace; clients without a live
+// token are deleted after a day.
+export const oauthClients = pgTable("oauth_clients", {
+	// The client_id.
+	id: id(),
+	name: text("name").notNull(),
+	redirectUris: jsonb("redirect_uris").$type<string[]>().notNull(),
+	createdAt: createdAt(),
+});
+
+// OAuth authorization codes, valid 5 minutes and once. A second use revokes
+// the token the first one got.
+export const oauthCodes = pgTable(
+	"oauth_codes",
+	{
+		id: id(),
+		codeHash: text("code_hash").notNull(),
+		workspaceId: text("workspace_id")
+			.notNull()
+			.references(() => workspaces.id, { onDelete: "cascade" }),
+		// The user who approved it.
+		userId: text("user_id").notNull(),
+		clientId: text("client_id").notNull(),
+		clientName: text("client_name").notNull(),
+		redirectUri: text("redirect_uri").notNull(),
+		// PKCE S256 challenge.
+		codeChallenge: text("code_challenge").notNull(),
+		scope: text("scope", { enum: ["read", "write"] }).notNull(),
+		expiresAt: ms("expires_at").notNull(),
+		apiTokenId: text("api_token_id").references(() => apiTokens.id, {
+			onDelete: "set null",
+		}),
+		usedAt: ms("used_at"),
+		createdAt: createdAt(),
+	},
+	(t) => [uniqueIndex("oauth_codes_hash").on(t.codeHash)],
+);
+
+// One-time links (/connect/<token>, valid 15 minutes) where the user pastes
+// a provider key in the browser instead of in an agent chat. Requested by a
+// signed-in user or through an API token.
+export const connectLinks = pgTable(
+	"connect_links",
+	{
+		id: id(),
+		workspaceId: text("workspace_id")
+			.notNull()
+			.references(() => workspaces.id, { onDelete: "cascade" }),
+		userId: text("user_id"),
+		apiTokenId: text("api_token_id").references(() => apiTokens.id, {
+			onDelete: "cascade",
+		}),
+		provider: text("provider").notNull(),
+		// SHA-256 of the token in the link.
+		tokenHash: text("token_hash").notNull(),
+		expiresAt: ms("expires_at").notNull(),
+		usedAt: ms("used_at"),
+		// The connection the link created.
+		connectionId: text("connection_id").references(() => connections.id, {
+			onDelete: "set null",
+		}),
+		createdAt: createdAt(),
+	},
+	(t) => [uniqueIndex("connect_links_hash").on(t.tokenHash)],
+);
+
+// `npx openprofit login`: the CLI shows `user_code`, the user approves it in
+// the browser, and the CLI polls with its device code until approved. The
+// approval columns stay null until then.
+export const cliLogins = pgTable(
+	"cli_logins",
+	{
+		id: id(),
+		// SHA-256 of the device code only the CLI holds.
+		deviceCodeHash: text("device_code_hash").notNull(),
+		userCode: text("user_code").notNull(),
+		// The address `npx openprofit login` ran from, shown on the approval
+		// page so a user can spot a request that isn't theirs.
+		requestedIp: text("requested_ip"),
+		expiresAt: ms("expires_at").notNull(),
+		approvedAt: ms("approved_at"),
+		// The user who approved it.
+		userId: text("user_id"),
+		workspaceId: text("workspace_id").references(() => workspaces.id, {
+			onDelete: "cascade",
+		}),
+		// The token issued on approval.
+		apiTokenId: text("api_token_id").references(() => apiTokens.id, {
+			onDelete: "set null",
+		}),
+		createdAt: createdAt(),
+	},
+	(t) => [
+		uniqueIndex("cli_logins_device").on(t.deviceCodeHash),
+		uniqueIndex("cli_logins_user_code").on(t.userCode),
+	],
+);
+
+// Changes made in the UI, over MCP or from the CLI. The weekly email lists
+// the MCP ones, such as a public page switched on.
+export const auditEvents = pgTable(
+	"audit_events",
+	{
+		id: id(),
+		workspaceId: text("workspace_id")
+			.notNull()
+			.references(() => workspaces.id, { onDelete: "cascade" }),
+		// A user id or an api_tokens id.
+		actorKind: text("actor_kind", { enum: ["user", "token"] }).notNull(),
+		actorId: text("actor_id").notNull(),
+		source: text("source", { enum: ["ui", "mcp", "cli"] }).notNull(),
+		// What happened, such as `product.public_page`, and to what (an id).
+		action: text("action").notNull(),
+		target: text("target"),
+		detail: jsonb("detail").$type<Record<string, unknown>>(),
+		createdAt: createdAt(),
+	},
+	(t) => [index("audit_ws_created").on(t.workspaceId, t.createdAt)],
+);
+
+// Monthly benchmark percentiles per MRR band. Aggregates across hosted
+// workspaces, so it has no `workspace_id`. Money metrics
+// are in USD cents, ratios in percent.
+export const benchmarkSnapshots = pgTable(
+	"benchmark_snapshots",
+	{
+		id: id(),
+		month: text("month").notNull(), // YYYY-MM
+		band: text("band", {
+			enum: ["0-1k", "1k-5k", "5k-20k", "20k+"],
+		}).notNull(),
+		metric: text("metric").notNull(),
+		// Workspaces in the cohort.
+		n: integer("n").notNull(),
+		p25: doublePrecision("p25").notNull(),
+		p50: doublePrecision("p50").notNull(),
+		p75: doublePrecision("p75").notNull(),
+		p90: doublePrecision("p90").notNull(),
+		computedAt: ms("computed_at").notNull(),
+	},
+	(t) => [
+		uniqueIndex("benchmarks_month_band_metric").on(t.month, t.band, t.metric),
 	],
 );
 

@@ -1,12 +1,13 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { siGithub } from "simple-icons";
+import { z } from "zod";
 import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
-import { NOINDEX } from "#/lib/app";
+import { isLocalPath, NOINDEX } from "#/lib/app";
 import { authClient } from "#/lib/auth-client";
 import { getAuthOptions, getSession } from "#/server/auth.functions";
 
@@ -15,9 +16,13 @@ export const Route = createFileRoute("/login")({
 		...NOINDEX,
 		meta: [{ title: "Sign in · OpenProfit" }, ...NOINDEX.meta],
 	}),
-	loader: async () => {
+	validateSearch: z.object({
+		redirect: z.string().refine(isLocalPath).optional().catch(undefined),
+	}),
+	loaderDeps: ({ search }) => ({ next: search.redirect }),
+	loader: async ({ deps }) => {
 		const user = await getSession();
-		if (user) throw redirect({ to: "/app" });
+		if (user) throw redirect({ href: deps.next ?? "/app" });
 		return getAuthOptions();
 	},
 	component: Login,
@@ -25,6 +30,12 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
 	const { social, mailer } = Route.useLoaderData();
+	const back = Route.useSearch().redirect;
+	const next = back ?? "/app";
+	// A new account creates its workspace first, then continues to `back`.
+	const newUser = back
+		? `/onboarding?redirect=${encodeURIComponent(back)}`
+		: "/onboarding";
 	const [email, setEmail] = useState("");
 	const [state, setState] = useState<"idle" | "sending" | "sent" | "error">(
 		"idle",
@@ -33,10 +44,12 @@ function Login() {
 	async function submit(e: React.FormEvent) {
 		e.preventDefault();
 		setState("sending");
+		// The link's verify step decodes these once more than it encodes them
+		// (better-auth 1.7, plugins/magic-link), so "%" goes in as "%25".
 		const { error } = await authClient.signIn.magicLink({
 			email,
-			callbackURL: "/app",
-			newUserCallbackURL: "/onboarding",
+			callbackURL: next.replaceAll("%", "%25"),
+			newUserCallbackURL: newUser.replaceAll("%", "%25"),
 		});
 		setState(error ? "error" : "sent");
 	}
@@ -74,8 +87,8 @@ function Login() {
 											onClick={() =>
 												authClient.signIn.social({
 													provider: p as "github" | "google",
-													callbackURL: "/app",
-													newUserCallbackURL: "/onboarding",
+													callbackURL: next,
+													newUserCallbackURL: newUser,
 												})
 											}
 										>

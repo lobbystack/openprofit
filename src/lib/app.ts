@@ -6,19 +6,28 @@ export const SITE_URL = "https://openprofit.dev";
 export const SITE_DESCRIPTION =
 	"Open-source dashboard that puts your Stripe or Paddle revenue next to your OpenAI, Vercel and other bills, and shows profit per product.";
 
-// Title, description, canonical and social tags for a public page.
+// Title, description, canonical and social tags for a public page. `image`
+// replaces the root's 1200x630 social image.
 export function seo({
 	title,
 	description = SITE_DESCRIPTION,
 	path,
+	image,
 }: {
 	title: string;
 	description?: string;
 	path: string;
+	image?: string;
 }) {
 	const url = `${SITE_URL}${path}`;
 	return {
 		meta: [
+			...(image
+				? [
+						{ property: "og:image", content: image },
+						{ name: "twitter:image", content: image },
+					]
+				: []),
 			{ title },
 			{ name: "description", content: description },
 			{ property: "og:title", content: title },
@@ -32,3 +41,17 @@ export function seo({
 }
 
 export const NOINDEX = { meta: [{ name: "robots", content: "noindex" }] };
+
+// Where to go after signing in (`?redirect=`): a path on this site, never
+// another host. Browsers drop tabs and newlines from URLs, so "/\t/x.com"
+// would become "//x.com"; control characters are out, and the path has to
+// parse back to this origin the way a browser reads it.
+export function isLocalPath(p: string) {
+	if (!/^\/(?![/\\])/.test(p) || [...p].some((c) => c < " " || c === "\x7f"))
+		return false;
+	try {
+		return new URL(p, "http://x").origin === "http://x";
+	} catch {
+		return false;
+	}
+}
