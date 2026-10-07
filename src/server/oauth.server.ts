@@ -112,10 +112,18 @@ export function wellKnown(request: Request, path: string) {
 			: path === "oauth-authorization-server"
 				? serverMetadata(iss)
 				: null;
+	// Shared caches may keep the document only when APP_URL fixes the issuer.
+	// Without it the issuer comes from the Host header, and a cache that
+	// ignores Host could hand one host's document to another.
 	return (
 		doc &&
 		Response.json(doc, {
-			headers: { ...CORS, "Cache-Control": "public, max-age=3600" },
+			headers: {
+				...CORS,
+				"Cache-Control": process.env.APP_URL
+					? "public, max-age=3600"
+					: "no-store",
+			},
 		})
 	);
 }

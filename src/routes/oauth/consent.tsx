@@ -105,9 +105,18 @@ function Consent() {
 			body = (
 				<>
 					<p>
-						{client.name}
-						{client.host && ` (${client.host})`} asks for access to one
-						workspace.
+						{client.host ? (
+							<>
+								{client.name} (<span className="num">{client.host}</span>) asks
+								for access to one workspace.
+							</>
+						) : (
+							<>
+								An app calling itself {client.name} asks for access to one
+								workspace. The app chose that name, and OpenProfit can't confirm
+								it.
+							</>
+						)}
 					</p>
 					<p className="mt-3 text-text-2">
 						{target.local ? (
@@ -119,7 +128,8 @@ function Consent() {
 						) : (
 							<>
 								After you approve, you go back to{" "}
-								<span className="num">{target.host}</span>.
+								<span className="num">{target.host}</span>. Approve only if you
+								started this connection there.
 							</>
 						)}
 					</p>

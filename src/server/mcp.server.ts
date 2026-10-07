@@ -17,7 +17,13 @@ import { RULE_NAMES, type RuleKind, ruleScope } from "#/lib/alerts";
 import { FlatCostInput, Day as IsoDay } from "#/lib/costs";
 import { CURRENCIES } from "#/lib/format";
 import pkg from "../../package.json";
-import { appUrl, audit, authenticate, type Caller } from "./api.server";
+import {
+	appUrl,
+	audit,
+	authenticate,
+	type Caller,
+	providerError,
+} from "./api.server";
 import { connectLinkStatus, createConnectLink } from "./connect.server";
 import { connectionRows } from "./connections.server";
 import { flatValues } from "./costs.server";
@@ -368,6 +374,8 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 				(await connectionRows(ws)).map((c) => ({
 					...c,
 					lastSyncedAt: iso(c.lastSyncedAt),
+					// The sentence, not the provider's raw response.
+					lastError: c.lastError && providerError(c.provider, c.lastError, {}),
 				})),
 			),
 	);

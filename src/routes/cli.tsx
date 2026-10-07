@@ -38,7 +38,12 @@ export const Route = createFileRoute("/cli")({
 });
 
 function Cli() {
-	const { state, workspaces } = Route.useLoaderData();
+	const { state, workspaces, requestedIp, minutesAgo, sameNetwork } =
+		Route.useLoaderData();
+	const when =
+		minutesAgo === null || minutesAgo < 1
+			? "just now"
+			: `${minutesAgo} minute${minutesAgo === 1 ? "" : "s"} ago`;
 	const { code } = Route.useSearch();
 	const decide = useServerFn(decideCli);
 	const here = useLocation({ select: (l) => l.href });
@@ -96,6 +101,19 @@ function Cli() {
 				<div className="num mt-3 text-center text-[24px] tracking-[0.08em]">
 					{code}
 				</div>
+				{requestedIp &&
+					(sameNetwork ? (
+						<p className="mt-3 text-[12px] text-text-2">
+							Started {when} from this network (
+							<span className="num">{requestedIp}</span>).
+						</p>
+					) : (
+						<p className="mt-3 text-[12px] text-negative">
+							Started {when} from <span className="num">{requestedIp}</span>, a
+							different network than this browser. Approve only if you ran{" "}
+							<span className="num">npx openprofit login</span> yourself.
+						</p>
+					))}
 				{workspaces.length > 1 && (
 					<Field className="mt-5">
 						<FieldLabel htmlFor="cli-ws">Workspace</FieldLabel>

@@ -459,6 +459,9 @@ export const cliLogins = pgTable(
 		// SHA-256 of the device code only the CLI holds.
 		deviceCodeHash: text("device_code_hash").notNull(),
 		userCode: text("user_code").notNull(),
+		// The address `npx openprofit login` ran from, shown on the approval
+		// page so a user can spot a request that isn't theirs.
+		requestedIp: text("requested_ip"),
 		expiresAt: ms("expires_at").notNull(),
 		approvedAt: ms("approved_at"),
 		// The user who approved it.

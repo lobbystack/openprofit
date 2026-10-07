@@ -57,6 +57,13 @@
       "when": 1791337216276,
       "tag": "0007_oauth",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791339444442,
+      "tag": "0008_cli_requested_ip",
+      "breakpoints": true
     }
   ]
 }

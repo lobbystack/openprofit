@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "#/db";
@@ -83,15 +84,18 @@ export const getCliLogin = createServerFn({ method: "GET" })
 			data,
 		}): Promise<{
 			state: CliLoginState;
+			requestedIp: string | null;
+			minutesAgo: number | null;
+			sameNetwork: boolean;
 			workspaces: { id: string; name: string }[];
 		} | null> => {
 			const user = await sessionUser();
 			if (!user) return null;
-			const [state, workspaces] = await Promise.all([
-				cliLoginState(data.code),
+			const [login, workspaces] = await Promise.all([
+				cliLoginState(data.code, getRequest()),
 				userWorkspaces(user.id),
 			]);
-			return { state, workspaces };
+			return { ...login, workspaces };
 		},
 	);
 

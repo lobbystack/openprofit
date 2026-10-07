@@ -2,7 +2,14 @@ import { and, eq, gt, isNull } from "drizzle-orm";
 import { connectors } from "#/connectors";
 import type { Credentials } from "#/connectors/types";
 import { db, schema } from "#/db";
-import { appUrl, audit, type Caller, randomToken, sha256 } from "./api.server";
+import {
+	appUrl,
+	audit,
+	type Caller,
+	providerError,
+	randomToken,
+	sha256,
+} from "./api.server";
 import { addConnection } from "./connections.server";
 import { syncConnection } from "./sync.server";
 import type { Workspace } from "./workspace.server";
@@ -78,7 +85,8 @@ export async function connectLinkStatus(ws: Workspace, linkId: string) {
 					last_synced_at: conn.lastSyncedAt
 						? new Date(conn.lastSyncedAt).toISOString()
 						: null,
-					last_error: conn.lastError,
+					last_error:
+						conn.lastError && providerError(conn.provider, conn.lastError, {}),
 				},
 			};
 	}

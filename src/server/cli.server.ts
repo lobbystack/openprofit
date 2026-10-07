@@ -45,6 +45,7 @@ export async function startCliLogin(request: Request) {
 			await db.insert(schema.cliLogins).values({
 				deviceCodeHash: sha256(deviceCode),
 				userCode: code,
+				requestedIp: clientIp(request),
 				expiresAt: Date.now() + TTL,
 			});
 			return {
@@ -103,13 +104,25 @@ export async function pollCliLogin(deviceCode: string) {
 
 export type CliLoginState = "pending" | "approved" | "expired";
 
-export async function cliLoginState(code: string): Promise<CliLoginState> {
+// The code's state, and where and when the login started, for the approval
+// page. `sameNetwork`: the browser approving it is at that same address.
+export async function cliLoginState(code: string, approver: Request) {
 	const row = await db.query.cliLogins.findFirst({
 		where: eq(schema.cliLogins.userCode, code.toUpperCase()),
 	});
-	if (row?.approvedAt) return "approved";
-	if (!row || row.expiresAt <= Date.now()) return "expired";
-	return "pending";
+	const state: CliLoginState = row?.approvedAt
+		? "approved"
+		: !row || row.expiresAt <= Date.now()
+			? "expired"
+			: "pending";
+	return {
+		state,
+		requestedIp: row?.requestedIp ?? null,
+		minutesAgo: row
+			? Math.max(0, Math.round((Date.now() - row.createdAt) / 60_000))
+			: null,
+		sameNetwork: !!row?.requestedIp && row.requestedIp === clientIp(approver),
+	};
 }
 
 // Approve (a workspace) or cancel (null) a pending code. False when the
