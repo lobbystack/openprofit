@@ -99,6 +99,11 @@ async function login(url?: string) {
 		expires_in: number;
 		interval: number;
 	}>(server, "POST", "/api/cli/login");
+	if (start.status === 429) {
+		throw new Error(
+			`Too many logins from this IP address on ${server.url}. Try again in a few minutes.`,
+		);
+	}
 	if (start.status !== 200 || !start.data.device_code) {
 		throw new Error(
 			`${server.url} didn't start a login (HTTP ${start.status}).`,
@@ -113,13 +118,19 @@ async function login(url?: string) {
 	if (process.stdout.isTTY) openBrowser(verification_url);
 
 	const deadline = Date.now() + (start.data.expires_in ?? 600) * 1000;
+	let interval = start.data.interval ?? 5;
 	while (Date.now() < deadline) {
-		await sleep((start.data.interval ?? 5) * 1000);
+		await sleep(interval * 1000);
 		const poll = await request<{
 			token?: string;
 			workspace?: { name: string; slug: string };
 		}>(server, "POST", "/api/cli/login/poll", { device_code });
 		if (poll.status === 202) continue;
+		// slow_down: wait 5 seconds longer between polls from now on (RFC 8628).
+		if (poll.status === 429) {
+			interval += 5;
+			continue;
+		}
 		if (poll.status === 410) break;
 		if (poll.status !== 200 || !poll.data.token || !poll.data.workspace) {
 			throw new Error(`Login failed (HTTP ${poll.status}).`);

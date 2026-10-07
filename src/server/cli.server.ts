@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { getRequestIP } from "@tanstack/react-start/server";
 import { and, eq, gt, isNull, lt } from "drizzle-orm";
 import { db, schema } from "#/db";
 import { appUrl, issueToken, randomToken, sha256 } from "./api.server";
@@ -9,6 +10,55 @@ import { appUrl, issueToken, randomToken, sha256 } from "./api.server";
 // receives a token.
 
 const TTL = 10 * 60_000;
+const INTERVAL = 2;
+
+// Railway's edge sets X-Real-IP to the client's address, overwriting what
+// the client sent, and services behind it can't be reached directly:
+// https://docs.railway.com/networking/public-networking/specs-and-limits
+// Anywhere else the client could send that header, so the socket counts.
+const clientIp = (request: Request) =>
+	(process.env.RAILWAY_ENVIRONMENT_ID && request.headers.get("x-real-ip")) ||
+	getRequestIP() ||
+	"unknown";
+
+// Fixed-window counters. A 429 with Retry-After once `key` passes `max`
+// requests in `ms`.
+// ponytail: per-process and reset on restart; with more than one instance,
+// move the counters to a shared store (Postgres or Redis).
+const windows = new Map<string, { hits: number; resetAt: number }>();
+let sweepAt = 0;
+function rateLimit(key: string, max: number, ms: number, body: object) {
+	const now = Date.now();
+	if (now > sweepAt) {
+		for (const [k, w] of windows) if (w.resetAt <= now) windows.delete(k);
+		sweepAt = now + 60_000;
+	}
+	let w = windows.get(key);
+	if (!w || w.resetAt <= now) {
+		w = { hits: 0, resetAt: now + ms };
+		windows.set(key, w);
+	}
+	if (++w.hits <= max) return null;
+	return Response.json(body, {
+		status: 429,
+		headers: { "Retry-After": String(Math.ceil((w.resetAt - now) / 1000)) },
+	});
+}
+
+export const loginLimit = (request: Request) =>
+	rateLimit(`login:${clientIp(request)}`, 10, 10 * 60_000, {
+		error: "Too many logins from this IP address. Try again in a few minutes.",
+	});
+
+// RFC 8628's slow_down: one poll per interval for each login, with half a
+// second of slack for network jitter, and room for two CLIs per address.
+export const pollLimit = (request: Request, deviceCode: string) =>
+	rateLimit(`poll-ip:${clientIp(request)}`, 60, 60_000, {
+		status: "slow_down",
+	}) ??
+	rateLimit(`poll:${sha256(deviceCode)}`, 1, INTERVAL * 1000 - 500, {
+		status: "slow_down",
+	});
 // No vowels, so codes never spell words; no 0/O or 1/I lookalikes.
 const LETTERS = "BCDFGHJKLMNPQRSTVWXZ";
 const userCode = () => {
@@ -35,7 +85,7 @@ export async function startCliLogin(request: Request) {
 				user_code: code,
 				verification_url: `${appUrl(request)}/cli?code=${code}`,
 				expires_in: TTL / 1000,
-				interval: 2,
+				interval: INTERVAL,
 			};
 		} catch (err) {
 			// A user code collision; 20^8 codes make a second one unlikely.

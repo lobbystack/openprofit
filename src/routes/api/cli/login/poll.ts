@@ -10,7 +10,9 @@ export const Route = createFileRoute("/api/cli/login/poll")({
 						{ error: "Send {device_code} from POST /api/cli/login." },
 						{ status: 400 },
 					);
-				const { pollCliLogin } = await import("#/server/cli.server");
+				const { pollCliLogin, pollLimit } = await import("#/server/cli.server");
+				const limited = pollLimit(request, body.device_code);
+				if (limited) return limited;
 				const { status, body: out } = await pollCliLogin(body.device_code);
 				return Response.json(out, { status });
 			},
