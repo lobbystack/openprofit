@@ -81,17 +81,12 @@ export function Shell({
 		<div className="flex min-h-screen">
 			<aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-line bg-paper p-3 md:flex">
 				<DropdownMenu disabled={demo}>
-					<DropdownMenuTrigger className="flex h-11 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2 data-disabled:hover:bg-transparent">
+					<DropdownMenuTrigger className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2 data-disabled:hover:bg-transparent">
 						<span className="flex min-w-0 items-center gap-2">
-							<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px] bg-ink text-[11px] text-paper">
+							<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
 								{picked[0]}
 							</span>
-							<span className="flex min-w-0 flex-col items-start leading-tight">
-								<span className="max-w-full truncate">{picked}</span>
-								<span className="max-w-full truncate text-[11px] text-text-3">
-									{workspace.name}
-								</span>
-							</span>
+							<span className="truncate">{picked}</span>
 						</span>
 						{!demo && (
 							<ChevronsUpDown size={14} className="shrink-0 text-text-3" />
