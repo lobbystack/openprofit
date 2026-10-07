@@ -15,6 +15,7 @@
     "check": "biome check",
     "start": "node .output/server/index.mjs",
     "db:seed": "tsx --env-file=.env scripts/seed.ts",
+    "benchmarks": "tsx --env-file=.env scripts/benchmarks.ts",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
