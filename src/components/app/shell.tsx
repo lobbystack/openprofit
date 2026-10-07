@@ -80,22 +80,20 @@ export function Shell({
 	return (
 		<div className="flex min-h-screen">
 			<aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-line bg-paper p-3 md:flex">
-				<DropdownMenu disabled={demo}>
-					<DropdownMenuTrigger className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2 data-disabled:hover:bg-transparent">
+				<DropdownMenu>
+					<DropdownMenuTrigger className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2">
 						<span className="flex min-w-0 items-center gap-2">
 							<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
 								{picked[0]}
 							</span>
 							<span className="truncate">{picked}</span>
 						</span>
-						{!demo && (
-							<ChevronsUpDown size={14} className="shrink-0 text-text-3" />
-						)}
+						<ChevronsUpDown size={14} className="shrink-0 text-text-3" />
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
-						<ProductItems workspace={workspace} />
+						<ProductItems workspace={workspace} demo={demo} />
 						<DropdownMenuSeparator />
-						<WorkspaceItems workspace={workspace} />
+						<WorkspaceItems workspace={workspace} demo={demo} />
 					</DropdownMenuContent>
 				</DropdownMenu>
 
@@ -296,14 +294,20 @@ export function SettingsRow({
 	);
 }
 
-// The workspace list with a check on the current one, then "New workspace".
-// All, then each product: the app narrows to the one picked.
-function ProductItems({ workspace }: { workspace: WorkspaceSummary }) {
+// All, then each product: the app narrows to the one picked. In the demo
+// the pick works too, and adding a product leads to sign-up.
+function ProductItems({
+	workspace,
+	demo = false,
+}: {
+	workspace: WorkspaceSummary;
+	demo?: boolean;
+}) {
 	const router = useRouter();
 	const pick = useServerFn(switchProduct);
 	const choose = async (id: string | null) => {
 		if (id === workspace.productId) return;
-		await pick({ data: { id } });
+		await pick({ data: { id, demo } });
 		await router.invalidate({ sync: true });
 	};
 	return (
@@ -319,11 +323,25 @@ function ProductItems({ workspace }: { workspace: WorkspaceSummary }) {
 					{p.id === workspace.productId && <Check size={14} />}
 				</DropdownMenuItem>
 			))}
+			<DropdownMenuItem
+				render={<Link to={demo ? "/login" : "/app/products"} />}
+			>
+				<Plus size={14} />
+				New product
+			</DropdownMenuItem>
 		</DropdownMenuGroup>
 	);
 }
 
-function WorkspaceItems({ workspace }: { workspace: WorkspaceSummary }) {
+// The workspace list with a check on the current one, then "New workspace",
+// which leads to sign-up in the demo.
+function WorkspaceItems({
+	workspace,
+	demo = false,
+}: {
+	workspace: WorkspaceSummary;
+	demo?: boolean;
+}) {
 	const router = useRouter();
 	const switchTo = useServerFn(switchWorkspace);
 	return (
@@ -349,7 +367,9 @@ function WorkspaceItems({ workspace }: { workspace: WorkspaceSummary }) {
 			</DropdownMenuGroup>
 			<DropdownMenuSeparator />
 			<DropdownMenuGroup>
-				<DropdownMenuItem render={<Link to="/onboarding" />}>
+				<DropdownMenuItem
+					render={<Link to={demo ? "/login" : "/onboarding"} />}
+				>
 					<Plus size={14} />
 					New workspace
 				</DropdownMenuItem>

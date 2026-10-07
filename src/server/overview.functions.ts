@@ -18,8 +18,7 @@ export const getOverview = createServerFn({ method: "GET" })
 			.default({ period: "this-month" }),
 	)
 	.handler(async ({ data }) => {
-		if (data.demo) return overview(await demoWorkspace(), data.period);
-		const ws = await currentWorkspace();
+		const ws = data.demo ? await demoWorkspace() : await currentWorkspace();
 		const product = data.all ? null : await currentProduct(ws);
 		return overview(ws, data.period, product?.id ?? null);
 	});

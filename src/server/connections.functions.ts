@@ -17,8 +17,7 @@ export type { ConnectionRow } from "./connections.server";
 export const getConnections = createServerFn({ method: "GET" })
 	.validator(z.object({ demo: z.boolean() }).optional())
 	.handler(async ({ data }) => {
-		if (data?.demo) return connectionRows(await demoWorkspace());
-		const ws = await currentWorkspace();
+		const ws = data?.demo ? await demoWorkspace() : await currentWorkspace();
 		return connectionRows(ws, (await currentProduct(ws))?.id ?? null);
 	});
 

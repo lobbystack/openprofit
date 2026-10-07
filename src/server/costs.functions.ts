@@ -31,7 +31,7 @@ export const getFlatCosts = createServerFn({ method: "GET" })
 	.handler(async ({ data }): Promise<FlatCosts> => {
 		const ws = data?.demo ? await demoWorkspace() : await currentWorkspace();
 		// The switcher's product shows its own flat costs only.
-		const product = data?.demo ? null : await currentProduct(ws);
+		const product = await currentProduct(ws);
 		const [flats, products] = await Promise.all([
 			db.query.flatCosts.findMany({
 				where: and(
