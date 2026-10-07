@@ -79,7 +79,7 @@ const units = (cents: number | null) =>
 const iso = (ms: number | null) => (ms ? new Date(ms).toISOString() : null);
 
 const Period = z
-	.enum(["this-month", "last-month", "3m", "12m", "ytd"])
+	.enum(["this-month", "30d", "last-month", "3m", "12m", "ytd"])
 	.describe("Defaults to this-month");
 const Day = IsoDay.describe("YYYY-MM-DD");
 const Id = (what: string) => z.string().describe(`${what} id`);

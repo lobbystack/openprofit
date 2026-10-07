@@ -1,4 +1,13 @@
-import { and, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import {
+	type AnyColumn,
+	and,
+	eq,
+	gte,
+	inArray,
+	lt,
+	type SQL,
+	sql,
+} from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
 import { connectors } from "#/connectors";
 import { db, schema } from "#/db";
@@ -49,6 +58,46 @@ const nextMonth = (m: string) => {
 	return ym(new Date(Date.UTC(y, mo, 1)));
 };
 
+const DAY = 86_400_000;
+// YYYY-MM-DD n days before today, UTC. Negative is ahead.
+export const daysAgo = (n: number) =>
+	new Date(Date.now() - n * DAY).toISOString().slice(0, 10);
+
+// A line's share of the days [from, to). A monthly connector's line covers
+// the month from its date, or up to today for the current month, so it
+// counts by its days inside the range; any other line is one day's amount.
+export function share(
+	amount: AnyColumn,
+	date: AnyColumn,
+	monthly: SQL,
+	from: string,
+	to: string,
+) {
+	const tomorrow = daysAgo(-1);
+	const start = sql`${date}::date`;
+	const end = sql`least((${start} + interval '1 month')::date, ${tomorrow}::date)`;
+	return sql`case
+		when not (${monthly}) then case when ${date} >= ${from} and ${date} < ${to} then ${amount} else 0 end
+		when ${start} >= ${tomorrow}::date then 0
+		else round(${amount} * greatest(0, least(${to}::date, ${end}) - greatest(${from}::date, ${start}))::numeric / (${end} - ${start}))
+	end`;
+}
+
+const monthlyIds = () =>
+	connectors()
+		.filter((c) => c.monthly)
+		.map((c) => c.id);
+export const monthlyCost = () =>
+	inArray(schema.costLines.provider, monthlyIds());
+export const monthlyRevenue = () =>
+	inArray(
+		schema.revenueLines.connectionId,
+		db
+			.select({ id: schema.connections.id })
+			.from(schema.connections)
+			.where(inArray(schema.connections.provider, monthlyIds())),
+	);
+
 // Flat costs count once per month they are active, in base cents. Yearly
 // ones spread over 12.
 export function flatMonthlyCents(
@@ -79,6 +128,23 @@ export async function overview(
 	const rangeFrom = `${period[0]}-01`;
 	const rangeTo = `${nextMonth(end)}-01`;
 	const inRange = (col: PgColumn) => and(gte(col, rangeFrom), lt(col, rangeTo));
+	// The days the tiles and breakdowns cover. Month periods take whole
+	// months, as the chart does. The last 30 days split monthly bills by day.
+	const is30 = periodKey === "30d";
+	const span = is30
+		? { from: daysAgo(29), to: daysAgo(-1) }
+		: { from: rangeFrom, to: rangeTo };
+	const prevSpan = { from: daysAgo(59), to: daysAgo(29) };
+	const rl = schema.revenueLines;
+	const cl = schema.costLines;
+	const monthlyRev = is30 ? monthlyRevenue() : sql`false`;
+	const monthlyCl = is30 ? monthlyCost() : sql`false`;
+	const revIn = (col: AnyColumn, s = span) =>
+		sql<number>`coalesce(sum(${share(col, rl.date, monthlyRev, s.from, s.to)}), 0)`;
+	const costIn = (s = span) =>
+		sql<number>`coalesce(sum(${share(cl.amountBaseCents, cl.date, monthlyCl, s.from, s.to)}), 0)`;
+	// Lines a span can reach: a monthly line starts up to a month before it.
+	const scan = (col: PgColumn) => (is30 ? gte(col, daysAgo(91)) : inRange(col));
 	const wsId = ws.id;
 	const month = (col: unknown) => sql<string>`substr(${col}, 1, 7)`;
 	// Narrows a query to the picked product; no condition for All.
@@ -96,6 +162,8 @@ export async function overview(
 		costByProv,
 		revByProdMonth,
 		costByProdMonth,
+		rev30,
+		cost30,
 	] = await Promise.all([
 		db
 			.select({
@@ -165,38 +233,20 @@ export async function overview(
 			orderBy: (p, { asc }) => asc(p.createdAt),
 		}),
 		db
-			.select({
-				productId: schema.revenueLines.productId,
-				v: sql<number>`sum(${schema.revenueLines.netBaseCents})`,
-			})
-			.from(schema.revenueLines)
-			.where(
-				and(
-					eq(schema.revenueLines.workspaceId, wsId),
-					only(schema.revenueLines.productId),
-					inRange(schema.revenueLines.date),
-				),
-			)
-			.groupBy(schema.revenueLines.productId),
+			.select({ productId: rl.productId, v: revIn(rl.netBaseCents) })
+			.from(rl)
+			.where(and(eq(rl.workspaceId, wsId), only(rl.productId), scan(rl.date)))
+			.groupBy(rl.productId),
 		db
-			.select({
-				productId: schema.costLines.productId,
-				v: sql<number>`sum(${schema.costLines.amountBaseCents})`,
-			})
-			.from(schema.costLines)
-			.where(
-				and(
-					eq(schema.costLines.workspaceId, wsId),
-					only(schema.costLines.productId),
-					inRange(schema.costLines.date),
-				),
-			)
-			.groupBy(schema.costLines.productId),
+			.select({ productId: cl.productId, v: costIn() })
+			.from(cl)
+			.where(and(eq(cl.workspaceId, wsId), only(cl.productId), scan(cl.date)))
+			.groupBy(cl.productId),
 		db
 			.select({
 				provider: schema.connections.provider,
-				v: sql<number>`sum(${schema.revenueLines.netBaseCents})`,
-				t: sql<number>`sum(${schema.revenueLines.taxBaseCents})`,
+				v: revIn(rl.netBaseCents),
+				t: revIn(rl.taxBaseCents),
 			})
 			.from(schema.revenueLines)
 			.innerJoin(
@@ -207,24 +257,15 @@ export async function overview(
 				and(
 					eq(schema.revenueLines.workspaceId, wsId),
 					only(schema.revenueLines.productId),
-					inRange(schema.revenueLines.date),
+					scan(schema.revenueLines.date),
 				),
 			)
 			.groupBy(schema.connections.provider),
 		db
-			.select({
-				provider: schema.costLines.provider,
-				v: sql<number>`sum(${schema.costLines.amountBaseCents})`,
-			})
-			.from(schema.costLines)
-			.where(
-				and(
-					eq(schema.costLines.workspaceId, wsId),
-					only(schema.costLines.productId),
-					inRange(schema.costLines.date),
-				),
-			)
-			.groupBy(schema.costLines.provider),
+			.select({ provider: cl.provider, v: costIn() })
+			.from(cl)
+			.where(and(eq(cl.workspaceId, wsId), only(cl.productId), scan(cl.date)))
+			.groupBy(cl.provider),
 		// Per product and month over the chart's 12 months, for each
 		// product's own trend line.
 		db
@@ -259,6 +300,28 @@ export async function overview(
 				),
 			)
 			.groupBy(schema.costLines.productId, month(schema.costLines.date)),
+		// Tiles for the last 30 days and the 30 before.
+		is30
+			? db
+					.select({
+						cur: revIn(rl.netBaseCents),
+						prev: revIn(rl.netBaseCents, prevSpan),
+						tax: revIn(rl.taxBaseCents),
+						prevTax: revIn(rl.taxBaseCents, prevSpan),
+					})
+					.from(rl)
+					.where(
+						and(eq(rl.workspaceId, wsId), only(rl.productId), scan(rl.date)),
+					)
+			: null,
+		is30
+			? db
+					.select({ cur: costIn(), prev: costIn(prevSpan) })
+					.from(cl)
+					.where(
+						and(eq(cl.workspaceId, wsId), only(cl.productId), scan(cl.date)),
+					)
+			: null,
 	]);
 	// Flat costs saved before amount_base_cents existed: convert once and
 	// store it, so they stop counting in their own currency.
@@ -293,19 +356,21 @@ export async function overview(
 		(r, i) => Math.round((r - costsAll[i]) * 100) / 100,
 	);
 
-	// Latest snapshot per connection within each month, summed.
+	// Latest snapshot per connection up to a month (YYYY-MM) or a day
+	// (YYYY-MM-DD), summed.
+	const latestSum = (metric: "mrr_base_cents" | "customers", upTo: string) => {
+		const latest = new Map<string, { date: string; value: number }>();
+		for (const s of snaps) {
+			if (s.metric !== metric || s.date.slice(0, upTo.length) > upTo) continue;
+			const prev = latest.get(s.connectionId);
+			if (!prev || s.date > prev.date) latest.set(s.connectionId, s);
+		}
+		let total = 0;
+		for (const v of latest.values()) total += v.value;
+		return metric === "customers" ? total : units(total);
+	};
 	const snapshot = (metric: "mrr_base_cents" | "customers") =>
-		all.map((m) => {
-			const latest = new Map<string, { date: string; value: number }>();
-			for (const s of snaps) {
-				if (s.metric !== metric || s.date.slice(0, 7) > m) continue;
-				const prev = latest.get(s.connectionId);
-				if (!prev || s.date > prev.date) latest.set(s.connectionId, s);
-			}
-			let total = 0;
-			for (const v of latest.values()) total += v.value;
-			return metric === "customers" ? total : units(total);
-		});
+		all.map((m) => latestSum(metric, m));
 
 	const seriesAll: Record<MetricKey, number[]> = {
 		revenue: revenueAll,
@@ -388,6 +453,7 @@ export async function overview(
 	for (const [k, v] of flatByProvider)
 		provTotals.set(k, (provTotals.get(k) ?? 0) + v);
 	const costsByProvider = [...provTotals]
+		.filter(([, cents]) => cents !== 0)
 		.map(([provider, cents]) => ({ provider, amount: units(cents) }))
 		.sort((a, b) => b.amount - a.amount);
 
@@ -399,9 +465,43 @@ export async function overview(
 			.filter((c) => c.remitsTax)
 			.map((c) => c.id),
 	);
+	const periodTotals = totals((v) => v.slice(24 - n));
+	const periodPrevious = totals((v) => v.slice(24 - 2 * n, 24 - n));
+	let taxTotal = sum(taxAll.slice(24 - n));
+	let taxPrevious = sum(taxAll.slice(24 - 2 * n, 24 - n));
+	if (is30) {
+		// Flat costs count their monthly amount, as on public pages.
+		const flatIn = (m: string) =>
+			flats.reduce((a, f) => a + flatMonthlyCents(f, m), 0);
+		const r = rev30?.[0];
+		const c = cost30?.[0];
+		const tiles = (rev: number, cost: number) => {
+			const revenue = units(rev);
+			const costs = units(cost);
+			return {
+				revenue,
+				costs,
+				profit: Math.round((revenue - costs) * 100) / 100,
+			};
+		};
+		Object.assign(
+			periodTotals,
+			tiles(Number(r?.cur ?? 0), Number(c?.cur ?? 0) + flatIn(end)),
+		);
+		Object.assign(periodPrevious, {
+			...tiles(
+				Number(r?.prev ?? 0),
+				Number(c?.prev ?? 0) + flatIn(daysAgo(30).slice(0, 7)),
+			),
+			mrr: latestSum("mrr_base_cents", daysAgo(30)),
+			customers: latestSum("customers", daysAgo(30)),
+		});
+		taxTotal = units(Number(r?.tax ?? 0));
+		taxPrevious = units(Number(r?.prevTax ?? 0));
+	}
 	const tax = {
-		total: sum(taxAll.slice(24 - n)),
-		previous: sum(taxAll.slice(24 - 2 * n, 24 - n)),
+		total: taxTotal,
+		previous: taxPrevious,
 		owed: units(
 			revBySrc
 				.filter((r) => !remits.has(r.provider))
@@ -424,13 +524,14 @@ export async function overview(
 		period: {
 			key: periodKey,
 			label: PERIODS.find((p) => p.key === periodKey)?.label ?? "",
-			totals: totals((v) => v.slice(24 - n)),
-			previous: totals((v) => v.slice(24 - 2 * n, 24 - n)),
+			totals: periodTotals,
+			previous: periodPrevious,
 			tax,
 		},
 		byProduct,
 		costsByProvider,
 		revenueBySource: revBySrc
+			.filter((r) => Number(r.v) !== 0)
 			.map((r) => ({ provider: r.provider, amount: units(Number(r.v)) }))
 			.sort((a, b) => b.amount - a.amount),
 	};
