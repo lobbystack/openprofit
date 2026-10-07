@@ -1,82 +1,19 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { connector, connectorInfo, connectors } from "#/connectors";
 import { db, schema } from "#/db";
-import { encrypt } from "#/lib/crypto";
-import { PLANS } from "#/lib/plans";
 import { capture } from "./analytics.server";
 import { requireUser } from "./auth.server";
-import { isCloud } from "./billing.server";
-import { lastMonths } from "./overview.server";
+import { addConnection, connectionRows } from "./connections.server";
 import { syncConnection } from "./sync.server";
 import { currentWorkspace } from "./workspace.server";
 
-export type ConnectionRow = {
-	id: string;
-	provider: string;
-	kind: "revenue" | "cost";
-	label: string | null;
-	status: "active" | "error" | "paused";
-	lastError: string | null;
-	cadenceMinutes: number;
-	lastSyncedAt: number | null;
-	// This month, base currency, whole units. Negative for costs.
-	amount: number;
-};
+export type { ConnectionRow } from "./connections.server";
 
 export const getConnections = createServerFn({ method: "GET" }).handler(
-	async (): Promise<ConnectionRow[]> => {
-		const ws = await currentWorkspace();
-		const from = `${lastMonths(1)[0]}-01`;
-		const [conns, rev, cost] = await Promise.all([
-			db.query.connections.findMany({
-				where: eq(schema.connections.workspaceId, ws.id),
-				orderBy: (c, { asc }) => [asc(c.kind), asc(c.createdAt)],
-			}),
-			db
-				.select({
-					id: schema.revenueLines.connectionId,
-					v: sql<number>`sum(${schema.revenueLines.netBaseCents})`,
-				})
-				.from(schema.revenueLines)
-				.where(
-					and(
-						eq(schema.revenueLines.workspaceId, ws.id),
-						gte(schema.revenueLines.date, from),
-					),
-				)
-				.groupBy(schema.revenueLines.connectionId),
-			db
-				.select({
-					id: schema.costLines.connectionId,
-					v: sql<number>`sum(${schema.costLines.amountBaseCents})`,
-				})
-				.from(schema.costLines)
-				.where(
-					and(
-						eq(schema.costLines.workspaceId, ws.id),
-						gte(schema.costLines.date, from),
-					),
-				)
-				.groupBy(schema.costLines.connectionId),
-		]);
-		const totals = new Map<string | null, number>();
-		for (const r of rev) totals.set(r.id, Number(r.v));
-		for (const c of cost) totals.set(c.id, -Number(c.v));
-		return conns.map((c) => ({
-			id: c.id,
-			provider: c.provider,
-			kind: c.kind,
-			label: c.label,
-			status: c.status,
-			lastError: c.lastError,
-			cadenceMinutes: c.cadenceMinutes,
-			lastSyncedAt: c.lastSyncedAt,
-			amount: Math.round(totals.get(c.id) ?? 0) / 100,
-		}));
-	},
+	async () => connectionRows(await currentWorkspace()),
 );
 
 export const getConnectorInfo = createServerFn({ method: "GET" })
@@ -112,35 +49,17 @@ export const createConnection = createServerFn({ method: "POST" })
 	.validator(z.object({ provider: z.string(), credentials: Creds }))
 	.handler(async ({ data }) => {
 		const [ws, user] = await Promise.all([currentWorkspace(), requireUser()]);
-		const c = connector(data.provider);
-		const { label } = await c.verify(data.credentials);
-		// One product: lines land there. More: the user assigns them.
-		const products = await db.query.products.findMany({
-			where: eq(schema.products.workspaceId, ws.id),
-		});
-		const [conn] = await db
-			.insert(schema.connections)
-			.values({
-				workspaceId: ws.id,
-				provider: c.id,
-				kind: c.kind,
-				label,
-				authKind: "key",
-				productId: products.length === 1 ? products[0].id : null,
-				credentials: await encrypt(data.credentials),
-				cadenceMinutes: isCloud ? PLANS[ws.plan].cadenceMinutes : 60,
-			})
-			.returning();
+		const conn = await addConnection(ws, data);
 		await capture(user.id, ws.id, "connection_added", {
-			provider: c.id,
-			kind: c.kind,
+			provider: conn.provider,
+			kind: conn.kind,
 		});
 		// First sync runs now so the overview has a number right away.
 		try {
 			await syncConnection(conn);
 			return { id: conn.id, synced: true };
 		} catch (err) {
-			console.error(`[sync] first sync ${c.id}:`, err);
+			console.error(`[sync] first sync ${conn.provider}:`, err);
 			return { id: conn.id, synced: false };
 		}
 	});
