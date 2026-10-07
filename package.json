@@ -1,5 +1,5 @@
 {
-  "name": "openprofit",
+  "name": "openprofit-app",
   "private": true,
   "type": "module",
   "imports": {
