@@ -136,11 +136,7 @@ function Connections() {
 					const ready = implemented.has(id);
 					const inner = (
 						<>
-							<ProviderLogo
-								id={id}
-								size={18}
-								className={ready ? "" : "opacity-50 grayscale"}
-							/>
+							<ProviderLogo id={id} size={18} />
 							<span className="flex-1">{p.name}</span>
 							{!ready && (
 								<span className="label-mono">{ALTERNATIVE[id]?.label}</span>
@@ -162,7 +158,7 @@ function Connections() {
 						<Link
 							key={id}
 							to={ALTERNATIVE[id]?.to ?? "/app/costs"}
-							className={`${cls} text-text-3 hover:border-line-strong`}
+							className={`${cls} hover:border-line-strong`}
 						>
 							{inner}
 						</Link>
