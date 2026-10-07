@@ -34,6 +34,7 @@ const COLUMNS: [string, [string, string][]][] = [
 			["Privacy", "/privacy"],
 			["Terms", "/terms"],
 			["Cookies", "/cookies"],
+			["Security", "/security"],
 		],
 	],
 ];

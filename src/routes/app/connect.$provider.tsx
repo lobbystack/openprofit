@@ -174,6 +174,14 @@ function Connect() {
 						Setup guide
 						<ArrowUpRight size={14} className="text-text-3" />
 					</Link>
+					<Link
+						to="/security"
+						target="_blank"
+						className="mt-2 flex items-center gap-1 text-[13px] hover:underline"
+					>
+						How OpenProfit stores your key
+						<ArrowUpRight size={14} className="text-text-3" />
+					</Link>
 					{info.scopes.length > 0 && (
 						<>
 							<div className="label-mono mt-5">Permissions</div>

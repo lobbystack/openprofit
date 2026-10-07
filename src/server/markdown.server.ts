@@ -23,6 +23,7 @@ export function markdownFor(path: string): string | null {
 	if (p === "/privacy") return LEGAL_MD.privacy;
 	if (p === "/terms") return LEGAL_MD.terms;
 	if (p === "/cookies") return LEGAL_MD.cookies;
+	if (p === "/security") return LEGAL_MD.security;
 	const [, section, slug] = p.split("/");
 	const list =
 		section === "docs"
