@@ -54,6 +54,14 @@ OpenProfit runs its scheduled jobs inside the server process:
 | --- | --- | --- |
 | `SYNC_SCHEDULER` | `on` | Set to `off` to stop the sync, weekly email and usage ping jobs, for example on a second instance that shares the database. The weekly email job runs hourly and sends to each workspace at the day and hour picked in **Settings**, in that workspace’s time zone |
 
+## Public demo
+
+The demo at `/demo` shows the dashboard with sample numbers. Anyone can open it without signing in, and nobody can change it:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `DEMO` | `off`, or `on` with `APP_MODE=cloud` | Set to `on` to serve the demo. The instance keeps one demo workspace with no members and rebuilds it every hour, so its twelve months end in the current month. While it's off, `/demo` redirects to `https://openprofit.dev/demo` |
+
 ## Hosted mode
 
 These variables apply only to the hosted version at openprofit.dev. A self-hosted instance leaves them unset:

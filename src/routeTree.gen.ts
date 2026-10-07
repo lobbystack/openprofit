@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -21,6 +22,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ApiExportDotcsvRouteImport } from './routes/api/export[.]csv'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppAlertsRouteImport } from './routes/app/alerts'
@@ -30,6 +32,10 @@ import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as CompareSlugRouteImport } from './routes/compare.$slug'
 import { Route as DataIndexRouteImport } from './routes/data.index'
 import { Route as DataFileRouteImport } from './routes/data.$file'
+import { Route as DemoIndexRouteImport } from './routes/demo/index'
+import { Route as DemoConnectionsRouteImport } from './routes/demo/connections'
+import { Route as DemoCostsRouteImport } from './routes/demo/costs'
+import { Route as DemoProductsRouteImport } from './routes/demo/products'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IngestSplatRouteImport } from './routes/ingest.$'
@@ -62,6 +68,11 @@ const ChangelogRoute = ChangelogRouteImport.update({
 const CookiesRoute = CookiesRouteImport.update({
   id: '/cookies',
   path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -102,6 +113,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExportDotcsvRoute = ApiExportDotcsvRouteImport.update({
+  id: '/api/export.csv',
+  path: '/api/export.csv',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTelemetryRoute = ApiTelemetryRouteImport.update({
@@ -148,6 +164,26 @@ const DataFileRoute = DataFileRouteImport.update({
   id: '/data/$file',
   path: '/data/$file',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DemoIndexRoute = DemoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoConnectionsRoute = DemoConnectionsRouteImport.update({
+  id: '/connections',
+  path: '/connections',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoCostsRoute = DemoCostsRouteImport.update({
+  id: '/costs',
+  path: '/costs',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoProductsRoute = DemoProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => DemoRoute,
 } as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/',
@@ -222,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/cookies': typeof CookiesRoute
+  '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -230,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/api/export.csv': typeof ApiExportDotcsvRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
@@ -237,11 +275,15 @@ export interface FileRoutesByFullPath {
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
   '/data/$file': typeof DataFileRoute
+  '/demo/connections': typeof DemoConnectionsRoute
+  '/demo/costs': typeof DemoCostsRoute
+  '/demo/products': typeof DemoProductsRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
   '/app/': typeof AppIndexRoute
   '/data/': typeof DataIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -264,6 +306,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/api/export.csv': typeof ApiExportDotcsvRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
@@ -271,11 +314,15 @@ export interface FileRoutesByTo {
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
   '/data/$file': typeof DataFileRoute
+  '/demo/connections': typeof DemoConnectionsRoute
+  '/demo/costs': typeof DemoCostsRoute
+  '/demo/products': typeof DemoProductsRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
   '/app': typeof AppIndexRoute
   '/data': typeof DataIndexRoute
+  '/demo': typeof DemoIndexRoute
   '/docs': typeof DocsIndexRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -293,6 +340,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/cookies': typeof CookiesRoute
+  '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -301,6 +349,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/api/export.csv': typeof ApiExportDotcsvRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
@@ -308,11 +357,15 @@ export interface FileRoutesById {
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
   '/data/$file': typeof DataFileRoute
+  '/demo/connections': typeof DemoConnectionsRoute
+  '/demo/costs': typeof DemoCostsRoute
+  '/demo/products': typeof DemoProductsRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
   '/app/': typeof AppIndexRoute
   '/data/': typeof DataIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -331,6 +384,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/changelog'
     | '/cookies'
+    | '/demo'
     | '/docs'
     | '/login'
     | '/onboarding'
@@ -339,6 +393,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/api/export.csv'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
@@ -346,11 +401,15 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/compare/$slug'
     | '/data/$file'
+    | '/demo/connections'
+    | '/demo/costs'
+    | '/demo/products'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
     | '/app/'
     | '/data/'
+    | '/demo/'
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
@@ -373,6 +432,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/api/export.csv'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
@@ -380,11 +440,15 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/compare/$slug'
     | '/data/$file'
+    | '/demo/connections'
+    | '/demo/costs'
+    | '/demo/products'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
     | '/app'
     | '/data'
+    | '/demo'
     | '/docs'
     | '/integrations'
     | '/api/auth/$'
@@ -401,6 +465,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/changelog'
     | '/cookies'
+    | '/demo'
     | '/docs'
     | '/login'
     | '/onboarding'
@@ -409,6 +474,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/api/export.csv'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
@@ -416,11 +482,15 @@ export interface FileRouteTypes {
     | '/app/settings'
     | '/compare/$slug'
     | '/data/$file'
+    | '/demo/connections'
+    | '/demo/costs'
+    | '/demo/products'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
     | '/app/'
     | '/data/'
+    | '/demo/'
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
@@ -438,6 +508,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ChangelogRoute: typeof ChangelogRoute
   CookiesRoute: typeof CookiesRoute
+  DemoRoute: typeof DemoRouteWithChildren
   DocsRoute: typeof DocsRouteWithChildren
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -446,6 +517,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  ApiExportDotcsvRoute: typeof ApiExportDotcsvRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CompareSlugRoute: typeof CompareSlugRoute
   DataFileRoute: typeof DataFileRoute
@@ -488,6 +560,13 @@ declare module '@tanstack/react-router' {
       path: '/cookies'
       fullPath: '/cookies'
       preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -544,6 +623,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/export.csv': {
+      id: '/api/export.csv'
+      path: '/api/export.csv'
+      fullPath: '/api/export.csv'
+      preLoaderRoute: typeof ApiExportDotcsvRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/telemetry': {
@@ -608,6 +694,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/data/$file'
       preLoaderRoute: typeof DataFileRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/demo/': {
+      id: '/demo/'
+      path: '/'
+      fullPath: '/demo/'
+      preLoaderRoute: typeof DemoIndexRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/connections': {
+      id: '/demo/connections'
+      path: '/connections'
+      fullPath: '/demo/connections'
+      preLoaderRoute: typeof DemoConnectionsRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/costs': {
+      id: '/demo/costs'
+      path: '/costs'
+      fullPath: '/demo/costs'
+      preLoaderRoute: typeof DemoCostsRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/products': {
+      id: '/demo/products'
+      path: '/products'
+      fullPath: '/demo/products'
+      preLoaderRoute: typeof DemoProductsRouteImport
+      parentRoute: typeof DemoRoute
     }
     '/docs/': {
       id: '/docs/'
@@ -727,6 +841,22 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface DemoRouteChildren {
+  DemoConnectionsRoute: typeof DemoConnectionsRoute
+  DemoCostsRoute: typeof DemoCostsRoute
+  DemoProductsRoute: typeof DemoProductsRoute
+  DemoIndexRoute: typeof DemoIndexRoute
+}
+
+const DemoRouteChildren: DemoRouteChildren = {
+  DemoConnectionsRoute: DemoConnectionsRoute,
+  DemoCostsRoute: DemoCostsRoute,
+  DemoProductsRoute: DemoProductsRoute,
+  DemoIndexRoute: DemoIndexRoute,
+}
+
+const DemoRouteWithChildren = DemoRoute._addFileChildren(DemoRouteChildren)
+
 interface DocsRouteChildren {
   DocsSlugRoute: typeof DocsSlugRoute
   DocsIndexRoute: typeof DocsIndexRoute
@@ -744,6 +874,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ChangelogRoute: ChangelogRoute,
   CookiesRoute: CookiesRoute,
+  DemoRoute: DemoRouteWithChildren,
   DocsRoute: DocsRouteWithChildren,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
@@ -752,6 +883,7 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  ApiExportDotcsvRoute: ApiExportDotcsvRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
   CompareSlugRoute: CompareSlugRoute,
   DataFileRoute: DataFileRoute,

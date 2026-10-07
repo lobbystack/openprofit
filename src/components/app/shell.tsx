@@ -14,6 +14,7 @@ import {
 	SunMoon,
 } from "lucide-react";
 import { Logo } from "#/components/logo";
+import { buttonVariants } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
 import {
 	DropdownMenu,
@@ -45,6 +46,14 @@ const NAV = [
 	{ to: "/app/settings", label: "Settings", icon: Settings },
 ] as const;
 
+// The public demo's pages: read-only, so no alerts or settings.
+const DEMO_NAV = [
+	{ to: "/demo", label: "Overview", icon: LayoutGrid, exact: true },
+	{ to: "/demo/products", label: "Products", icon: Package },
+	{ to: "/demo/connections", label: "Connections", icon: Cable },
+	{ to: "/demo/costs", label: "Costs", icon: Receipt },
+] as const;
+
 function signOut() {
 	authClient.signOut().then(() => {
 		window.location.href = "/login";
@@ -52,41 +61,50 @@ function signOut() {
 }
 
 // 240px sidebar, paper background, hairline right border. See design/DESIGN.md.
+// `demo`: the public demo at /demo. No workspace, search or account menus,
+// and a sign-up bar over the page.
 export function Shell({
 	workspace,
+	demo = false,
 	children,
 }: {
 	workspace: WorkspaceSummary;
+	demo?: boolean;
 	children: React.ReactNode;
 }) {
 	const path = useRouterState({ select: (s) => s.location.pathname });
+	const nav = demo ? DEMO_NAV : NAV;
 	return (
 		<div className="flex min-h-screen">
 			<aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 flex-col border-r border-line bg-paper p-3 md:flex">
-				<DropdownMenu>
-					<DropdownMenuTrigger className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2">
+				<DropdownMenu disabled={demo}>
+					<DropdownMenuTrigger className="flex h-9 w-full items-center justify-between rounded-md px-2 text-[13px] hover:bg-surface-2 data-disabled:hover:bg-transparent">
 						<span className="flex min-w-0 items-center gap-2">
 							<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
 								{workspace.name[0]}
 							</span>
 							<span className="truncate">{workspace.name}</span>
 						</span>
-						<ChevronsUpDown size={14} className="shrink-0 text-text-3" />
+						{!demo && (
+							<ChevronsUpDown size={14} className="shrink-0 text-text-3" />
+						)}
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
 						<WorkspaceItems workspace={workspace} />
 					</DropdownMenuContent>
 				</DropdownMenu>
 
-				<Search
-					pages={NAV}
-					products={workspace.products}
-					className="mt-2 flex h-8 w-full items-center gap-2 rounded-md border border-line px-2 text-[13px] text-text-3 hover:border-line-strong"
-				/>
+				{!demo && (
+					<Search
+						pages={NAV}
+						products={workspace.products}
+						className="mt-2 flex h-8 w-full items-center gap-2 rounded-md border border-line px-2 text-[13px] text-text-3 hover:border-line-strong"
+					/>
+				)}
 
 				<nav className="mt-5">
 					<ul className="space-y-px">
-						{NAV.map(({ to, label, icon: Icon, ...rest }) => {
+						{nav.map(({ to, label, icon: Icon, ...rest }) => {
 							const active =
 								"exact" in rest ? path === to : path.startsWith(to);
 							return (
@@ -113,7 +131,7 @@ export function Shell({
 					{workspace.products.map((p) => (
 						<li key={p.id}>
 							<Link
-								to="/app/products"
+								to={demo ? "/demo/products" : "/app/products"}
 								className="flex h-8 items-center justify-between rounded-md px-2 text-[13px] text-text-2 hover:bg-surface-1 hover:text-ink"
 							>
 								<span>{p.name}</span>
@@ -125,46 +143,64 @@ export function Shell({
 					))}
 				</ul>
 
-				<div className="mt-auto">
-					<DropdownMenu>
-						<DropdownMenuTrigger className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-[13px] hover:bg-surface-2">
-							<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-3 text-[10px]">
-								{workspace.email[0]}
-							</span>
-							<span className="flex-1 truncate text-left text-text-2">
-								{workspace.email}
-							</span>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent side="top">
-							<AccountItems />
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-			</aside>
-
-			<div className="min-w-0 flex-1">
-				{/* Phones: the sidebar's sections as a scrollable bar. */}
-				<header className="chrome sticky top-0 z-40 border-b border-line md:hidden">
-					<div className="flex h-12 items-center justify-between px-4">
-						<Link to="/app">
-							<Logo size={15} />
-						</Link>
+				{!demo && (
+					<div className="mt-auto">
 						<DropdownMenu>
-							<DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-[12px]">
-								{workspace.email[0]}
+							<DropdownMenuTrigger className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-[13px] hover:bg-surface-2">
+								<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-3 text-[10px]">
+									{workspace.email[0]}
+								</span>
+								<span className="flex-1 truncate text-left text-text-2">
+									{workspace.email}
+								</span>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" sideOffset={8} className="w-56">
-								<WorkspaceItems workspace={workspace} />
-								<DropdownMenuSeparator />
-								<DropdownMenuGroup>
-									<DropdownMenuLabel>{workspace.email}</DropdownMenuLabel>
-									<AccountItems />
-								</DropdownMenuGroup>
+							<DropdownMenuContent side="top">
+								<AccountItems />
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
+				)}
+			</aside>
+
+			<div className="min-w-0 flex-1">
+				{demo && (
+					<div className="flex min-h-10 flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-line bg-surface-1 px-4 py-1.5 text-[13px]">
+						<span className="text-text-2">
+							You're looking at sample numbers for a made-up company.
+						</span>
+						<Link to="/login" className={buttonVariants({ size: "xs" })}>
+							Start free
+						</Link>
+					</div>
+				)}
+				{/* Phones: the sidebar's sections as a scrollable bar. */}
+				<header className="chrome sticky top-0 z-40 border-b border-line md:hidden">
+					<div className="flex h-12 items-center justify-between px-4">
+						<Link to={demo ? "/demo" : "/app"}>
+							<Logo size={15} />
+						</Link>
+						{!demo && (
+							<DropdownMenu>
+								<DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-[12px]">
+									{workspace.email[0]}
+								</DropdownMenuTrigger>
+								<DropdownMenuContent
+									align="end"
+									sideOffset={8}
+									className="w-56"
+								>
+									<WorkspaceItems workspace={workspace} />
+									<DropdownMenuSeparator />
+									<DropdownMenuGroup>
+										<DropdownMenuLabel>{workspace.email}</DropdownMenuLabel>
+										<AccountItems />
+									</DropdownMenuGroup>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						)}
+					</div>
 					<nav className="flex gap-1 overflow-x-auto px-3 pb-2 [scrollbar-width:none]">
-						{NAV.map(({ to, label, ...rest }) => {
+						{nav.map(({ to, label, ...rest }) => {
 							const active =
 								"exact" in rest ? path === to : path.startsWith(to);
 							return (
@@ -220,7 +256,9 @@ export function PageHeader({
 				<h1 className="text-[20px]">{title}</h1>
 				{meta && <span className="text-[12px] text-text-3">{meta}</span>}
 			</div>
-			{children && <div className="flex items-center gap-2">{children}</div>}
+			{children && (
+				<div className="flex flex-wrap items-center gap-2">{children}</div>
+			)}
 		</div>
 	);
 }

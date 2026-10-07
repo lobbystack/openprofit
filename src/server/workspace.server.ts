@@ -26,30 +26,27 @@ export async function userWorkspaces(userId: string) {
 			schema.workspaces,
 			eq(schema.workspaces.id, schema.workspaceMembers.workspaceId),
 		)
-		.where(eq(schema.workspaceMembers.userId, userId))
+		.where(
+			and(
+				eq(schema.workspaceMembers.userId, userId),
+				// The public demo is read-only: nobody works in it as a member.
+				eq(schema.workspaces.demo, false),
+			),
+		)
 		.orderBy(schema.workspaceMembers.createdAt);
 }
 
 // The workspace picked in the switcher (a cookie), else the user's first.
-// Redirects to onboarding when they have none.
+// Redirects to onboarding when they have none. Never the demo workspace, so
+// no server function that starts here can change it.
 export async function currentWorkspace(): Promise<Workspace> {
 	const user = await requireUser();
 	const picked = getCookie(COOKIE);
-	const member =
-		(picked &&
-			(await db.query.workspaceMembers.findFirst({
-				where: and(
-					eq(schema.workspaceMembers.userId, user.id),
-					eq(schema.workspaceMembers.workspaceId, picked),
-				),
-			}))) ||
-		(await db.query.workspaceMembers.findFirst({
-			where: eq(schema.workspaceMembers.userId, user.id),
-			orderBy: (m, { asc }) => asc(m.createdAt),
-		}));
-	if (!member) throw redirect({ to: "/onboarding" });
+	const mine = await userWorkspaces(user.id);
+	const id = (mine.find((w) => w.id === picked) ?? mine[0])?.id;
+	if (!id) throw redirect({ to: "/onboarding" });
 	const ws = await db.query.workspaces.findFirst({
-		where: eq(schema.workspaces.id, member.workspaceId),
+		where: eq(schema.workspaces.id, id),
 	});
 	if (!ws) throw redirect({ to: "/onboarding" });
 	return ws;

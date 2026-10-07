@@ -4,6 +4,7 @@ import { PLANS } from "#/lib/plans";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
 import { boot } from "./boot.server";
+import { demoWorkspace } from "./demo.server";
 import { convert } from "./fx.server";
 import { overview } from "./overview.server";
 import {
@@ -53,6 +54,28 @@ export const getWorkspace = createServerFn({ method: "GET" }).handler(
 			email: user.email,
 			analytics: user.analytics,
 			workspaces: await userWorkspaces(user.id),
+			products: data.byProduct
+				.filter((p) => p.id !== "shared")
+				.map((p) => ({ id: p.id, name: p.name, profit: p.revenue - p.costs })),
+		};
+	},
+);
+
+// The shell's summary for /demo. No user: anyone can read it.
+export const getDemoWorkspace = createServerFn({ method: "GET" }).handler(
+	async (): Promise<WorkspaceSummary> => {
+		const ws = await demoWorkspace();
+		const data = await overview(ws);
+		return {
+			id: ws.id,
+			name: ws.name,
+			currency: ws.baseCurrency,
+			plan: ws.plan,
+			overCap: false,
+			userId: "",
+			email: "",
+			analytics: false,
+			workspaces: [],
 			products: data.byProduct
 				.filter((p) => p.id !== "shared")
 				.map((p) => ({ id: p.id, name: p.name, profit: p.revenue - p.costs })),

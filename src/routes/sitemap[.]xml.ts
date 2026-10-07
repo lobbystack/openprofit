@@ -6,6 +6,7 @@ import { DOCS } from "#/lib/docs";
 
 const STATIC = [
 	"/",
+	"/demo",
 	"/integrations",
 	...INTEGRATIONS.map((p) => `/integrations/${p.slug}`),
 	...COMPARISONS.map((p) => `/compare/${p.slug}`),

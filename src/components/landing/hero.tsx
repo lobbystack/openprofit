@@ -62,6 +62,14 @@ export function Hero() {
 							Self-host
 						</Href>
 					</div>
+					<Href
+						href="/demo"
+						className={`rise mt-3 ${buttonVariants({ variant: "ghost", weight: "medium" })}`}
+						style={{ "--rise-delay": "240ms" } as React.CSSProperties}
+					>
+						See the demo
+						<ArrowRight size={13} />
+					</Href>
 				</Container>
 			</section>
 
