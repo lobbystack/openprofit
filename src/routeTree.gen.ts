@@ -24,6 +24,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as DotwellKnownSplatRouteImport } from './routes/[.]well-known/$'
 import { Route as ApiConnectionsRouteImport } from './routes/api/connections'
 import { Route as ApiExportDotcsvRouteImport } from './routes/api/export[.]csv'
 import { Route as ApiProvidersRouteImport } from './routes/api/providers'
@@ -46,6 +47,11 @@ import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IngestSplatRouteImport } from './routes/ingest.$'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
 import { Route as IntegrationsSlugRouteImport } from './routes/integrations.$slug'
+import { Route as OauthAuthorizeRouteImport } from './routes/oauth/authorize'
+import { Route as OauthConsentRouteImport } from './routes/oauth/consent'
+import { Route as OauthRegisterRouteImport } from './routes/oauth/register'
+import { Route as OauthRevokeRouteImport } from './routes/oauth/revoke'
+import { Route as OauthTokenRouteImport } from './routes/oauth/token'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCliLoginRouteImport } from './routes/api/cli/login'
 import { Route as ApiPolarWebhookRouteImport } from './routes/api/polar/webhook'
@@ -130,6 +136,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DotwellKnownSplatRoute = DotwellKnownSplatRouteImport.update({
+  id: '/.well-known/$',
+  path: '/.well-known/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiConnectionsRoute = ApiConnectionsRouteImport.update({
@@ -242,6 +253,31 @@ const IntegrationsSlugRoute = IntegrationsSlugRouteImport.update({
   path: '/integrations/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OauthAuthorizeRoute = OauthAuthorizeRouteImport.update({
+  id: '/oauth/authorize',
+  path: '/oauth/authorize',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthConsentRoute = OauthConsentRouteImport.update({
+  id: '/oauth/consent',
+  path: '/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthRegisterRoute = OauthRegisterRouteImport.update({
+  id: '/oauth/register',
+  path: '/oauth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthRevokeRoute = OauthRevokeRouteImport.update({
+  id: '/oauth/revoke',
+  path: '/oauth/revoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthTokenRoute = OauthTokenRouteImport.update({
+  id: '/oauth/token',
+  path: '/oauth/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -311,6 +347,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/$': typeof DotwellKnownSplatRoute
   '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
   '/api/providers': typeof ApiProvidersRoute
@@ -328,6 +365,11 @@ export interface FileRoutesByFullPath {
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
+  '/oauth/authorize': typeof OauthAuthorizeRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/oauth/register': typeof OauthRegisterRoute
+  '/oauth/revoke': typeof OauthRevokeRoute
+  '/oauth/token': typeof OauthTokenRoute
   '/app/': typeof AppIndexRoute
   '/data/': typeof DataIndexRoute
   '/demo/': typeof DemoIndexRoute
@@ -357,6 +399,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/$': typeof DotwellKnownSplatRoute
   '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
   '/api/providers': typeof ApiProvidersRoute
@@ -374,6 +417,11 @@ export interface FileRoutesByTo {
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
+  '/oauth/authorize': typeof OauthAuthorizeRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/oauth/register': typeof OauthRegisterRoute
+  '/oauth/revoke': typeof OauthRevokeRoute
+  '/oauth/token': typeof OauthTokenRoute
   '/app': typeof AppIndexRoute
   '/data': typeof DataIndexRoute
   '/demo': typeof DemoIndexRoute
@@ -407,6 +455,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/$': typeof DotwellKnownSplatRoute
   '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
   '/api/providers': typeof ApiProvidersRoute
@@ -424,6 +473,11 @@ export interface FileRoutesById {
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
+  '/oauth/authorize': typeof OauthAuthorizeRoute
+  '/oauth/consent': typeof OauthConsentRoute
+  '/oauth/register': typeof OauthRegisterRoute
+  '/oauth/revoke': typeof OauthRevokeRoute
+  '/oauth/token': typeof OauthTokenRoute
   '/app/': typeof AppIndexRoute
   '/data/': typeof DataIndexRoute
   '/demo/': typeof DemoIndexRoute
@@ -458,6 +512,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/$'
     | '/api/connections'
     | '/api/export.csv'
     | '/api/providers'
@@ -475,6 +530,11 @@ export interface FileRouteTypes {
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
+    | '/oauth/authorize'
+    | '/oauth/consent'
+    | '/oauth/register'
+    | '/oauth/revoke'
+    | '/oauth/token'
     | '/app/'
     | '/data/'
     | '/demo/'
@@ -504,6 +564,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/$'
     | '/api/connections'
     | '/api/export.csv'
     | '/api/providers'
@@ -521,6 +582,11 @@ export interface FileRouteTypes {
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
+    | '/oauth/authorize'
+    | '/oauth/consent'
+    | '/oauth/register'
+    | '/oauth/revoke'
+    | '/oauth/token'
     | '/app'
     | '/data'
     | '/demo'
@@ -553,6 +619,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/$'
     | '/api/connections'
     | '/api/export.csv'
     | '/api/providers'
@@ -570,6 +637,11 @@ export interface FileRouteTypes {
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
+    | '/oauth/authorize'
+    | '/oauth/consent'
+    | '/oauth/register'
+    | '/oauth/revoke'
+    | '/oauth/token'
     | '/app/'
     | '/data/'
     | '/demo/'
@@ -603,6 +675,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
   ApiConnectionsRoute: typeof ApiConnectionsRoute
   ApiExportDotcsvRoute: typeof ApiExportDotcsvRoute
   ApiProvidersRoute: typeof ApiProvidersRoute
@@ -612,6 +685,11 @@ export interface RootRouteChildren {
   DataFileRoute: typeof DataFileRoute
   IngestSplatRoute: typeof IngestSplatRoute
   IntegrationsSlugRoute: typeof IntegrationsSlugRoute
+  OauthAuthorizeRoute: typeof OauthAuthorizeRoute
+  OauthConsentRoute: typeof OauthConsentRoute
+  OauthRegisterRoute: typeof OauthRegisterRoute
+  OauthRevokeRoute: typeof OauthRevokeRoute
+  OauthTokenRoute: typeof OauthTokenRoute
   DataIndexRoute: typeof DataIndexRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -727,6 +805,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/$': {
+      id: '/.well-known/$'
+      path: '/.well-known/$'
+      fullPath: '/.well-known/$'
+      preLoaderRoute: typeof DotwellKnownSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/connections': {
@@ -883,6 +968,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntegrationsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oauth/authorize': {
+      id: '/oauth/authorize'
+      path: '/oauth/authorize'
+      fullPath: '/oauth/authorize'
+      preLoaderRoute: typeof OauthAuthorizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/consent': {
+      id: '/oauth/consent'
+      path: '/oauth/consent'
+      fullPath: '/oauth/consent'
+      preLoaderRoute: typeof OauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/register': {
+      id: '/oauth/register'
+      path: '/oauth/register'
+      fullPath: '/oauth/register'
+      preLoaderRoute: typeof OauthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/revoke': {
+      id: '/oauth/revoke'
+      path: '/oauth/revoke'
+      fullPath: '/oauth/revoke'
+      preLoaderRoute: typeof OauthRevokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth/token': {
+      id: '/oauth/token'
+      path: '/oauth/token'
+      fullPath: '/oauth/token'
+      preLoaderRoute: typeof OauthTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -1036,6 +1156,7 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  DotwellKnownSplatRoute: DotwellKnownSplatRoute,
   ApiConnectionsRoute: ApiConnectionsRoute,
   ApiExportDotcsvRoute: ApiExportDotcsvRoute,
   ApiProvidersRoute: ApiProvidersRoute,
@@ -1045,6 +1166,11 @@ const rootRouteChildren: RootRouteChildren = {
   DataFileRoute: DataFileRoute,
   IngestSplatRoute: IngestSplatRoute,
   IntegrationsSlugRoute: IntegrationsSlugRoute,
+  OauthAuthorizeRoute: OauthAuthorizeRoute,
+  OauthConsentRoute: OauthConsentRoute,
+  OauthRegisterRoute: OauthRegisterRoute,
+  OauthRevokeRoute: OauthRevokeRoute,
+  OauthTokenRoute: OauthTokenRoute,
   DataIndexRoute: DataIndexRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

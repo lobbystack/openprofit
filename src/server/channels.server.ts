@@ -1,15 +1,12 @@
 import { createHmac, randomBytes } from "node:crypto";
-import dns from "node:dns";
 import { lookup } from "node:dns/promises";
-import { request as httpRequest } from "node:http";
-import { request as httpsRequest } from "node:https";
-import { BlockList, isIPv6, type LookupFunction } from "node:net";
 import { and, eq, lt, or, sql } from "drizzle-orm";
 import { db, schema } from "#/db";
 import { SMS_CAP } from "#/lib/alerts";
 import { APP_NAME } from "#/lib/app";
 import { decrypt } from "#/lib/crypto";
 import { isCloud } from "./billing.server";
+import { isPrivate, PUBLIC_ONLY, publicRequest } from "./net.server";
 import type { Workspace } from "./workspace.server";
 
 // Slack, a signed webhook and SMS: every alert that opens goes to each one
@@ -84,49 +81,6 @@ export async function postSlack(url: string, ws: Workspace, a: OpenedAlert) {
 
 // Hosted: an endpoint must be public https, so a workspace can't make the
 // server call addresses on its own network. Self-host allows anything.
-// IPv4 rules also match IPv4-mapped IPv6 (::ffff:127.0.0.1).
-const PRIVATE = new BlockList();
-for (const [net, bits] of [
-	["0.0.0.0", 8], // "this network"; 0.0.0.0 reaches localhost
-	["10.0.0.0", 8],
-	["100.64.0.0", 10], // CGNAT
-	["127.0.0.0", 8],
-	["169.254.0.0", 16], // link-local, cloud metadata
-	["172.16.0.0", 12],
-	["192.0.0.0", 24],
-	["192.168.0.0", 16],
-	["198.18.0.0", 15],
-	["224.0.0.0", 4], // multicast
-	["240.0.0.0", 4], // reserved, broadcast
-] as const)
-	PRIVATE.addSubnet(net, bits, "ipv4");
-for (const [net, bits] of [
-	["::", 96], // unspecified, loopback, IPv4-compatible
-	["64:ff9b::", 96], // NAT64 to IPv4
-	["64:ff9b:1::", 48],
-	["fc00::", 7], // unique local
-	["fe80::", 10], // link-local
-	["fec0::", 10], // site-local
-	["ff00::", 8], // multicast
-] as const)
-	PRIVATE.addSubnet(net, bits, "ipv6");
-const isPrivate = (ip: string) =>
-	PRIVATE.check(ip, isIPv6(ip) ? "ipv6" : "ipv4");
-const PUBLIC_ONLY = "Use an address on the public internet";
-
-// For the socket's `lookup`: resolves the name, fails if any address is
-// private, and hands over only the addresses it checked, so the request
-// connects to exactly those and a second DNS answer can't swap them.
-// Sockets skip `lookup` for IP literals, which endpointProblem checks.
-const publicLookup: LookupFunction = (hostname, options, callback) =>
-	dns.lookup(hostname, { ...options, all: true }, (err, addrs) => {
-		if (err) return callback(err, "");
-		if (addrs.some((a) => isPrivate(a.address)))
-			return callback(new Error(PUBLIC_ONLY), "");
-		if (options.all) return callback(null, addrs);
-		callback(null, addrs[0].address, addrs[0].family);
-	});
-
 export async function endpointProblem(raw: string): Promise<string | null> {
 	let u: URL;
 	try {
@@ -182,31 +136,16 @@ export async function postWebhook(
 		opened_at: new Date(a.openedAt).toISOString(),
 		link: link(),
 	});
-	// node:http(s) rather than fetch, which has no `lookup`. It never follows
-	// redirects. TLS still verifies the certificate against the hostname.
-	const u = new URL(url);
-	const status = await new Promise<number>((resolve, reject) => {
-		const req = (u.protocol === "https:" ? httpsRequest : httpRequest)(
-			u,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					// The alert id, so a receiver can drop a duplicate.
-					...signWebhook(secret, body, a.id),
-				},
-				lookup: isCloud ? publicLookup : undefined,
-				// A pooled socket could have connected without that check.
-				agent: false,
-				signal: timeout(),
-			},
-			(res) => {
-				res.resume();
-				resolve(res.statusCode ?? 0);
-			},
-		);
-		req.on("error", reject);
-		req.end(body);
+	const { status } = await publicRequest(new URL(url), {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			// The alert id, so a receiver can drop a duplicate.
+			...signWebhook(secret, body, a.id),
+		},
+		body,
+		publicOnly: isCloud,
+		timeoutMs: 15_000,
 	});
 	if (status < 200 || status > 299)
 		throw new Error(`Your endpoint answered ${status}`);

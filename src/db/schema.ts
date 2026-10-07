@@ -367,9 +367,58 @@ export const apiTokens = pgTable(
 		prefix: text("prefix").notNull(),
 		lastUsedAt: ms("last_used_at"),
 		revokedAt: ms("revoked_at"),
+		// Tokens issued over OAuth (/oauth/token): the client's id, when the
+		// access token expires, and the SHA-256 of the refresh token. A refresh
+		// replaces both hashes on this row, so one connection stays one row.
+		oauthClientId: text("oauth_client_id"),
+		expiresAt: ms("expires_at"),
+		refreshHash: text("refresh_hash"),
 		createdAt: createdAt(),
 	},
-	(t) => [uniqueIndex("api_tokens_hash").on(t.tokenHash)],
+	(t) => [
+		uniqueIndex("api_tokens_hash").on(t.tokenHash),
+		uniqueIndex("api_tokens_refresh").on(t.refreshHash),
+	],
+);
+
+// OAuth clients from Dynamic Client Registration (/oauth/register). Clients
+// that use a Client ID Metadata Document aren't stored. Registration comes
+// before anyone signs in, so there is no workspace; clients without a live
+// token are deleted after a day.
+export const oauthClients = pgTable("oauth_clients", {
+	// The client_id.
+	id: id(),
+	name: text("name").notNull(),
+	redirectUris: jsonb("redirect_uris").$type<string[]>().notNull(),
+	createdAt: createdAt(),
+});
+
+// OAuth authorization codes, valid 5 minutes and once. A second use revokes
+// the token the first one got.
+export const oauthCodes = pgTable(
+	"oauth_codes",
+	{
+		id: id(),
+		codeHash: text("code_hash").notNull(),
+		workspaceId: text("workspace_id")
+			.notNull()
+			.references(() => workspaces.id, { onDelete: "cascade" }),
+		// The user who approved it.
+		userId: text("user_id").notNull(),
+		clientId: text("client_id").notNull(),
+		clientName: text("client_name").notNull(),
+		redirectUri: text("redirect_uri").notNull(),
+		// PKCE S256 challenge.
+		codeChallenge: text("code_challenge").notNull(),
+		scope: text("scope", { enum: ["read", "write"] }).notNull(),
+		expiresAt: ms("expires_at").notNull(),
+		apiTokenId: text("api_token_id").references(() => apiTokens.id, {
+			onDelete: "set null",
+		}),
+		usedAt: ms("used_at"),
+		createdAt: createdAt(),
+	},
+	(t) => [uniqueIndex("oauth_codes_hash").on(t.codeHash)],
 );
 
 // One-time links (/connect/<token>, valid 15 minutes) where the user pastes
@@ -452,7 +501,7 @@ export const auditEvents = pgTable(
 );
 
 // Monthly benchmark percentiles per MRR band. Aggregates across hosted
-// workspaces, so this is the one table without `workspace_id`. Money metrics
+// workspaces, so it has no `workspace_id`. Money metrics
 // are in USD cents, ratios in percent.
 export const benchmarkSnapshots = pgTable(
 	"benchmark_snapshots",

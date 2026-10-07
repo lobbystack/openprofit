@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gte, inArray, isNull, lt, ne } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, isNull, lt, ne, or } from "drizzle-orm";
 import { db, schema } from "#/db";
 import { describeError } from "#/lib/errors";
 import { providerName } from "#/lib/providers";
@@ -25,6 +25,10 @@ export async function issueToken(input: {
 	userId: string;
 	name: string;
 	scope: "read" | "write";
+	// OAuth tokens only; see oauth.server.ts.
+	oauthClientId?: string;
+	expiresAt?: number;
+	refreshHash?: string;
 }) {
 	const token = `op_${randomToken()}`;
 	const [row] = await db
@@ -35,7 +39,8 @@ export async function issueToken(input: {
 }
 
 // `Authorization: Bearer op_...` to the token and its workspace. The token
-// stops working when revoked or when its creator leaves the workspace.
+// stops working when revoked, when it expires (OAuth tokens) or when its
+// creator leaves the workspace.
 export async function authenticate(request: Request): Promise<Caller | null> {
 	const raw = request.headers
 		.get("authorization")
@@ -59,6 +64,10 @@ export async function authenticate(request: Request): Promise<Caller | null> {
 			and(
 				eq(schema.apiTokens.tokenHash, sha256(raw)),
 				isNull(schema.apiTokens.revokedAt),
+				or(
+					isNull(schema.apiTokens.expiresAt),
+					gt(schema.apiTokens.expiresAt, Date.now()),
+				),
 			),
 		);
 	if (!row) return null;
