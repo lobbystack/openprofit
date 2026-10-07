@@ -22,6 +22,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as OpenRouteImport } from './routes/open'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as DotwellKnownSplatRouteImport } from './routes/[.]well-known/$'
@@ -126,6 +127,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -345,6 +351,7 @@ export interface FileRoutesByFullPath {
   '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/.well-known/$': typeof DotwellKnownSplatRoute
@@ -397,6 +404,7 @@ export interface FileRoutesByTo {
   '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/.well-known/$': typeof DotwellKnownSplatRoute
@@ -453,6 +461,7 @@ export interface FileRoutesById {
   '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/.well-known/$': typeof DotwellKnownSplatRoute
@@ -510,6 +519,7 @@ export interface FileRouteTypes {
     | '/open'
     | '/privacy'
     | '/robots.txt'
+    | '/security'
     | '/sitemap.xml'
     | '/terms'
     | '/.well-known/$'
@@ -562,6 +572,7 @@ export interface FileRouteTypes {
     | '/open'
     | '/privacy'
     | '/robots.txt'
+    | '/security'
     | '/sitemap.xml'
     | '/terms'
     | '/.well-known/$'
@@ -617,6 +628,7 @@ export interface FileRouteTypes {
     | '/open'
     | '/privacy'
     | '/robots.txt'
+    | '/security'
     | '/sitemap.xml'
     | '/terms'
     | '/.well-known/$'
@@ -673,6 +685,7 @@ export interface RootRouteChildren {
   OpenRoute: typeof OpenRoute
   PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
@@ -791,6 +804,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -1154,6 +1174,7 @@ const rootRouteChildren: RootRouteChildren = {
   OpenRoute: OpenRoute,
   PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
+  SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   DotwellKnownSplatRoute: DotwellKnownSplatRoute,

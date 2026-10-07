@@ -1,10 +1,11 @@
 import "@tanstack/react-start/server-only";
 import cookies from "../legal/cookies.md?raw";
 import privacy from "../legal/privacy.md?raw";
+import security from "../legal/security.md?raw";
 import terms from "../legal/terms.md?raw";
 import { toHtml } from "./content";
 
-export const LEGAL_MD = { privacy, terms, cookies };
+export const LEGAL_MD = { privacy, terms, cookies, security };
 
 export const LEGAL = {
 	privacy: {
@@ -18,5 +19,9 @@ export const LEGAL = {
 	cookies: {
 		title: "Cookie Policy",
 		html: toHtml(cookies),
+	},
+	security: {
+		title: "Security",
+		html: toHtml(security),
 	},
 };

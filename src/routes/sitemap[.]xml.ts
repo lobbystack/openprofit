@@ -14,6 +14,7 @@ const STATIC = [
 	"/privacy",
 	"/terms",
 	"/cookies",
+	"/security",
 ];
 
 export const Route = createFileRoute("/sitemap.xml")({

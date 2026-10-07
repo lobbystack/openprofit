@@ -1,5 +1,6 @@
 import { and, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
 import { authSchema, db, schema } from "#/db";
+import { money } from "#/lib/format";
 import { providerName } from "#/lib/providers";
 import { agentChanges } from "./api.server";
 import { sendEmail } from "./email.server";
@@ -8,11 +9,7 @@ const day = (offset: number) =>
 	new Date(Date.now() - offset * 86_400_000).toISOString().slice(0, 10);
 
 const fmt = (cents: number, currency: string) =>
-	new Intl.NumberFormat("en-US", {
-		style: "currency",
-		currency,
-		maximumFractionDigits: 0,
-	}).format(cents / 100);
+	money(cents / 100, { currency });
 
 // Last seven days against the seven before, plus the cost that moved most.
 export async function weeklySummary(workspaceId: string) {

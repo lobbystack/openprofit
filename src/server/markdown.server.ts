@@ -6,7 +6,7 @@ import { LEGAL_MD } from "#/lib/legal";
 const integrationsIndex = [
 	"# Integrations",
 	"",
-	"Revenue from your payment processor, costs from the services you pay for. Each takes a read-only key.",
+	"Revenue from your payment processor, costs from the services you pay for. Each connection uses an API key with the narrowest access the provider offers, and OpenProfit only reads with it.",
 	"",
 	...INTEGRATIONS.map(
 		(p) =>
@@ -25,6 +25,7 @@ export function markdownFor(path: string): string | null {
 	if (p === "/privacy") return LEGAL_MD.privacy;
 	if (p === "/terms") return LEGAL_MD.terms;
 	if (p === "/cookies") return LEGAL_MD.cookies;
+	if (p === "/security") return LEGAL_MD.security;
 	// Hosted only, and never prerendered: the page shows live figures, the
 	// markdown points to the files.
 	if (p === "/data")

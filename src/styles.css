@@ -247,6 +247,8 @@
   & table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 0 0 16px; }
   & th { text-align: left; font-weight: 500; color: var(--ink); border-bottom: 1px solid var(--line-strong); padding: 6px 8px 6px 0; }
   & td { border-bottom: 1px solid var(--line); padding: 7px 8px 7px 0; vertical-align: top; }
+  /* Long identifiers in cells (API scopes, ids) wrap instead of widening the page on a phone. */
+  & td code { overflow-wrap: anywhere; }
   & ul, & ol { padding-left: 20px; margin: 0 0 14px; }
   & ul { list-style: disc; }
   & ol { list-style: decimal; }
