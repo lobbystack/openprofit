@@ -12,6 +12,7 @@ const ORDER = [
 	"self-host",
 	"environment",
 	"public-pages",
+	"agents",
 	"billing",
 ];
 
