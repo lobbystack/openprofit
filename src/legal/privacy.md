@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Last updated: October 6, 2026
+Last updated: October 6, 2026. Added section 6, Benchmarks.
 
 This policy explains what personal information OpenProfit collects, why, and what you can do about it. OpenProfit is operated by Lobbystack Inc., Montreal, Quebec, Canada ("we", "us"). It covers the hosted service at openprofit.dev. If you run the open-source software on your own server, we receive nothing from it unless you switch on the usage ping described in section 5.
 
@@ -35,7 +35,7 @@ This policy explains what personal information OpenProfit collects, why, and wha
 - To keep the Service secure and to debug problems.
 - To see which features people use and where they get stuck, so we know what to fix. Session replays add to this while your Analytics switch is on.
 - To tell you about changes to the Service, these terms or pricing. These are service messages, not marketing. We do not send marketing email unless you opt in, and you can opt out at any time.
-- To produce aggregate statistics that do not identify anyone, such as how many workspaces use a given connector.
+- To produce aggregate statistics that do not identify anyone, such as how many workspaces use a given connector, and the benchmarks described in section 6.
 
 Under the GDPR, our legal bases are performance of our contract with you, our legitimate interest in running, securing and improving the Service, and consent where we ask for it. Product analytics, session replay and web analytics without cookies rely on our legitimate interest in improving the Service. You can switch off product analytics and session replay with **Analytics** in Settings, and object to web analytics by emailing us.
 
@@ -66,7 +66,15 @@ The Service runs on servers in the United States. If you are in Canada, the Euro
 
 A self-hosted copy of the open-source software sends us nothing by default. If its owner switches on the usage ping, it sends once a day: a hashed instance id that cannot be reversed, the software version, and counts of workspaces, products and connections per provider. No names, emails, amounts or keys. We use it to know which connectors matter and which versions are in use.
 
-## 6. How long we keep it
+## 6. Benchmarks
+
+On the hosted Service, we add each workspace's monthly figures to benchmark cohorts unless someone in the workspace switches off **Benchmarks** in Settings. For each month we use the workspace's revenue, its gross margin, its total costs and its AI provider costs as shares of revenue, and its MRR band. We never include self-hosted copies or the public demo.
+
+We group workspaces by MRR band. For each group of 10 or more we compute the 25th, 50th, 75th and 90th percentiles, and publish only those at openprofit.dev/data as an open dataset under the Creative Commons Attribution 4.0 license (CC BY 4.0), which lets anyone reuse it with credit. The dataset holds no names, emails, workspace ids or figures for any single workspace. We publish nothing until at least 50 workspaces qualify in a month.
+
+When you switch off Benchmarks, we leave the workspace out of every month we compute from then on. Months already published stay as they are. While the switch is off, the overview no longer compares your figures with your band. We rely on our legitimate interest in publishing market statistics; the switch is how you object.
+
+## 7. How long we keep it
 
 - Account and workspace data: while your workspace exists, then deleted within 30 days of a deletion request.
 - Backups: cycle out within 90 days.
@@ -76,26 +84,26 @@ A self-hosted copy of the open-source software sends us nothing by default. If i
 - Billing records: as long as tax law requires, through Polar.
 - Support emails: up to two years.
 
-## 7. Security
+## 8. Security
 
 Credentials are encrypted with AES-256-GCM. Traffic is encrypted in transit. Access to production systems is limited to the people who run the Service. No system is perfectly secure; if we learn of a breach that affects you, we will tell you and the authorities as the law requires.
 
-## 8. Your rights
+## 9. Your rights
 
 Depending on where you live, you may have the right to access, correct, export or delete your personal information, to object to or restrict some processing, to withdraw consent, and to complain to a supervisory authority. In Canada this includes rights under PIPEDA and Quebec's Act respecting the protection of personal information in the private sector; in the EEA and UK, rights under the GDPR; in California, rights under the CCPA.
 
-You can do most of this yourself: edit the workspace in Settings, and remove connections, products and flat costs. To delete a workspace or your account, email hello@openprofit.dev. To stop product analytics and session replay, switch off **Analytics** in Settings. For anything else, email hello@openprofit.dev. We respond within 30 days and may ask you to confirm your identity first.
+You can do most of this yourself: edit the workspace in Settings, and remove connections, products and flat costs. To delete a workspace or your account, email hello@openprofit.dev. To stop product analytics and session replay, switch off **Analytics** in Settings. To leave the benchmarks, switch off **Benchmarks**. For anything else, email hello@openprofit.dev. We respond within 30 days and may ask you to confirm your identity first.
 
 Quebec residents: the person in charge of the protection of personal information is the operator named above, reachable at the same address.
 
-## 9. Children
+## 10. Children
 
 The Service is not directed at anyone under 18, and we do not knowingly collect their information.
 
-## 10. Changes
+## 11. Changes
 
 We may update this policy. We will post the new version at openprofit.dev/privacy with a new date, and for material changes we will email you or show a notice in the Service before they take effect.
 
-## 11. Contact
+## 12. Contact
 
 hello@openprofit.dev
