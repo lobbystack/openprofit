@@ -5,8 +5,7 @@ import { getOverview } from "#/server/overview.functions";
 
 export const Route = createFileRoute("/demo/products")({
 	head: () => ({ meta: [{ title: "Products · OpenProfit demo" }] }),
-	loader: () =>
-		getOverview({ data: { period: "this-month", demo: true, all: true } }),
+	loader: () => getOverview({ data: { period: "30d", demo: true, all: true } }),
 	component: DemoProducts,
 });
 

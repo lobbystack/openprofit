@@ -12,11 +12,9 @@ import { getOverview } from "#/server/overview.functions";
 export const Route = createFileRoute("/demo/")({
 	// No period in the URL stays that way, so /demo doesn't redirect.
 	validateSearch: (s: Record<string, unknown>): { period?: PeriodKey } => ({
-		period: s.period
-			? periodSchema.catch("this-month").parse(s.period)
-			: undefined,
+		period: s.period ? periodSchema.catch("30d").parse(s.period) : undefined,
 	}),
-	loaderDeps: ({ search }) => ({ period: search.period ?? "this-month" }),
+	loaderDeps: ({ search }) => ({ period: search.period ?? "30d" }),
 	loader: ({ deps }) =>
 		getOverview({ data: { period: deps.period, demo: true } }),
 	component: DemoOverview,

@@ -1,4 +1,6 @@
 import "@tanstack/react-start/server-only";
+import { connector } from "#/connectors";
+import { splitCents } from "#/connectors/types";
 import { type db, schema } from "#/db";
 import { encrypt } from "#/lib/crypto";
 
@@ -40,6 +42,37 @@ const lastDay = (m: string) => {
 	const [y, mo] = m.split("-").map(Number);
 	return `${m}-${String(new Date(Date.UTC(y, mo, 0)).getUTCDate()).padStart(2, "0")}`;
 };
+
+// A month's amount as daily lines, as most providers report it: split over
+// the month's days, through today for the current month. A monthly
+// connector reports one month-to-date line on the 1st.
+function daily(m: string, cents: number, today: string, monthly = false) {
+	const n = Number(lastDay(m).slice(8));
+	const days = Array.from(
+		{ length: n },
+		(_, k) => `${m}-${String(k + 1).padStart(2, "0")}`,
+	);
+	const parts = splitCents(
+		cents,
+		days.map(() => 1),
+	);
+	const out = days
+		.map((d, k): [string, number] => [d, parts[k]])
+		.filter(([d]) => d <= today);
+	return monthly
+		? [[`${m}-01`, out.reduce((a, [, c]) => a + c, 0)] as [string, number]]
+		: out;
+}
+
+// Postgres takes at most 65,535 parameters per statement.
+async function insertAll<T extends Record<string, unknown>>(
+	tx: Tx,
+	table: Parameters<Tx["insert"]>[0],
+	rows: T[],
+) {
+	for (let i = 0; i < rows.length; i += 1000)
+		await tx.insert(table).values(rows.slice(i, i + 1000) as never);
+}
 
 export async function seedWorkspace(
 	tx: Tx,
@@ -106,36 +139,38 @@ export async function seedWorkspace(
 	const costLines: (typeof schema.costLines.$inferInsert)[] = [];
 	const snapshots: (typeof schema.metricSnapshots.$inferInsert)[] = [];
 
+	const today = now.toISOString().slice(0, 10);
 	months.forEach((m, i) => {
-		const date = `${m}-01`;
 		for (const s of REVENUE_SOURCES) {
 			const c = conn(s.provider);
 			for (const p of PRODUCTS) {
 				const product = products.find((x) => x.slug === p.slug);
 				if (!product) continue;
-				const net = Math.round(REVENUE[i] * s.share * p.share * 100);
-				const gross = Math.round(net / (1 - s.fee));
-				// Stripe sales carry about 12% sales tax or VAT on top. Polar's
-				// metrics report none.
-				const tax = s.provider === "stripe" ? Math.round(gross * 0.12) : 0;
-				revenueLines.push({
-					workspaceId: ws.id,
-					connectionId: c.id,
-					productId: product.id,
-					date,
-					currency: "USD",
-					grossCents: gross,
-					feesCents: gross - net,
-					refundsCents: 0,
-					netCents: net,
-					netBaseCents: net,
-					taxCents: tax,
-					taxBaseCents: tax,
-					kind: "subscription",
-					subUnitId: `${s.provider}:${p.slug}`,
-					subUnitLabel: p.name,
-					externalId: `seed-${m}-${p.slug}`,
-				});
+				const month = Math.round(REVENUE[i] * s.share * p.share * 100);
+				for (const [date, net] of daily(m, month, today)) {
+					const gross = Math.round(net / (1 - s.fee));
+					// Stripe sales carry about 12% sales tax or VAT on top. Polar's
+					// metrics report none.
+					const tax = s.provider === "stripe" ? Math.round(gross * 0.12) : 0;
+					revenueLines.push({
+						workspaceId: ws.id,
+						connectionId: c.id,
+						productId: product.id,
+						date,
+						currency: "USD",
+						grossCents: gross,
+						feesCents: gross - net,
+						refundsCents: 0,
+						netCents: net,
+						netBaseCents: net,
+						taxCents: tax,
+						taxBaseCents: tax,
+						kind: "subscription",
+						subUnitId: `${s.provider}:${p.slug}`,
+						subUnitLabel: p.name,
+						externalId: `seed-${date}-${p.slug}`,
+					});
+				}
 			}
 			snapshots.push(
 				{
@@ -157,39 +192,43 @@ export async function seedWorkspace(
 		for (const cp of COST_PROVIDERS) {
 			const c = conn(cp.provider);
 			const total = Math.round(COSTS[i] * cp.share * 100);
+			const monthly = connector(cp.provider).monthly;
 			if (cp.mapped) {
 				for (const p of PRODUCTS) {
 					const product = products.find((x) => x.slug === p.slug);
+					const cents = Math.round(total * p.share);
+					for (const [date, amount] of daily(m, cents, today, monthly))
+						costLines.push({
+							workspaceId: ws.id,
+							connectionId: c.id,
+							productId: product?.id,
+							provider: cp.provider,
+							date,
+							currency: "USD",
+							amountCents: amount,
+							amountBaseCents: amount,
+							service: cp.provider,
+							subUnitId: `${cp.provider}:${p.slug}`,
+							subUnitLabel: p.name,
+							source: "sync",
+							externalId: `seed-${cp.provider}-${date}-${p.slug}`,
+						});
+				}
+			} else {
+				for (const [date, amount] of daily(m, total, today, monthly))
 					costLines.push({
 						workspaceId: ws.id,
 						connectionId: c.id,
-						productId: product?.id,
+						productId: null,
 						provider: cp.provider,
 						date,
 						currency: "USD",
-						amountCents: Math.round(total * p.share),
-						amountBaseCents: Math.round(total * p.share),
+						amountCents: amount,
+						amountBaseCents: amount,
 						service: cp.provider,
-						subUnitId: `${cp.provider}:${p.slug}`,
-						subUnitLabel: p.name,
 						source: "sync",
-						externalId: `seed-${cp.provider}-${m}-${p.slug}`,
+						externalId: `seed-${cp.provider}-${date}`,
 					});
-				}
-			} else {
-				costLines.push({
-					workspaceId: ws.id,
-					connectionId: c.id,
-					productId: null,
-					provider: cp.provider,
-					date,
-					currency: "USD",
-					amountCents: total,
-					amountBaseCents: total,
-					service: cp.provider,
-					source: "sync",
-					externalId: `seed-${cp.provider}-${m}`,
-				});
 			}
 		}
 	});
@@ -213,8 +252,8 @@ export async function seedWorkspace(
 		}
 	}
 	await tx.insert(schema.productMappings).values(mappings);
-	await tx.insert(schema.revenueLines).values(revenueLines);
-	await tx.insert(schema.costLines).values(costLines);
+	await insertAll(tx, schema.revenueLines, revenueLines);
+	await insertAll(tx, schema.costLines, costLines);
 	await tx.insert(schema.metricSnapshots).values(snapshots);
 
 	const draftly = products.find((p) => p.slug === "draftly");
