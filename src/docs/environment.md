@@ -25,6 +25,14 @@ OpenProfit uses an embedded Postgres database unless you give it a server:
 | --- | --- | --- |
 | `DATABASE_URL` | `./data/openprofit` | A `postgres://` connection string, or a directory path for the embedded database |
 
+## Reverse proxy
+
+Sign-in from the CLI and agent sign-up are rate-limited per IP address. Behind a reverse proxy (nginx, Caddy, Traefik, a load balancer), every request seems to come from the proxy unless you set this:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `TRUST_PROXY` | None | The number of proxies in front of the instance, usually `1`. OpenProfit then reads the client's address from `X-Forwarded-For`. Leave it unset when nothing sits in front, or clients can fake their address. Not needed on Railway |
+
 ## Email and sign-in
 
 Without these, sign-in links print to the server log and only email sign-in is offered:

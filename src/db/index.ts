@@ -20,12 +20,12 @@ export const isPostgresServer = /^postgres(ql)?:\/\//.test(DATABASE_URL);
 
 const schema = { ...appSchema, ...authSchema };
 
-const pgDb = isPostgresServer
-	? drizzlePg(new Pool({ connectionString: DATABASE_URL }), { schema })
+const pool = isPostgresServer
+	? new Pool({ connectionString: DATABASE_URL })
 	: null;
-const pgliteDb = pgDb
-	? null
-	: drizzlePglite(new PGlite(DATABASE_URL), { schema });
+const pglite = pool ? null : new PGlite(DATABASE_URL);
+const pgDb = pool ? drizzlePg(pool, { schema }) : null;
+const pgliteDb = pglite ? drizzlePglite(pglite, { schema }) : null;
 
 export const db: NodePgDatabase<typeof schema> =
 	pgDb ?? (pgliteDb as unknown as NodePgDatabase<typeof schema>);
@@ -39,3 +39,24 @@ if (process.env.SKIP_MIGRATIONS !== "1") {
 	else if (pgliteDb) await migratePglite(pgliteDb, opts);
 }
 export { appSchema as schema, authSchema };
+
+// On SIGTERM (docker stop, a deploy) or SIGINT, close the database, then
+// exit. Nitro stops the HTTP server and waits for the event loop to empty,
+// but PGlite keeps a timer running, so without this the process never ends
+// and Docker kills it 10 seconds later, possibly mid-write. Once per
+// process: Vite can evaluate this module again in development.
+declare global {
+	var __openprofitDbClose: boolean | undefined;
+}
+if (!globalThis.__openprofitDbClose) {
+	globalThis.__openprofitDbClose = true;
+	const close = () => {
+		// A query that never finishes can't hold the exit forever.
+		setTimeout(() => process.exit(0), 5000).unref();
+		void (pglite ? pglite.close() : pool?.end())
+			?.catch((err) => console.error("[db] close", err))
+			.finally(() => process.exit(0));
+	};
+	process.once("SIGTERM", close);
+	process.once("SIGINT", close);
+}

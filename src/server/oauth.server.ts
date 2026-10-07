@@ -15,6 +15,7 @@ import { db, schema } from "#/db";
 import { decrypt, encrypt } from "#/lib/crypto";
 import { appUrl, issueToken, randomToken, sha256 } from "./api.server";
 import { publicRequest } from "./net.server";
+import { clientIp, rateLimit } from "./ratelimit.server";
 
 // OAuth 2.1 authorization server for the remote MCP server, for clients that
 // only connect with OAuth (claude.ai, ChatGPT, Cursor). The access token is
@@ -271,6 +272,15 @@ const liveClients = () =>
 			),
 		);
 
+// 20 registrations an hour from one address: a person adds a connector
+// once, and a misbehaving client retries far more.
+export const registerLimit = (request: Request) =>
+	rateLimit(`oauth-register:${clientIp(request)}`, 20, 60 * 60_000, {
+		error: "temporarily_unavailable",
+		error_description:
+			"Too many registrations from this address. Try again later.",
+	});
+
 // POST /oauth/register: Dynamic Client Registration (RFC 7591), for clients
 // without a metadata document. Public clients only.
 export async function register(body: unknown) {
@@ -299,8 +309,7 @@ export async function register(body: unknown) {
 			"Only the authorization_code and refresh_token grants are supported.",
 		);
 	// Clients that never got a token go after a day, and only so many can
-	// wait at once.
-	// ponytail: one global cap; limit per IP if registrations get abused.
+	// wait at once, so one address can't fill the table (registerLimit).
 	await db
 		.delete(schema.oauthClients)
 		.where(
