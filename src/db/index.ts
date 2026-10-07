@@ -20,10 +20,19 @@ export const isPostgresServer = /^postgres(ql)?:\/\//.test(DATABASE_URL);
 
 const schema = { ...appSchema, ...authSchema };
 
+declare global {
+	var __openprofitPglite: PGlite | undefined;
+	var __openprofitDbClose: boolean | undefined;
+}
+
 const pool = isPostgresServer
 	? new Pool({ connectionString: DATABASE_URL })
 	: null;
-const pglite = pool ? null : new PGlite(DATABASE_URL);
+// One PGlite per process: Vite evaluates this module again in development
+// when a file it imports changes, and a second instance writing to the same
+// directory corrupts it.
+if (!pool) globalThis.__openprofitPglite ??= new PGlite(DATABASE_URL);
+const pglite = globalThis.__openprofitPglite ?? null;
 const pgDb = pool ? drizzlePg(pool, { schema }) : null;
 const pgliteDb = pglite ? drizzlePglite(pglite, { schema }) : null;
 
@@ -45,9 +54,6 @@ export { appSchema as schema, authSchema };
 // but PGlite keeps a timer running, so without this the process never ends
 // and Docker kills it 10 seconds later, possibly mid-write. Once per
 // process: Vite can evaluate this module again in development.
-declare global {
-	var __openprofitDbClose: boolean | undefined;
-}
 if (!globalThis.__openprofitDbClose) {
 	globalThis.__openprofitDbClose = true;
 	const close = () => {
