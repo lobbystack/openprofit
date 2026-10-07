@@ -6,7 +6,7 @@ import { LEGAL_MD } from "#/lib/legal";
 const integrationsIndex = [
 	"# Integrations",
 	"",
-	"Revenue from your payment processor, costs from the services you pay for. Each takes a read-only key.",
+	"Revenue from your payment processor, costs from the services you pay for. Each connection uses an API key with the narrowest access the provider offers, and OpenProfit only reads with it.",
 	"",
 	...INTEGRATIONS.map(
 		(p) =>

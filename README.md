@@ -4,7 +4,7 @@
 
 ### Finance for developers
 
-[Website](https://openprofit.dev) · [Docs](https://openprofit.dev/docs) · [Self-host](https://openprofit.dev/docs/self-host) · [Connectors](https://openprofit.dev/docs/connectors) · [Issues](https://github.com/lobbystack/openprofit/issues)
+[Website](https://openprofit.dev) · [Docs](https://openprofit.dev/docs) · [Self-host](https://openprofit.dev/docs/self-host) · [Connectors](https://openprofit.dev/docs/connectors) · [Security](https://openprofit.dev/security) · [Issues](https://github.com/lobbystack/openprofit/issues)
 
 [![Check](https://github.com/lobbystack/openprofit/actions/workflows/check.yml/badge.svg)](https://github.com/lobbystack/openprofit/actions/workflows/check.yml)
 [![License](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
@@ -25,7 +25,7 @@ Revenue lives in your payment processor. Costs live in a dozen billing pages: AI
 
 ### Connect your whole stack
 
-Revenue from your payment processor. Costs from your AI providers, hosting and infrastructure. Paste a read-only key and two years of history fill in.
+Revenue from your payment processor. Costs from your AI providers, hosting and infrastructure. Paste an API key and two years of history fill in.
 
 ### Measure what you keep
 
@@ -59,7 +59,7 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 
 - **Overview** with revenue, costs, profit, MRR and customers for any period, deltas against the previous one, and a twelve-month chart with last year as a reference line.
 - **Breakdowns** by product, by revenue source and by cost provider.
-- **Connectors** that take a read-only key, test it before saving, and store it encrypted. Two years of history on the first sync, incremental after that.
+- **Connectors** that take an API key with the narrowest access each provider offers, test it before saving, and store it encrypted. OpenProfit only reads with it. Two years of history on the first sync, incremental after that. [Security](https://openprofit.dev/security) lists what each key can do.
 - **Product mapping** per provider sub-unit, with a shared bucket for anything unassigned.
 - **Flat costs** for subscriptions, domains and anything without an API.
 - **Multi-currency** workspaces with daily rates and a base currency you can change later.
