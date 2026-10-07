@@ -79,14 +79,21 @@ async function forward(
 }
 
 export function serveMcp(server: Server) {
-	// One remote connection per process, shared by every factory call.
-	const remote = server.token
-		? connectRemote(server).catch((e: Error) => {
-				// stdout carries JSON-RPC, so log to stderr.
-				console.error(`openprofit: ${server.url}/mcp: ${e.message}`);
-				return undefined;
-			})
-		: undefined;
+	// One remote connection per process, shared by every factory call. A
+	// failed attempt (offline, a deploy) is forgotten, so the next session
+	// or connect_provider call tries again.
+	let remote: Promise<Remote | undefined> | undefined;
+	const getRemote = () => {
+		if (!server.token) return Promise.resolve(undefined);
+		remote ??= connectRemote(server).catch((e: Error) => {
+			// stdout carries JSON-RPC, so log to stderr.
+			console.error(`openprofit: ${server.url}/mcp: ${e.message}`);
+			remote = undefined;
+			return undefined;
+		});
+		return remote;
+	};
+	void getRemote();
 
 	// https://ts.sdk.modelcontextprotocol.io/v2/serving/stdio.html
 	const handle = serveStdio(async () => {
@@ -94,7 +101,7 @@ export function serveMcp(server: Server) {
 			{ name: "openprofit", version: VERSION },
 			{ instructions: INSTRUCTIONS },
 		);
-		const r = await remote;
+		const r = await getRemote();
 
 		// ponytail: tools are listed once at startup; restart the server to
 		// pick up new remote tools, or handle tools/list_changed if that matters.
@@ -183,9 +190,10 @@ export function serveMcp(server: Server) {
 					);
 				}
 
-				if (!r)
+				const live = r ?? (await getRemote());
+				if (!live)
 					throw new Error(`Can't reach ${server.url}/mcp to create a link.`);
-				const result = await forward(r, "connect_provider", {
+				const result = await forward(live, "connect_provider", {
 					provider: p.id,
 					...(product_id && { product_id }),
 				});

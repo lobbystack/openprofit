@@ -6,13 +6,11 @@ import { DOCS } from "#/lib/docs";
 
 const STATIC = [
 	"/",
-	"/demo",
 	"/integrations",
 	...INTEGRATIONS.map((p) => `/integrations/${p.slug}`),
 	...COMPARISONS.map((p) => `/compare/${p.slug}`),
 	...DOCS.map((d) => `/docs/${d.slug}`),
 	"/changelog",
-	"/data",
 	"/privacy",
 	"/terms",
 	"/cookies",
@@ -33,10 +31,13 @@ export const Route = createFileRoute("/sitemap.xml")({
 						eq(schema.workspaces.id, schema.products.workspaceId),
 					)
 					.where(ne(schema.products.publicPage, "off"));
+				const cloud = process.env.APP_MODE === "cloud";
 				const paths = [
 					...STATIC,
-					// The leaderboard exists on the hosted instance only.
-					...(process.env.APP_MODE === "cloud" ? ["/open"] : []),
+					// The leaderboard and the benchmarks exist on the hosted
+					// instance only; the demo there or with DEMO=on.
+					...(cloud ? ["/open", "/data"] : []),
+					...(cloud || process.env.DEMO === "on" ? ["/demo"] : []),
 					...pub.map((r) => `/p/${r.ws}/${r.p}`),
 				];
 				return new Response(

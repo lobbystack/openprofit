@@ -46,11 +46,20 @@ export type Snapshot = {
 	band: Band;
 	metric: Metric;
 	n: number;
-	p25: number;
+	// Null when too few workspaces sit beyond it; see `shown`.
+	p25: number | null;
 	p50: number;
-	p75: number;
-	p90: number;
+	p75: number | null;
+	p90: number | null;
 };
+
+// A percentile goes out only when at least 3 workspaces sit beyond it on
+// its far side, so no published value is close to one workspace's own
+// figure: quartiles need 12 workspaces, the 90th percentile 30.
+// The 1e-9 absorbs float error: 1 - 0.9 is 0.09999…, and 30 of them must
+// still count as 3.
+export const shown = (n: number, q: number) =>
+	n * Math.min(q, 1 - q) + 1e-9 >= 3;
 
 // Linear interpolation between closest ranks, as numpy and Excel's
 // PERCENTILE.INC do. `sorted` is ascending and not empty.

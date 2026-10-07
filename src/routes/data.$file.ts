@@ -26,7 +26,7 @@ export const Route = createFileRoute("/data/$file")({
 						...Object.fromEntries(
 							(["p25", "p50", "p75", "p90"] as const).map((k) => [
 								k,
-								usd ? r[k] / 100 : r[k],
+								r[k] === null || !usd ? r[k] : r[k] / 100,
 							]),
 						),
 					};

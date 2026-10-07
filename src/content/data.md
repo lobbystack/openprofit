@@ -8,7 +8,7 @@ description: Monthly revenue, gross margin and cost shares of the products on Op
 - [benchmarks.csv](https://openprofit.dev/data/benchmarks.csv)
 - [benchmarks.json](https://openprofit.dev/data/benchmarks.json)
 
-Both files hold every published month, with one row per month, MRR band and metric. The columns are `month`, `band`, `metric`, `unit`, `n`, `p25`, `p50`, `p75` and `p90`, where `n` counts the workspaces in the cohort. Revenue is in US dollars and the other metrics in percent of revenue. We add each new month to the same two files.
+Both files hold every published month, with one row per month, MRR band and metric. The columns are `month`, `band`, `metric`, `unit`, `n`, `p25`, `p50`, `p75` and `p90`, where `n` counts the workspaces in the cohort. A percentile is empty until enough workspaces back it (see Privacy). Revenue is in US dollars and the other metrics in percent of revenue. We add each new month to the same two files.
 
 ## License
 
@@ -33,7 +33,7 @@ You can share and adapt the data under [CC BY 4.0](https://creativecommons.org/l
 
 Each cost metric counts the workspaces that had that kind of cost in the month.
 
-**Privacy.** We publish a cohort once it has 10 workspaces or more, and then only its 25th, 50th (median), 75th and 90th percentiles. The files and this page hold no workspace names or individual values.
+**Privacy.** We publish a cohort once it has 10 workspaces or more, and then only its percentiles: the median always, the 25th and 75th from 12 workspaces, the 90th from 30. Each published value has at least 3 workspaces beyond it, so none sits close to one workspace's figure. The files and this page hold no workspace names or individual values.
 
 **Currency.** OpenProfit converts each amount to the workspace's base currency at the European Central Bank rate for its day. For the benchmarks we convert that total to US dollars at the rate for the month's last day.
 

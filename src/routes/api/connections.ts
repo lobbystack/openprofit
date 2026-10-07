@@ -13,9 +13,8 @@ export const Route = createFileRoute("/api/connections")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
-				const { audit, authenticate, redact, unauthorized } = await import(
-					"#/server/api.server"
-				);
+				const { audit, authenticate, providerError, unauthorized } =
+					await import("#/server/api.server");
 				const caller = await authenticate(request);
 				if (!caller) return unauthorized();
 				if (caller.token.scope !== "write")
@@ -41,7 +40,7 @@ export const Route = createFileRoute("/api/connections")({
 				} catch (err) {
 					const message = err instanceof Error ? err.message : String(err);
 					return Response.json(
-						{ error: redact(message, credentials) },
+						{ error: providerError(provider, message, credentials) },
 						{ status: 400 },
 					);
 				}

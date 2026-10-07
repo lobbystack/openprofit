@@ -11,6 +11,7 @@ import {
 	MIN_COHORT,
 	percentile,
 	type Snapshot,
+	shown,
 } from "#/lib/benchmarks";
 import { convert } from "./fx.server";
 import { flatMonthlyCents, lastMonths } from "./overview.server";
@@ -194,13 +195,27 @@ export async function allSnapshots(): Promise<Snapshot[]> {
 		.orderBy(desc(s.month));
 	const bi = (b: string) => BANDS.findIndex((x) => x.key === b);
 	const mi = (m: string) => METRICS.findIndex((x) => x.key === m);
-	return (rows as Snapshot[]).sort(
-		(a, b) =>
-			b.month.localeCompare(a.month) ||
-			bi(a.band) - bi(b.band) ||
-			mi(a.metric) - mi(b.metric),
-	);
+	return rows
+		.map(
+			(r): Snapshot => ({
+				...(r as Snapshot),
+				p25: shown(r.n, 0.25) ? r.p25 : null,
+				p75: shown(r.n, 0.75) ? r.p75 : null,
+				p90: shown(r.n, 0.9) ? r.p90 : null,
+			}),
+		)
+		.sort(
+			(a, b) =>
+				b.month.localeCompare(a.month) ||
+				bi(a.band) - bi(b.band) ||
+				mi(a.metric) - mi(b.metric),
+		);
 }
+
+// A workspace's own figures for a published month, kept for an hour so the
+// overview doesn't redo a month of sums on every load.
+// ponytail: per-process map, one entry per workspace; fine at this scale.
+const mine = new Map<string, { at: number; figures: Figures | undefined }>();
 
 // The workspace's own figures for the latest published month next to its
 // band's medians. Null when it opted out or its band has no data.
@@ -212,7 +227,13 @@ export async function myBenchmarks(ws: Workspace) {
 		.from(s);
 	if (!latest?.m) return null;
 	const month = latest.m;
-	const [me] = await figures(month, ws.id);
+	const key = `${ws.id}:${month}`;
+	let cached = mine.get(key);
+	if (!cached || Date.now() - cached.at > 60 * 60_000) {
+		cached = { at: Date.now(), figures: (await figures(month, ws.id))[0] };
+		mine.set(key, cached);
+	}
+	const me = cached.figures;
 	if (!me) return null;
 	const cohort = await db.query.benchmarkSnapshots.findMany({
 		where: and(eq(s.month, month), eq(s.band, me.band)),

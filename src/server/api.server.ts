@@ -1,6 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gte, inArray, isNull } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, lt, ne } from "drizzle-orm";
 import { db, schema } from "#/db";
+import { describeError } from "#/lib/errors";
+import { providerName } from "#/lib/providers";
 import type { Workspace } from "./workspace.server";
 
 // API tokens for the MCP endpoint and the CLI. Tokens are `op_` plus 32
@@ -76,13 +78,15 @@ export const unauthorized = () =>
 		{ status: 401, headers: { "WWW-Authenticate": "Bearer" } },
 	);
 
-// Provider error messages sometimes quote what they were sent, whole or
-// masked (Stripe: `rk_test_****abcd`). Keeps the provider's own message when
-// the body is JSON, then drops any 8 characters of a secret and any masked
-// run, so an agent reading the error learns nothing about the key.
-export function redact(message: string, secrets: Record<string, string>) {
-	const inner = message.match(/"message":\s*"((?:[^"\\]|\\.)*)"/)?.[1];
-	let m = inner ?? message;
+// A provider error for an agent or the CLI: the sentence describeError
+// writes for the app (never the raw response body), then any 8 characters
+// of a credential, or a masked run like Stripe's `rk_test_****abcd`, cut.
+export function providerError(
+	provider: string,
+	message: string,
+	secrets: Record<string, string>,
+) {
+	let m = describeError(providerName(provider), message).text;
 	for (const v of Object.values(secrets)) {
 		for (let i = 0; i + 8 <= v.length; i++) {
 			m = m.split(v.slice(i, i + 8)).join("[redacted]");
@@ -90,6 +94,22 @@ export function redact(message: string, secrets: Record<string, string>) {
 		if (v.length >= 4) m = m.split(v).join("[redacted]");
 	}
 	return m.replace(/(\[redacted\])?\*{3,}\w*/g, "[redacted]");
+}
+
+// Daily: expired connect links and CLI logins, and audit events older than
+// the weekly email needs.
+const DAY = 86_400_000;
+export async function pruneAgentRecords() {
+	const now = Date.now();
+	await Promise.all([
+		db
+			.delete(schema.connectLinks)
+			.where(lt(schema.connectLinks.expiresAt, now - DAY)),
+		db.delete(schema.cliLogins).where(lt(schema.cliLogins.expiresAt, now)),
+		db
+			.delete(schema.auditEvents)
+			.where(lt(schema.auditEvents.createdAt, now - 90 * DAY)),
+	]);
 }
 
 export async function audit(
@@ -110,31 +130,39 @@ export async function audit(
 	});
 }
 
-// Changes made over MCP or the CLI since `since`, oldest first, for the
-// weekly email. Public page changes come first.
+// Changes made over MCP or the CLI since `since`, for the weekly email:
+// every public page change first, then the 50 latest other changes, each
+// group oldest first.
+const PUBLIC_PAGE = "product.public_page";
 export async function agentChanges(workspaceId: string, since: number) {
-	const rows = await db.query.auditEvents.findMany({
-		where: and(
-			eq(schema.auditEvents.workspaceId, workspaceId),
-			inArray(schema.auditEvents.source, ["mcp", "cli"]),
-			gte(schema.auditEvents.createdAt, since),
-		),
-		orderBy: (a, { asc }) => asc(a.createdAt),
-		limit: 50,
-	});
+	const e = schema.auditEvents;
+	const recent = and(
+		eq(e.workspaceId, workspaceId),
+		inArray(e.source, ["mcp", "cli"]),
+		gte(e.createdAt, since),
+	);
+	const [pages, others] = await Promise.all([
+		db.query.auditEvents.findMany({
+			where: and(recent, eq(e.action, PUBLIC_PAGE)),
+			orderBy: (a, { desc }) => desc(a.createdAt),
+		}),
+		db.query.auditEvents.findMany({
+			where: and(recent, ne(e.action, PUBLIC_PAGE)),
+			orderBy: (a, { desc }) => desc(a.createdAt),
+			limit: 51,
+		}),
+	]);
+	const more = others.length > 50;
+	const rows = [...pages.reverse(), ...others.slice(0, 50).reverse()];
 	const lines = rows.map((r) => {
 		const d = r.detail ?? {};
 		const name = typeof d.name === "string" ? d.name : r.target;
-		if (r.action === "product.public_page")
-			return {
-				pub: true,
-				text: `Public page of ${name}: ${d.mode === "off" ? "turned off" : `turned on (${d.mode})`}`,
-			};
-		return { pub: false, text: `${ACTIONS[r.action] ?? r.action}: ${name}` };
+		if (r.action === PUBLIC_PAGE)
+			return `Public page of ${name}: ${d.mode === "off" ? "turned off" : `turned on (${d.mode})`}`;
+		return `${ACTIONS[r.action] ?? r.action}: ${name}`;
 	});
-	return [...lines.filter((l) => l.pub), ...lines.filter((l) => !l.pub)].map(
-		(l) => l.text,
-	);
+	if (more) lines.push("Earlier changes this week aren't listed.");
+	return lines;
 }
 
 const ACTIONS: Record<string, string> = {

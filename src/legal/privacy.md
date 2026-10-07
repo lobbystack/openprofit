@@ -70,7 +70,7 @@ A self-hosted copy of the open-source software sends us nothing by default. If i
 
 On the hosted Service, we add each workspace's monthly figures to benchmark cohorts unless someone in the workspace switches off **Benchmarks** in Settings. For each month we use the workspace's revenue, its gross margin, its total costs and its AI provider costs as shares of revenue, and its MRR band. We never include self-hosted copies or the public demo.
 
-We group workspaces by MRR band. For each group of 10 or more we compute the 25th, 50th, 75th and 90th percentiles, and publish only those at openprofit.dev/data as an open dataset under the Creative Commons Attribution 4.0 license (CC BY 4.0), which lets anyone reuse it with credit. The dataset holds no names, emails, workspace ids or figures for any single workspace. We publish nothing until at least 50 workspaces qualify in a month.
+We group workspaces by MRR band. For each group of 10 or more we compute the 25th, 50th, 75th and 90th percentiles, and publish only those with at least 3 workspaces beyond them (the median from 10 workspaces, the 25th and 75th from 12, the 90th from 30) at openprofit.dev/data as an open dataset under the Creative Commons Attribution 4.0 license (CC BY 4.0), which lets anyone reuse it with credit. The dataset holds no names, emails, workspace ids or figures for any single workspace. We publish nothing until at least 50 workspaces qualify in a month.
 
 When you switch off Benchmarks, we leave the workspace out of every month we compute from then on. Months already published stay as they are. While the switch is off, the overview no longer compares your figures with your band. We rely on our legitimate interest in publishing market statistics; the switch is how you object.
 

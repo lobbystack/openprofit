@@ -163,9 +163,11 @@ function Open() {
 				</Card>
 				<p className="mt-4 max-w-[600px] text-[13px] text-text-2">
 					A product shows up here when its public page is on, it has revenue and
-					a cost source, and it has 30 days of history. A dash means the owner
-					keeps that number private. Pages set to growth and margin appear on
-					those two tabs only.{" "}
+					a connected cost provider, and it has 30 days of history. Rankings
+					count costs read from provider APIs only, so self-reported costs show
+					on the product's page but not here. A dash means the owner keeps that
+					number private. Pages set to growth and margin appear on those two
+					tabs only.{" "}
 					<Link
 						to="/docs/$slug"
 						params={{ slug: "public-pages" }}

@@ -2,6 +2,7 @@ import "@tanstack/react-start/server-only";
 import { and, eq, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "#/db";
+import { Day } from "#/lib/costs";
 import { providerName } from "#/lib/providers";
 import { authenticate } from "./api.server";
 import { sessionUser } from "./auth.server";
@@ -15,8 +16,6 @@ import { currentWorkspace, type Workspace } from "./workspace.server";
 // bank-statement style imports (Xero, QuickBooks) take a single table with
 // one signed Amount column, so revenue is positive, costs are negative and
 // the column sums to profit.
-
-const Day = z.iso.date();
 
 const HEADER = [
 	"Date",

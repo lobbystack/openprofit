@@ -34,9 +34,14 @@ type Stats = {
 };
 
 // Revenue, costs and revenue growth over the last 30 days for some products.
+// `verifiedOnly` counts only costs synced from a provider's API, leaving
+// out self-reported ones, as /open ranks on verified numbers.
 // ponytail: flat costs count their whole monthly amount in each 30-day
 // window; prorate by day if someone notices.
-async function stats(ids: string[]): Promise<Map<string, Stats>> {
+async function stats(
+	ids: string[],
+	verifiedOnly = false,
+): Promise<Map<string, Stats>> {
 	const out = new Map<string, Stats>();
 	if (!ids.length) return out;
 	const w = window30();
@@ -59,11 +64,18 @@ async function stats(ids: string[]): Promise<Map<string, Stats>> {
 				cur: sql<number>`coalesce(sum(case when ${c.date} >= ${w.from} then ${c.amountBaseCents} end), 0)`,
 			})
 			.from(c)
-			.where(inArray(c.productId, ids))
+			.where(
+				and(
+					inArray(c.productId, ids),
+					verifiedOnly ? eq(c.source, "sync") : undefined,
+				),
+			)
 			.groupBy(c.productId),
-		db.query.flatCosts.findMany({
-			where: inArray(schema.flatCosts.productId, ids),
-		}),
+		verifiedOnly
+			? []
+			: db.query.flatCosts.findMany({
+					where: inArray(schema.flatCosts.productId, ids),
+				}),
 	]);
 	for (const id of ids)
 		out.set(id, {
@@ -299,8 +311,9 @@ export type OpenRow = {
 
 let board: { at: number; rows: Promise<OpenRow[]> } | undefined;
 
-// Public products on this instance with revenue, a cost source and 30 days
-// of history, outside the demo workspace. Cached for five minutes.
+// Public products on this instance with revenue, a synced cost source and
+// 30 days of history, outside the demo workspace. Costs and profit count
+// synced costs only. Cached for five minutes.
 export function openBoard(): Promise<OpenRow[]> {
 	if (!board || Date.now() - board.at > 5 * 60_000) {
 		board = { at: Date.now(), rows: loadBoard() };
@@ -336,7 +349,10 @@ async function loadBoard(): Promise<OpenRow[]> {
 		);
 	// ponytail: one pass over every public product's lines; precompute
 	// nightly if /open gets slow.
-	const all = await stats(products.map((p) => p.id));
+	const all = await stats(
+		products.map((p) => p.id),
+		true,
+	);
 	const rates = new Map<string, number | null>();
 	for (const cur of new Set(products.map((p) => p.currency)))
 		rates.set(
@@ -425,7 +441,7 @@ export function openMarkdown(rows: OpenRow[]) {
 	return [
 		"# The database of open product profit",
 		"",
-		"Products that publish their numbers on OpenProfit, ranked by profit over the last 30 days. OpenProfit reads revenue and costs from the providers' APIs. Amounts in US dollars. A dash means the owner keeps that number private.",
+		"Products that publish their numbers on OpenProfit, ranked by profit over the last 30 days. Revenue and costs come from the providers' APIs; self-reported costs don't count here. Amounts in US dollars. A dash means the owner keeps that number private.",
 		"",
 		"| # | Product | By | Revenue | Profit | Margin | Growth |",
 		"| --- | --- | --- | --- | --- | --- | --- |",

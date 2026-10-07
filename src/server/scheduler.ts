@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
 import { Cron } from "croner";
 import { identifyWorkspaces } from "./analytics.server";
+import { pruneAgentRecords } from "./api.server";
 import { computeBenchmarks } from "./benchmarks.server";
 import { isCloud } from "./billing.server";
 import { syncDue } from "./sync.server";
@@ -26,6 +27,9 @@ export function startScheduler() {
 	});
 	const telemetry = new Cron("30 3 * * *", { protect: true }, () => {
 		void sendTelemetry();
+		void pruneAgentRecords().catch((e) =>
+			console.error("[scheduler] prune agent records", e),
+		);
 		// Workspace counts for PostHog's workspace groups.
 		if (isCloud)
 			void identifyWorkspaces().catch((e) =>

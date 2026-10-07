@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { CURRENCIES } from "./format";
 
-const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+// A calendar date, YYYY-MM-DD. Rejects days that don't exist (2026-02-31).
+export const Day = z.iso.date();
 
 // A flat cost as the Costs page and the MCP server send it.
 export const FlatCostInput = z

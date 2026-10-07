@@ -72,7 +72,7 @@ function Figures({ rows }: { rows: Snapshot[] }) {
 	const months = [...new Set(rows.map((r) => r.month))];
 	const cell = (month: string, band: string) =>
 		picked.find((r) => r.month === month && r.band === band);
-	const fmt = (v: number) => formatValue(metric, v);
+	const fmt = (v: number | null) => (v === null ? "–" : formatValue(metric, v));
 	const right = "text-right";
 
 	return (

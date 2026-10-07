@@ -13,11 +13,10 @@ import { and, desc, eq, gte, isNull, lte, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { connectorInfo, connectors } from "#/connectors";
 import { db, schema } from "#/db";
-import { RULE_NAMES, ruleScope } from "#/lib/alerts";
-import { FlatCostInput } from "#/lib/costs";
+import { RULE_NAMES, type RuleKind, ruleScope } from "#/lib/alerts";
+import { FlatCostInput, Day as IsoDay } from "#/lib/costs";
 import { CURRENCIES } from "#/lib/format";
 import pkg from "../../package.json";
-import { evaluateAlerts } from "./alerts.server";
 import {
 	appUrl,
 	audit,
@@ -81,10 +80,7 @@ const iso = (ms: number | null) => (ms ? new Date(ms).toISOString() : null);
 const Period = z
 	.enum(["this-month", "last-month", "3m", "12m", "ytd"])
 	.describe("Defaults to this-month");
-const Day = z
-	.string()
-	.regex(/^\d{4}-\d{2}-\d{2}$/)
-	.describe("YYYY-MM-DD");
+const Day = IsoDay.describe("YYYY-MM-DD");
 const Id = (what: string) => z.string().describe(`${what} id`);
 
 type LineQuery = {
@@ -192,6 +188,25 @@ const flatRow = (
 	product_id: f.productId,
 	product: f.productId ? (names.get(f.productId) ?? null) : null,
 });
+
+// Allowed thresholds per rule kind. margin_floor is a fraction, so an agent
+// sending 60 for 60% gets told instead of storing 6000%.
+const THRESHOLDS: Partial<
+	Record<RuleKind, { min: number; max: number; message: string }>
+> = {
+	cost_spike: {
+		min: 0.1,
+		max: 20,
+		message:
+			"cost_spike thresholds run from 0.1 to 20: 1 alerts at twice the 7-day average.",
+	},
+	margin_floor: {
+		min: 0,
+		max: 1,
+		message:
+			"margin_floor is a fraction from 0 to 1: 0.6 alerts under 60% margin.",
+	},
+};
 
 function build({ authInfo, requestInfo }: McpRequestContext) {
 	const caller = authInfo?.extra?.caller as Caller;
@@ -503,11 +518,10 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		{
 			title: "List alerts",
 			description:
-				"Checks the alert rules now, then returns the 50 latest alerts (open ones have no resolvedAt) and the rules with what each watches.",
+				"The 50 latest alerts (open ones have no resolvedAt) and the rules with what each watches. Rules run after every sync.",
 			annotations: READ,
 		},
 		async () => {
-			await evaluateAlerts(ws.id);
 			const [alerts, rules] = await Promise.all([
 				db.query.alerts.findMany({
 					where: eq(schema.alerts.workspaceId, ws.id),
@@ -920,22 +934,30 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			inputSchema: z.object({
 				rule_id: Id("Rule"),
 				enabled: z.boolean().optional(),
-				threshold: z.number().min(0).max(100).optional(),
+				threshold: z.number().optional(),
 			}),
 			annotations: { ...WRITE, idempotentHint: true },
 		},
 		async ({ rule_id, enabled, threshold }) => {
+			if (enabled === undefined && threshold === undefined)
+				return fail("Pass enabled, threshold or both.");
+			const where = and(
+				eq(schema.alertRules.id, rule_id),
+				eq(schema.alertRules.workspaceId, ws.id),
+			);
+			const before = await db.query.alertRules.findFirst({ where });
+			if (!before) return fail("No rule with that id. list_alerts has them.");
+			if (threshold !== undefined) {
+				const range = THRESHOLDS[before.kind];
+				if (!range) return fail("Sync failure rules have no threshold.");
+				if (threshold < range.min || threshold > range.max)
+					return fail(range.message);
+			}
 			const [rule] = await db
 				.update(schema.alertRules)
 				.set({ enabled, threshold })
-				.where(
-					and(
-						eq(schema.alertRules.id, rule_id),
-						eq(schema.alertRules.workspaceId, ws.id),
-					),
-				)
+				.where(where)
 				.returning();
-			if (!rule) return fail("No rule with that id. list_alerts has them.");
 			await log("alert_rule.update", rule.id, {
 				name: RULE_NAMES[rule.kind],
 				enabled: rule.enabled,

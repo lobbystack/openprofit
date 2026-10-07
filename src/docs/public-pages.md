@@ -52,7 +52,7 @@ The badge refreshes within five minutes of a sync. Links shared on social sites 
 [openprofit.dev/open](https://openprofit.dev/open) ranks public products by profit over the last 30 days, with tabs for revenue, margin and growth. A product appears once it meets these conditions:
 
 - Its public page is on
-- It has revenue and at least one cost source
+- It has revenue and at least one connected cost provider
 - Its first revenue is at least 30 days old
 
-Each tab lists only the products whose mode shows that number, so a Growth and margin page appears on the margin and growth tabs. Products on self-hosted instances don’t appear.
+Each tab lists only the products whose mode shows that number, so a Growth and margin page appears on the margin and growth tabs. Rankings count only costs read from provider APIs. Self-reported costs show on the product’s page but not on the leaderboard. Products on self-hosted instances don’t appear.
