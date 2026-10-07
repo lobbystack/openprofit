@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { siGithub } from "simple-icons";
+import { z } from "zod";
 import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
@@ -15,9 +16,18 @@ export const Route = createFileRoute("/login")({
 		...NOINDEX,
 		meta: [{ title: "Sign in · OpenProfit" }, ...NOINDEX.meta],
 	}),
-	loader: async () => {
+	// Where to go after signing in: a path on this site, never another host.
+	validateSearch: z.object({
+		redirect: z
+			.string()
+			.regex(/^\/(?![/\\])/)
+			.optional()
+			.catch(undefined),
+	}),
+	loaderDeps: ({ search }) => ({ next: search.redirect }),
+	loader: async ({ deps }) => {
 		const user = await getSession();
-		if (user) throw redirect({ to: "/app" });
+		if (user) throw redirect({ href: deps.next ?? "/app" });
 		return getAuthOptions();
 	},
 	component: Login,
@@ -25,6 +35,7 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
 	const { social, mailer } = Route.useLoaderData();
+	const next = Route.useSearch().redirect ?? "/app";
 	const [email, setEmail] = useState("");
 	const [state, setState] = useState<"idle" | "sending" | "sent" | "error">(
 		"idle",
@@ -35,7 +46,7 @@ function Login() {
 		setState("sending");
 		const { error } = await authClient.signIn.magicLink({
 			email,
-			callbackURL: "/app",
+			callbackURL: next,
 			newUserCallbackURL: "/onboarding",
 		});
 		setState(error ? "error" : "sent");
@@ -74,7 +85,7 @@ function Login() {
 											onClick={() =>
 												authClient.signIn.social({
 													provider: p as "github" | "google",
-													callbackURL: "/app",
+													callbackURL: next,
 													newUserCallbackURL: "/onboarding",
 												})
 											}

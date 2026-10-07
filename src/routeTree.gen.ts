@@ -12,17 +12,21 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as ChangelogRouteImport } from './routes/changelog'
+import { Route as CliRouteImport } from './routes/cli'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as OpenRouteImport } from './routes/open'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ApiConnectionsRouteImport } from './routes/api/connections'
 import { Route as ApiExportDotcsvRouteImport } from './routes/api/export[.]csv'
+import { Route as ApiProvidersRouteImport } from './routes/api/providers'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppAlertsRouteImport } from './routes/app/alerts'
@@ -30,6 +34,7 @@ import { Route as AppCostsRouteImport } from './routes/app/costs'
 import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as CompareSlugRouteImport } from './routes/compare.$slug'
+import { Route as ConnectTokenRouteImport } from './routes/connect.$token'
 import { Route as DataIndexRouteImport } from './routes/data.index'
 import { Route as DataFileRouteImport } from './routes/data.$file'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
@@ -42,11 +47,13 @@ import { Route as IngestSplatRouteImport } from './routes/ingest.$'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
 import { Route as IntegrationsSlugRouteImport } from './routes/integrations.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiCliLoginRouteImport } from './routes/api/cli/login'
 import { Route as ApiPolarWebhookRouteImport } from './routes/api/polar/webhook'
 import { Route as AppConnectProviderRouteImport } from './routes/app/connect.$provider'
 import { Route as AppConnectionsIndexRouteImport } from './routes/app/connections.index'
 import { Route as AppConnectionsIdRouteImport } from './routes/app/connections.$id'
 import { Route as PWorkspaceProductRouteImport } from './routes/p.$workspace.$product'
+import { Route as ApiCliLoginPollRouteImport } from './routes/api/cli/login/poll'
 import { Route as PWorkspaceProductBadgeDotsvgRouteImport } from './routes/p.$workspace.$product_.badge[.]svg'
 import { Route as PWorkspaceProductOgDotpngRouteImport } from './routes/p.$workspace.$product_.og[.]png'
 
@@ -63,6 +70,11 @@ const AppRoute = AppRouteImport.update({
 const ChangelogRoute = ChangelogRouteImport.update({
   id: '/changelog',
   path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CliRoute = CliRouteImport.update({
+  id: '/cli',
+  path: '/cli',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CookiesRoute = CookiesRouteImport.update({
@@ -83,6 +95,11 @@ const DocsRoute = DocsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -115,9 +132,19 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiConnectionsRoute = ApiConnectionsRouteImport.update({
+  id: '/api/connections',
+  path: '/api/connections',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiExportDotcsvRoute = ApiExportDotcsvRouteImport.update({
   id: '/api/export.csv',
   path: '/api/export.csv',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProvidersRoute = ApiProvidersRouteImport.update({
+  id: '/api/providers',
+  path: '/api/providers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTelemetryRoute = ApiTelemetryRouteImport.update({
@@ -153,6 +180,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 const CompareSlugRoute = CompareSlugRouteImport.update({
   id: '/compare/$slug',
   path: '/compare/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectTokenRoute = ConnectTokenRouteImport.update({
+  id: '/connect/$token',
+  path: '/connect/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DataIndexRoute = DataIndexRouteImport.update({
@@ -215,6 +247,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCliLoginRoute = ApiCliLoginRouteImport.update({
+  id: '/api/cli/login',
+  path: '/api/cli/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPolarWebhookRoute = ApiPolarWebhookRouteImport.update({
   id: '/api/polar/webhook',
   path: '/api/polar/webhook',
@@ -240,6 +277,11 @@ const PWorkspaceProductRoute = PWorkspaceProductRouteImport.update({
   path: '/p/$workspace/$product',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCliLoginPollRoute = ApiCliLoginPollRouteImport.update({
+  id: '/poll',
+  path: '/poll',
+  getParentRoute: () => ApiCliLoginRoute,
+} as any)
 const PWorkspaceProductBadgeDotsvgRoute =
   PWorkspaceProductBadgeDotsvgRouteImport.update({
     id: '/p/$workspace/$product_/badge.svg',
@@ -257,23 +299,28 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/changelog': typeof ChangelogRoute
+  '/cli': typeof CliRoute
   '/cookies': typeof CookiesRoute
   '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
   '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/connect/$token': typeof ConnectTokenRoute
   '/data/$file': typeof DataFileRoute
   '/demo/connections': typeof DemoConnectionsRoute
   '/demo/costs': typeof DemoCostsRoute
@@ -287,32 +334,39 @@ export interface FileRoutesByFullPath {
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cli/login': typeof ApiCliLoginRouteWithChildren
   '/api/polar/webhook': typeof ApiPolarWebhookRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
   '/app/connections/': typeof AppConnectionsIndexRoute
+  '/api/cli/login/poll': typeof ApiCliLoginPollRoute
   '/p/$workspace/$product/badge.svg': typeof PWorkspaceProductBadgeDotsvgRoute
   '/p/$workspace/$product/og.png': typeof PWorkspaceProductOgDotpngRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
+  '/cli': typeof CliRoute
   '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
   '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/connect/$token': typeof ConnectTokenRoute
   '/data/$file': typeof DataFileRoute
   '/demo/connections': typeof DemoConnectionsRoute
   '/demo/costs': typeof DemoCostsRoute
@@ -326,11 +380,13 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsIndexRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cli/login': typeof ApiCliLoginRouteWithChildren
   '/api/polar/webhook': typeof ApiPolarWebhookRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
   '/app/connections': typeof AppConnectionsIndexRoute
+  '/api/cli/login/poll': typeof ApiCliLoginPollRoute
   '/p/$workspace/$product/badge.svg': typeof PWorkspaceProductBadgeDotsvgRoute
   '/p/$workspace/$product/og.png': typeof PWorkspaceProductOgDotpngRoute
 }
@@ -339,23 +395,28 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/changelog': typeof ChangelogRoute
+  '/cli': typeof CliRoute
   '/cookies': typeof CookiesRoute
   '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
   '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/connect/$token': typeof ConnectTokenRoute
   '/data/$file': typeof DataFileRoute
   '/demo/connections': typeof DemoConnectionsRoute
   '/demo/costs': typeof DemoCostsRoute
@@ -369,11 +430,13 @@ export interface FileRoutesById {
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cli/login': typeof ApiCliLoginRouteWithChildren
   '/api/polar/webhook': typeof ApiPolarWebhookRoute
   '/app/connect/$provider': typeof AppConnectProviderRoute
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
   '/app/connections/': typeof AppConnectionsIndexRoute
+  '/api/cli/login/poll': typeof ApiCliLoginPollRoute
   '/p/$workspace/$product_/badge.svg': typeof PWorkspaceProductBadgeDotsvgRoute
   '/p/$workspace/$product_/og.png': typeof PWorkspaceProductOgDotpngRoute
 }
@@ -383,23 +446,28 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/changelog'
+    | '/cli'
     | '/cookies'
     | '/demo'
     | '/docs'
     | '/login'
+    | '/mcp'
     | '/onboarding'
     | '/open'
     | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/api/connections'
     | '/api/export.csv'
+    | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/connect/$token'
     | '/data/$file'
     | '/demo/connections'
     | '/demo/costs'
@@ -413,32 +481,39 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
+    | '/api/cli/login'
     | '/api/polar/webhook'
     | '/app/connect/$provider'
     | '/app/connections/$id'
     | '/p/$workspace/$product'
     | '/app/connections/'
+    | '/api/cli/login/poll'
     | '/p/$workspace/$product/badge.svg'
     | '/p/$workspace/$product/og.png'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/changelog'
+    | '/cli'
     | '/cookies'
     | '/login'
+    | '/mcp'
     | '/onboarding'
     | '/open'
     | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/api/connections'
     | '/api/export.csv'
+    | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/connect/$token'
     | '/data/$file'
     | '/demo/connections'
     | '/demo/costs'
@@ -452,11 +527,13 @@ export interface FileRouteTypes {
     | '/docs'
     | '/integrations'
     | '/api/auth/$'
+    | '/api/cli/login'
     | '/api/polar/webhook'
     | '/app/connect/$provider'
     | '/app/connections/$id'
     | '/p/$workspace/$product'
     | '/app/connections'
+    | '/api/cli/login/poll'
     | '/p/$workspace/$product/badge.svg'
     | '/p/$workspace/$product/og.png'
   id:
@@ -464,23 +541,28 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/changelog'
+    | '/cli'
     | '/cookies'
     | '/demo'
     | '/docs'
     | '/login'
+    | '/mcp'
     | '/onboarding'
     | '/open'
     | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/terms'
+    | '/api/connections'
     | '/api/export.csv'
+    | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/connect/$token'
     | '/data/$file'
     | '/demo/connections'
     | '/demo/costs'
@@ -494,11 +576,13 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
+    | '/api/cli/login'
     | '/api/polar/webhook'
     | '/app/connect/$provider'
     | '/app/connections/$id'
     | '/p/$workspace/$product'
     | '/app/connections/'
+    | '/api/cli/login/poll'
     | '/p/$workspace/$product_/badge.svg'
     | '/p/$workspace/$product_/og.png'
   fileRoutesById: FileRoutesById
@@ -507,25 +591,31 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   ChangelogRoute: typeof ChangelogRoute
+  CliRoute: typeof CliRoute
   CookiesRoute: typeof CookiesRoute
   DemoRoute: typeof DemoRouteWithChildren
   DocsRoute: typeof DocsRouteWithChildren
   LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
   OnboardingRoute: typeof OnboardingRoute
   OpenRoute: typeof OpenRoute
   PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  ApiConnectionsRoute: typeof ApiConnectionsRoute
   ApiExportDotcsvRoute: typeof ApiExportDotcsvRoute
+  ApiProvidersRoute: typeof ApiProvidersRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CompareSlugRoute: typeof CompareSlugRoute
+  ConnectTokenRoute: typeof ConnectTokenRoute
   DataFileRoute: typeof DataFileRoute
   IngestSplatRoute: typeof IngestSplatRoute
   IntegrationsSlugRoute: typeof IntegrationsSlugRoute
   DataIndexRoute: typeof DataIndexRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCliLoginRoute: typeof ApiCliLoginRouteWithChildren
   ApiPolarWebhookRoute: typeof ApiPolarWebhookRoute
   PWorkspaceProductRoute: typeof PWorkspaceProductRoute
   PWorkspaceProductBadgeDotsvgRoute: typeof PWorkspaceProductBadgeDotsvgRoute
@@ -555,6 +645,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cli': {
+      id: '/cli'
+      path: '/cli'
+      fullPath: '/cli'
+      preLoaderRoute: typeof CliRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cookies': {
       id: '/cookies'
       path: '/cookies'
@@ -581,6 +678,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -625,11 +729,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/connections': {
+      id: '/api/connections'
+      path: '/api/connections'
+      fullPath: '/api/connections'
+      preLoaderRoute: typeof ApiConnectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/export.csv': {
       id: '/api/export.csv'
       path: '/api/export.csv'
       fullPath: '/api/export.csv'
       preLoaderRoute: typeof ApiExportDotcsvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/providers': {
+      id: '/api/providers'
+      path: '/api/providers'
+      fullPath: '/api/providers'
+      preLoaderRoute: typeof ApiProvidersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/telemetry': {
@@ -679,6 +797,13 @@ declare module '@tanstack/react-router' {
       path: '/compare/$slug'
       fullPath: '/compare/$slug'
       preLoaderRoute: typeof CompareSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect/$token': {
+      id: '/connect/$token'
+      path: '/connect/$token'
+      fullPath: '/connect/$token'
+      preLoaderRoute: typeof ConnectTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/data/': {
@@ -765,6 +890,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cli/login': {
+      id: '/api/cli/login'
+      path: '/api/cli/login'
+      fullPath: '/api/cli/login'
+      preLoaderRoute: typeof ApiCliLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/polar/webhook': {
       id: '/api/polar/webhook'
       path: '/api/polar/webhook'
@@ -799,6 +931,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/p/$workspace/$product'
       preLoaderRoute: typeof PWorkspaceProductRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/cli/login/poll': {
+      id: '/api/cli/login/poll'
+      path: '/poll'
+      fullPath: '/api/cli/login/poll'
+      preLoaderRoute: typeof ApiCliLoginPollRouteImport
+      parentRoute: typeof ApiCliLoginRoute
     }
     '/p/$workspace/$product_/badge.svg': {
       id: '/p/$workspace/$product_/badge.svg'
@@ -869,29 +1008,47 @@ const DocsRouteChildren: DocsRouteChildren = {
 
 const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
 
+interface ApiCliLoginRouteChildren {
+  ApiCliLoginPollRoute: typeof ApiCliLoginPollRoute
+}
+
+const ApiCliLoginRouteChildren: ApiCliLoginRouteChildren = {
+  ApiCliLoginPollRoute: ApiCliLoginPollRoute,
+}
+
+const ApiCliLoginRouteWithChildren = ApiCliLoginRoute._addFileChildren(
+  ApiCliLoginRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   ChangelogRoute: ChangelogRoute,
+  CliRoute: CliRoute,
   CookiesRoute: CookiesRoute,
   DemoRoute: DemoRouteWithChildren,
   DocsRoute: DocsRouteWithChildren,
   LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
   OnboardingRoute: OnboardingRoute,
   OpenRoute: OpenRoute,
   PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  ApiConnectionsRoute: ApiConnectionsRoute,
   ApiExportDotcsvRoute: ApiExportDotcsvRoute,
+  ApiProvidersRoute: ApiProvidersRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
   CompareSlugRoute: CompareSlugRoute,
+  ConnectTokenRoute: ConnectTokenRoute,
   DataFileRoute: DataFileRoute,
   IngestSplatRoute: IngestSplatRoute,
   IntegrationsSlugRoute: IntegrationsSlugRoute,
   DataIndexRoute: DataIndexRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCliLoginRoute: ApiCliLoginRouteWithChildren,
   ApiPolarWebhookRoute: ApiPolarWebhookRoute,
   PWorkspaceProductRoute: PWorkspaceProductRoute,
   PWorkspaceProductBadgeDotsvgRoute: PWorkspaceProductBadgeDotsvgRoute,

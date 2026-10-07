@@ -3,9 +3,10 @@ import { and, eq, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "#/db";
 import { providerName } from "#/lib/providers";
+import { authenticate } from "./api.server";
 import { sessionUser } from "./auth.server";
 import { flatMonthlyCents } from "./overview.server";
-import { currentWorkspace } from "./workspace.server";
+import { currentWorkspace, type Workspace } from "./workspace.server";
 
 // GET /api/export.csv?from=YYYY-MM-DD&to=YYYY-MM-DD: revenue lines, cost
 // lines and flat costs in one file, this calendar year by default.
@@ -46,13 +47,13 @@ export function csvCell(v: string | number | null) {
 	return /[",\r\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
 }
 
+// A signed-in session, or `Authorization: Bearer op_...` for scripts.
 export async function exportCsv(request: Request) {
-	// Session only. API tokens (`Authorization: Bearer op_...`) resolve to
-	// their workspace here once they exist.
-	if (!(await sessionUser())) {
+	const caller = await authenticate(request);
+	if (!caller && !(await sessionUser())) {
 		return new Response("Sign in to export.", { status: 401 });
 	}
-	const ws = await currentWorkspace();
+	const ws = caller ? caller.ws : await currentWorkspace();
 
 	const year = new Date().getUTCFullYear();
 	const params = new URL(request.url).searchParams;
@@ -69,7 +70,17 @@ export async function exportCsv(request: Request) {
 		});
 	}
 	const { from, to } = range.data;
+	return new Response(await csvText(ws, from, to), {
+		headers: {
+			"Content-Type": "text/csv; charset=utf-8",
+			"Content-Disposition": `attachment; filename="openprofit-${ws.slug}-${from}-to-${to}.csv"`,
+			"Cache-Control": "no-store",
+		},
+	});
+}
 
+// The file itself, shared with the MCP export_csv tool.
+export async function csvText(ws: Workspace, from: string, to: string) {
 	const [revenue, costs, flats, products] = await Promise.all([
 		db
 			.select({
@@ -173,12 +184,5 @@ export async function exportCsv(request: Request) {
 	rows.sort((a, b) => String(a[0]).localeCompare(String(b[0])));
 
 	// The BOM tells Excel the file is UTF-8.
-	const csv = `﻿${[HEADER, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n")}\r\n`;
-	return new Response(csv, {
-		headers: {
-			"Content-Type": "text/csv; charset=utf-8",
-			"Content-Disposition": `attachment; filename="openprofit-${ws.slug}-${from}-to-${to}.csv"`,
-			"Cache-Control": "no-store",
-		},
-	});
+	return `﻿${[HEADER, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n")}\r\n`;
 }
