@@ -59,6 +59,21 @@ async function workspaceId(c: Credentials) {
 	return ws.id;
 }
 
+// Project names for the mapping page, from Railway's documented query:
+// https://docs.railway.com/integrations/api/manage-projects
+// Deleted projects aren't listed and keep showing their id. Names are only
+// labels, so a failed lookup must not fail the cost sync.
+async function projectNames(c: Credentials, workspaceId: string) {
+	const r = await gql<{
+		projects: { edges: { node: { id: string; name: string } }[] };
+	}>(
+		c,
+		"query ($id: String!) { projects(workspaceId: $id) { edges { node { id name } } } }",
+		{ id: workspaceId },
+	).catch(() => null);
+	return new Map(r?.projects.edges.map((e) => [e.node.id, e.node.name]));
+}
+
 const monthsBetween = (from: string, to: string) => {
 	const out: string[] = [];
 	let d = new Date(`${from.slice(0, 7)}-01T00:00:00Z`);
@@ -106,6 +121,7 @@ export const railway = register({
 	// the range, so months are the finest grain without a query per day.
 	async fetchCosts(c, range) {
 		const id = await workspaceId(c);
+		const names = await projectNames(c, id);
 		const out: CostLine[] = [];
 		for (const month of monthsBetween(range.from, range.to)) {
 			const start = `${month}-01T00:00:00.000Z`;
@@ -132,6 +148,7 @@ export const railway = register({
 					amountCents: toCents(dollars),
 					service: price.label,
 					subUnitId: u.tags.projectId ?? undefined,
+					subUnitLabel: names.get(u.tags.projectId ?? ""),
 				});
 			}
 		}
