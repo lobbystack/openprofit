@@ -3,7 +3,7 @@ import { type db, schema } from "#/db";
 import { encrypt } from "#/lib/crypto";
 
 // Sample numbers for `pnpm db:seed` and the public demo: twelve months
-// ending this month, three products, two revenue sources, five cost
+// ending this month, three products, Stripe for revenue, seven cost
 // providers and a few flat costs.
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -24,17 +24,16 @@ const PRODUCTS = [
 	{ name: "Shipmail", slug: "shipmail", share: 0.29 },
 	{ name: "Quoteflow", slug: "quoteflow", share: 0.13 },
 ];
-const REVENUE_SOURCES = [
-	{ provider: "stripe", share: 0.79, fee: 0.029 },
-	{ provider: "polar", share: 0.21, fee: 0.05 },
-];
+const REVENUE_SOURCES = [{ provider: "stripe", share: 1, fee: 0.029 }];
 // Share of synced cost per provider, and whether it maps to products.
 const COST_PROVIDERS = [
-	{ provider: "openai", share: 0.46, mapped: true },
-	{ provider: "vercel", share: 0.21, mapped: true },
-	{ provider: "anthropic", share: 0.16, mapped: true },
+	{ provider: "openai", share: 0.4, mapped: true },
+	{ provider: "vercel", share: 0.18, mapped: true },
+	{ provider: "anthropic", share: 0.15, mapped: true },
 	{ provider: "railway", share: 0.07, mapped: true },
-	{ provider: "cloudflare", share: 0.04, mapped: false },
+	{ provider: "resend", share: 0.05, mapped: true },
+	{ provider: "firecrawl", share: 0.09, mapped: true },
+	{ provider: "cloudflare", share: 0.06, mapped: false },
 ];
 
 const lastDay = (m: string) => {
@@ -243,8 +242,6 @@ export async function seedWorkspace(
 		.insert(schema.flatCosts)
 		.values([
 			flat("Supabase Pro", "supabase", 2500, "month"),
-			flat("Resend Pro", "resend", 2000, "month"),
-			flat("Firecrawl", "firecrawl", 1900, "month", draftly?.id),
 			flat("draftly.app", "domains", 1400, "year", draftly?.id),
 			flat("shipmail.dev", "domains", 1400, "year", shipmail?.id),
 		]);

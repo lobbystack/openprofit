@@ -52,24 +52,16 @@ export function Hero() {
 							Start for free
 						</Href>
 						<Href
-							href="/docs/self-host"
+							href="/demo"
 							className={buttonVariants({
 								variant: "outline",
 								size: "lg",
 								weight: "medium",
 							})}
 						>
-							Self-host
+							Try the live demo
 						</Href>
 					</div>
-					<Href
-						href="/demo"
-						className={`rise mt-3 ${buttonVariants({ variant: "ghost", weight: "medium" })}`}
-						style={{ "--rise-delay": "240ms" } as React.CSSProperties}
-					>
-						See the demo
-						<ArrowRight size={13} />
-					</Href>
 				</Container>
 			</section>
 
