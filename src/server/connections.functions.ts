@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { connector, connectorInfo, connectors } from "#/connectors";
 import { db, schema } from "#/db";
+import { periodSchema } from "#/lib/overview";
 import { capture } from "./analytics.server";
 import { requireUser } from "./auth.server";
 import { addConnection, connectionRows } from "./connections.server";
@@ -15,10 +16,18 @@ export type { ConnectionRow } from "./connections.server";
 
 // `demo` reads the public demo workspace instead of the user's.
 export const getConnections = createServerFn({ method: "GET" })
-	.validator(z.object({ demo: z.boolean() }).optional())
+	.validator(
+		z
+			.object({ demo: z.boolean().optional(), period: periodSchema.optional() })
+			.optional(),
+	)
 	.handler(async ({ data }) => {
 		const ws = data?.demo ? await demoWorkspace() : await currentWorkspace();
-		return connectionRows(ws, (await currentProduct(ws))?.id ?? null);
+		return connectionRows(
+			ws,
+			(await currentProduct(ws))?.id ?? null,
+			data?.period,
+		);
 	});
 
 export const getConnectorInfo = createServerFn({ method: "GET" })

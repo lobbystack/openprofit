@@ -58,6 +58,20 @@ const nextMonth = (m: string) => {
 	return ym(new Date(Date.UTC(y, mo, 1)));
 };
 
+type Range = { from: string; to: string };
+
+// The days [from, to) a period covers. Month periods take whole months, as
+// the chart does. The last 30 days split monthly bills by day (`byDay`).
+export function periodSpan(key: PeriodKey) {
+	if (key === "30d") return { from: daysAgo(29), to: daysAgo(-1), byDay: true };
+	const months = periodMonths(key);
+	return {
+		from: `${months[0]}-01`,
+		to: `${nextMonth(months[months.length - 1])}-01`,
+		byDay: false,
+	};
+}
+
 const DAY = 86_400_000;
 // YYYY-MM-DD n days before today, UTC. Negative is ahead.
 export const daysAgo = (n: number) =>
@@ -128,20 +142,17 @@ export async function overview(
 	const rangeFrom = `${period[0]}-01`;
 	const rangeTo = `${nextMonth(end)}-01`;
 	const inRange = (col: PgColumn) => and(gte(col, rangeFrom), lt(col, rangeTo));
-	// The days the tiles and breakdowns cover. Month periods take whole
-	// months, as the chart does. The last 30 days split monthly bills by day.
-	const is30 = periodKey === "30d";
-	const span = is30
-		? { from: daysAgo(29), to: daysAgo(-1) }
-		: { from: rangeFrom, to: rangeTo };
+	// The days the tiles and breakdowns cover.
+	const span = periodSpan(periodKey);
+	const is30 = span.byDay;
 	const prevSpan = { from: daysAgo(59), to: daysAgo(29) };
 	const rl = schema.revenueLines;
 	const cl = schema.costLines;
 	const monthlyRev = is30 ? monthlyRevenue() : sql`false`;
 	const monthlyCl = is30 ? monthlyCost() : sql`false`;
-	const revIn = (col: AnyColumn, s = span) =>
+	const revIn = (col: AnyColumn, s: Range = span) =>
 		sql<number>`coalesce(sum(${share(col, rl.date, monthlyRev, s.from, s.to)}), 0)`;
-	const costIn = (s = span) =>
+	const costIn = (s: Range = span) =>
 		sql<number>`coalesce(sum(${share(cl.amountBaseCents, cl.date, monthlyCl, s.from, s.to)}), 0)`;
 	// Lines a span can reach: a monthly line starts up to a month before it.
 	const scan = (col: PgColumn) => (is30 ? gte(col, daysAgo(91)) : inRange(col));
