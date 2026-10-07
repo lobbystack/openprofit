@@ -85,7 +85,7 @@ Before editing files for a substantial task:
 - Charts are shadcn `Chart` (Recharts) in `src/components/dashboard/area-chart-recharts.tsx`, loaded lazily through `area-chart.tsx` so pages don't wait for Recharts.
 - Destructive actions (removing a connection, product or flat cost) confirm first in an `AlertDialog` (`useConfirm` in `src/components/app/confirm.tsx`) and say what happens to the data.
 - No all-caps text anywhere. Headings weight 400. No shadows or gradients on the marketing pages, no emoji.
-- The logo is the wordmark (`src/components/logo.tsx`). The mark sits before it only in the landing nav (`<Logo mark />`); everywhere else it's the wordmark alone.
+- The logo is the wordmark (`src/components/logo.tsx`). The mark always sits before it.
 - Provider logos are full-color SVG files in `public/logos/`, taken from SVGL (svgl.app), with a `-dark` variant when SVGL has one. No SVGL logo: use the brand's official press kit, then the Simple Icons path in its brand color. Never hand-draw a logo or show a text stand-in. Record the source in `public/logos/SOURCES.md`; the steps are in CONTRIBUTING.md.
 - Never name the sites the design was modeled on in code, comments, docs or commits.
 - UI and marketing copy: short, specific, no filler or decorative text. Every sentence must be useful.
