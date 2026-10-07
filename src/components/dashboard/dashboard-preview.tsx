@@ -1,13 +1,24 @@
-import { money } from "#/lib/format";
+import {
+	Bell,
+	Cable,
+	ChevronsUpDown,
+	LayoutGrid,
+	Package,
+	Receipt,
+	Search,
+	Settings,
+} from "lucide-react";
 import { MOCK_OVERVIEW } from "./mock-data";
 import { OverviewBreakdowns, OverviewCard } from "./overview";
 
+// The app's sidebar, as in src/components/app/shell.tsx.
 const NAV = [
-	["Overview", true],
-	["Products", false],
-	["Connections", false],
-	["Costs", false],
-	["Alerts", false],
+	["Overview", LayoutGrid, true],
+	["Products", Package, false],
+	["Connections", Cable, false],
+	["Costs", Receipt, false],
+	["Alerts", Bell, false],
+	["Settings", Settings, false],
 ] as const;
 
 // The dashboard as it appears in the landing hero. Static data, real components.
@@ -19,34 +30,30 @@ export function DashboardPreview({
 	return (
 		<div className="flex overflow-hidden rounded-xl border border-line bg-paper text-left">
 			<aside className="hidden w-[200px] shrink-0 border-r border-line p-3 md:block">
-				<div className="flex h-8 items-center justify-between px-2">
-					<span className="text-[13px]">Acme Labs</span>
+				<div className="flex h-8 items-center justify-between px-2 text-[13px]">
+					<span className="flex items-center gap-2">
+						<span className="flex h-5 w-5 items-center justify-center rounded-[4px] bg-ink text-[10px] text-paper">
+							A
+						</span>
+						All
+					</span>
+					<ChevronsUpDown size={13} className="text-text-3" />
+				</div>
+				<div className="mt-2 flex h-7 items-center gap-2 rounded-md border border-line px-2 text-[12px] text-text-3">
+					<Search size={12} />
+					<span className="flex-1">Search</span>
 					<span className="label-mono">⌘K</span>
 				</div>
-				<div className="label-mono mt-5 px-2">Workspace</div>
-				<ul className="mt-2 space-y-px">
-					{NAV.map(([label, active]) => (
+				<ul className="mt-4 space-y-px">
+					{NAV.map(([label, Icon, active]) => (
 						<li
 							key={label}
-							className={`flex h-7 items-center rounded-md px-2 text-[13px] ${
+							className={`flex h-7 items-center gap-2.5 rounded-md px-2 text-[13px] ${
 								active ? "bg-surface-2 text-ink" : "text-text-2"
 							}`}
 						>
+							<Icon size={14} />
 							{label}
-						</li>
-					))}
-				</ul>
-				<div className="label-mono mt-6 px-2">Products</div>
-				<ul className="mt-2 space-y-px">
-					{MOCK_OVERVIEW.byProduct.map((p) => (
-						<li
-							key={p.name}
-							className="flex h-7 items-center justify-between rounded-md px-2 text-[13px] text-text-2"
-						>
-							<span>{p.name}</span>
-							<span className="num text-[11px] text-text-3">
-								{money(p.revenue - p.costs)}
-							</span>
 						</li>
 					))}
 				</ul>

@@ -20,7 +20,7 @@ OpenProfit is the open-source finance dashboard for developers. It brings your r
 Revenue lives in your payment processor. Costs live in a dozen billing pages: AI providers, hosting, databases, email, domains. Each shows its own slice, in its own currency. OpenProfit pulls them together and assigns every line to the product it belongs to.
 
 <p align="center">
-  <img src=".github/dashboard.png" alt="Overview: revenue, costs, profit, MRR and customers across three products, with a twelve-month chart and breakdowns by product and provider" width="900">
+  <img src=".github/dashboard.png" alt="Overview: revenue, costs, profit, MRR and subscriptions across three products, with a twelve-month chart and breakdowns by product and provider" width="900">
 </p>
 
 ### Connect your whole stack
