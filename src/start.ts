@@ -33,7 +33,7 @@ const edge = createMiddleware({ type: "request" }).server(
 		const res = result.response;
 		const noStore =
 			handlerType === "serverFn" ||
-			/^\/(app|onboarding|cli|connect|api|mcp)(\/|$)/.test(url.pathname);
+			/^\/(app|onboarding|cli|connect|oauth|api|mcp)(\/|$)/.test(url.pathname);
 		// Start turns a redirect thrown by a server function into its RPC
 		// response after this middleware, so the redirect object must pass
 		// through as is; a copy reaches the browser as a bare 307.
@@ -44,6 +44,10 @@ const edge = createMiddleware({ type: "request" }).server(
 		const type = res.headers.get("content-type") ?? "";
 		const headers = new Headers(res.headers);
 		if (noStore) headers.set("Cache-Control", "no-store");
+		// Approval pages can't be framed, so no other site can trick a click
+		// on Approve.
+		if (/^\/(cli|connect|oauth)(\/|$)/.test(url.pathname))
+			headers.set("Content-Security-Policy", "frame-ancestors 'none'");
 
 		const gzip =
 			res.body &&

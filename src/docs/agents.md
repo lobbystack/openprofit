@@ -1,12 +1,12 @@
 ---
 navLabel: Agents and MCP
 contentType: How-to
-description: Connect Claude Code, Cursor or another MCP client to OpenProfit, and connect providers without pasting keys into the chat.
+description: Connect claude.ai, Claude Code, Cursor or another MCP client to OpenProfit, and connect providers without pasting keys into the chat.
 ---
 
 # Connect an AI agent to OpenProfit
 
-Your agent can read your numbers and change your workspace through the Model Context Protocol (MCP), the standard AI clients use to call tools. This page covers API tokens, the remote MCP server, the `openprofit` npm package, and how provider keys stay out of the chat.
+Your agent can read your numbers and change your workspace through the Model Context Protocol (MCP), the standard AI clients use to call tools. This page covers API tokens, the remote MCP server and its OAuth sign-in, the `openprofit` npm package, and how provider keys stay out of the chat.
 
 ## Create an API token
 
@@ -27,6 +27,16 @@ claude mcp add --transport http openprofit https://openprofit.dev/mcp \
 ```
 
 Other clients take the same URL and header in their MCP settings. The server speaks Streamable HTTP and serves clients on protocol versions 2025-11-25 and 2026-07-28.
+
+## Connect from claude.ai or another OAuth client
+
+Clients that sign in with OAuth, such as claude.ai, ChatGPT and Cursor, don’t need an API token. Add `https://openprofit.dev/mcp` as a custom connector, or your `APP_URL` followed by `/mcp` when you self-host. In claude.ai:
+
+1. Go to **Customize > Connectors** and click **Add custom connector**
+2. Enter the server URL and leave the OAuth client ID and secret empty
+3. Click **Add**, then **Connect**
+
+OpenProfit asks you to sign in, pick a workspace and choose **Read** or **Read and write**. The client gets a token for that workspace, listed under **API tokens** in **Settings** with the client’s name and “(OAuth)”. Revoke it there to disconnect the client. A self-hosted instance needs a public HTTPS `APP_URL`, because claude.ai connects from Anthropic’s servers.
 
 ## Use the npm package
 

@@ -18,13 +18,7 @@ import { FlatCostInput } from "#/lib/costs";
 import { CURRENCIES } from "#/lib/format";
 import pkg from "../../package.json";
 import { evaluateAlerts } from "./alerts.server";
-import {
-	appUrl,
-	audit,
-	authenticate,
-	type Caller,
-	unauthorized,
-} from "./api.server";
+import { appUrl, audit, authenticate, type Caller } from "./api.server";
 import { connectLinkStatus, createConnectLink } from "./connect.server";
 import { connectionRows } from "./connections.server";
 import { flatValues } from "./costs.server";
@@ -34,6 +28,7 @@ import {
 	assignSubUnit,
 	connectionDetail,
 } from "./mappings.server";
+import { challenge } from "./oauth.server";
 import { overview } from "./overview.server";
 import { productSeries } from "./product.server";
 import { addProduct } from "./products.server";
@@ -1019,7 +1014,7 @@ const handler = createMcpHandler(build, {
 
 export async function serveMcp(request: Request) {
 	const caller = await authenticate(request);
-	if (!caller) return unauthorized();
+	if (!caller) return challenge(request);
 	return handler.fetch(request, {
 		authInfo: {
 			token: caller.token.id,
