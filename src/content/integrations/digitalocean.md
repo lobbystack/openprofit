@@ -28,7 +28,7 @@ Past months come from the issued invoice. The current month comes from the invoi
 
 ## Costs per product
 
-Each DigitalOcean project appears on the connection's page. Assign it to a product and its costs follow, past months included. Invoice items without a project stay in the shared bucket.
+Each DigitalOcean project appears on the connection's page. Assign it to a product and its costs follow, past months included. Invoice items without a project stay under Unassigned.
 
 ## Common questions
 

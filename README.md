@@ -41,7 +41,7 @@ OpenAI, Vercel, Neon, Resend and 10 more providers report what they charged you,
 
 - **Usage billing.** Per-token and per-GB charges come from the provider's own billing data.
 - **Flat subscriptions.** Supabase, domains, anything else. Enter the price once and it counts every month.
-- **Mapped to products.** Point each OpenAI or Vercel project at the product it serves. The rest stays shared until you decide.
+- **Mapped to products.** Point each OpenAI or Vercel project at the product it serves. The rest stays under Unassigned until you decide.
 
 ### Know when something moves
 
@@ -60,7 +60,7 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 - **Overview** with revenue, costs, profit, MRR and customers for any period, deltas against the previous one, and a twelve-month chart with last year as a reference line.
 - **Breakdowns** by product, by revenue source and by cost provider.
 - **Connectors** that take an API key with the narrowest access each provider offers, test it before saving, and store it encrypted. OpenProfit only reads with it. Two years of history on the first sync, incremental after that. [Security](https://openprofit.dev/security) lists what each key can do.
-- **Product mapping** per provider sub-unit, with a shared bucket for anything unassigned.
+- **Product mapping** per provider sub-unit, with an Unassigned bucket for the rest.
 - **Flat costs** for subscriptions, domains and anything without an API.
 - **Multi-currency** workspaces with daily rates and a base currency you can change later.
 - **Alerts** for cost spikes, margin floors and sync failures.

@@ -140,7 +140,7 @@ export function FlatCostItem({
 				<span className="block text-[12px] text-text-3">{span(f)}</span>
 			</span>
 			<span className="hidden w-32 truncate text-text-2 sm:block">
-				{f.product ?? "Shared"}
+				{f.product ?? "Unassigned"}
 			</span>
 			<span className="num w-24 text-right">
 				{money(f.amount, { currency: f.currency, cents: true })}

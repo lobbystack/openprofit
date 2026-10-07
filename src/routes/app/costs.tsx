@@ -232,7 +232,7 @@ function FlatCostForm({
 						value={v.productId}
 						onChange={set("productId")}
 					>
-						<NativeSelectOption value="">Shared</NativeSelectOption>
+						<NativeSelectOption value="">Unassigned</NativeSelectOption>
 						{products.map((p) => (
 							<NativeSelectOption key={p.id} value={p.id}>
 								{p.name}

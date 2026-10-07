@@ -27,7 +27,7 @@ import { setPublicPage } from "#/server/public.functions";
 
 export const Route = createFileRoute("/app/products")({
 	head: () => ({ meta: [{ title: "Products · OpenProfit" }] }),
-	loader: () => getOverview(),
+	loader: () => getOverview({ data: { period: "this-month", all: true } }),
 	component: Products,
 });
 
@@ -40,7 +40,7 @@ function Products() {
 	const setPage = useServerFn(setPublicPage);
 	const [adding, setAdding] = useState(false);
 	const [name, setName] = useState("");
-	const products = data.byProduct.filter((p) => p.id !== "shared");
+	const products = data.byProduct.filter((p) => p.id !== "unassigned");
 
 	async function add(e: React.FormEvent) {
 		e.preventDefault();
@@ -55,7 +55,7 @@ function Products() {
 		const ok = await confirm({
 			title: `Remove ${name}?`,
 			description:
-				"Its costs and revenue move to Shared, and its public page goes offline.",
+				"Its costs and revenue move to Unassigned, and its public page goes offline.",
 			action: "Remove product",
 		});
 		if (!ok) return;

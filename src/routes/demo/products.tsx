@@ -11,7 +11,7 @@ export const Route = createFileRoute("/demo/products")({
 
 function DemoProducts() {
 	const data = Route.useLoaderData();
-	const count = data.byProduct.filter((p) => p.id !== "shared").length;
+	const count = data.byProduct.filter((p) => p.id !== "unassigned").length;
 	return (
 		<>
 			<PageHeader title="Products" meta={`${count}`} />

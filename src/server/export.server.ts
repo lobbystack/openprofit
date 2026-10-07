@@ -120,7 +120,7 @@ export async function csvText(ws: Workspace, from: string, to: string) {
 		}),
 	]);
 	const names = new Map(products.map((p) => [p.id, p.name]));
-	const product = (id: string | null) => (id && names.get(id)) || "Shared";
+	const product = (id: string | null) => (id && names.get(id)) || "Unassigned";
 
 	type Row = (string | number | null)[];
 	const rows: Row[] = [];

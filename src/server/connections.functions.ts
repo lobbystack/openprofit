@@ -9,18 +9,18 @@ import { requireUser } from "./auth.server";
 import { addConnection, connectionRows } from "./connections.server";
 import { demoWorkspace } from "./demo.server";
 import { syncConnection } from "./sync.server";
-import { currentWorkspace } from "./workspace.server";
+import { currentProduct, currentWorkspace } from "./workspace.server";
 
 export type { ConnectionRow } from "./connections.server";
 
 // `demo` reads the public demo workspace instead of the user's.
 export const getConnections = createServerFn({ method: "GET" })
 	.validator(z.object({ demo: z.boolean() }).optional())
-	.handler(async ({ data }) =>
-		connectionRows(
-			data?.demo ? await demoWorkspace() : await currentWorkspace(),
-		),
-	);
+	.handler(async ({ data }) => {
+		if (data?.demo) return connectionRows(await demoWorkspace());
+		const ws = await currentWorkspace();
+		return connectionRows(ws, (await currentProduct(ws))?.id ?? null);
+	});
 
 export const getConnectorInfo = createServerFn({ method: "GET" })
 	.validator(z.object({ id: z.string() }))

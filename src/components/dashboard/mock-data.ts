@@ -91,6 +91,8 @@ const at = (f: (v: number[]) => number) =>
 export const MOCK_OVERVIEW: OverviewData = {
 	currency: "USD",
 	workspaceSlug: "acme",
+	product: null,
+	snapshots: true,
 	months: MONTHS,
 	series: SERIES,
 	previousSeries: Object.fromEntries(

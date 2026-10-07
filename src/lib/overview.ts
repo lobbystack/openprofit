@@ -60,6 +60,11 @@ export const PERIODS: { key: PeriodKey; label: string }[] = [
 export type OverviewData = {
 	currency: string;
 	workspaceSlug: string;
+	// The switcher's product these numbers cover; null is All.
+	product: { id: string; name: string } | null;
+	// MRR and subscriptions are known. A product only has them when a
+	// revenue connection is assigned to it as a whole.
+	snapshots: boolean;
 	// YYYY-MM, oldest first. Money series are whole units, not cents.
 	months: string[];
 	series: Record<MetricKey, number[]>;

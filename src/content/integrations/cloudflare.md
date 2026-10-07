@@ -24,4 +24,4 @@ The token can read billing and account names. It can't change anything.
 
 ## Costs per product
 
-Where Cloudflare attributes usage to a zone, the zone appears on the connection's page and you assign it to a product. Account-wide charges stay shared.
+Where Cloudflare attributes usage to a zone, the zone appears on the connection's page and you assign it to a product. Account-wide charges stay under Unassigned.

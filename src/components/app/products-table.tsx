@@ -13,7 +13,7 @@ import type { OverviewData } from "#/lib/overview";
 
 type Product = OverviewData["byProduct"][number];
 
-// Products, then Shared, with their period numbers and profit trend. The app
+// Products, then Unassigned, with their period numbers and profit trend. The app
 // passes `publicPage` and `remove` for its controls and extra rows as
 // children; /demo passes neither.
 export function ProductsTable({
@@ -28,8 +28,8 @@ export function ProductsTable({
 	children?: React.ReactNode;
 }) {
 	const fmt = (n: number) => money(n, { currency: data.currency });
-	const products = data.byProduct.filter((p) => p.id !== "shared");
-	const shared = data.byProduct.find((p) => p.id === "shared");
+	const products = data.byProduct.filter((p) => p.id !== "unassigned");
+	const shared = data.byProduct.find((p) => p.id === "unassigned");
 	return (
 		<Card className="mt-4 overflow-hidden">
 			<Table>
@@ -48,11 +48,11 @@ export function ProductsTable({
 				<TableBody>
 					{[...products, ...(shared ? [shared] : [])].map((p) => {
 						const profit = p.revenue - p.costs;
-						const isShared = p.id === "shared";
+						const isUnassigned = p.id === "unassigned";
 						return (
 							<TableRow
 								key={p.id}
-								className={isShared ? "text-text-2" : undefined}
+								className={isUnassigned ? "text-text-2" : undefined}
 							>
 								<TableCell className="h-12">{p.name}</TableCell>
 								<TableCell className="num text-right">
@@ -78,11 +78,11 @@ export function ProductsTable({
 									)}
 								</TableCell>
 								{publicPage && (
-									<TableCell>{!isShared && publicPage(p)}</TableCell>
+									<TableCell>{!isUnassigned && publicPage(p)}</TableCell>
 								)}
 								{remove && (
 									<TableCell className="px-2">
-										{!isShared && remove(p)}
+										{!isUnassigned && remove(p)}
 									</TableCell>
 								)}
 							</TableRow>

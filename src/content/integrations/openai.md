@@ -32,7 +32,7 @@ The key is stored encrypted and used only to read costs.
 
 ## Costs per product
 
-Each OpenAI project appears on the connection's page with this month's spend. Point a project at the product it serves, and its costs land on that product from then on, history included. Projects you leave unassigned stay in a shared bucket until you decide. If you run one product, everything goes to it by default.
+Each OpenAI project appears on the connection's page with this month's spend. Point a project at the product it serves, and its costs land on that product from then on, history included. Projects you leave unassigned stay under Unassigned until you decide. If you run one product, everything goes to it by default.
 
 Three products on one OpenAI account, one project each, and you see which one pays for its tokens.
 

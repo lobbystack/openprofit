@@ -51,7 +51,7 @@ function Connection() {
 	const p = PROVIDERS[c.provider];
 	// Where lines of a sub-unit without its own product go.
 	const fallback =
-		c.products.find((pr) => pr.id === c.productId)?.name ?? "Shared";
+		c.products.find((pr) => pr.id === c.productId)?.name ?? "Unassigned";
 
 	async function assign(subUnitId: string, productId: string | null) {
 		await map({ data: { connectionId: c.id, subUnitId, productId } });
@@ -66,7 +66,7 @@ function Connection() {
 	const select = (
 		value: string | null,
 		onChange: (v: string | null) => void,
-		empty = "Shared",
+		empty = "Unassigned",
 	) => (
 		<NativeSelect
 			size="xs"

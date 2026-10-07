@@ -18,7 +18,7 @@ OpenProfit reads Vercel's billing charges, which Vercel publishes in the FOCUS f
 - the service, such as functions, edge requests or bandwidth;
 - the project, when Vercel attributes the charge to one.
 
-Charges that belong to the team as a whole, like the seat price of a Pro plan, have no project. They stay in the shared bucket.
+Charges that belong to the team as a whole, like the seat price of a Pro plan, have no project. They stay under Unassigned.
 
 ## Connect it
 
