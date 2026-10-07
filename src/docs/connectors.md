@@ -77,7 +77,7 @@ OpenProfit assigns a cost to a product through the provider’s own grouping. Th
 
 Open a connection from **Connections** to see each grouping with this month’s spend, then pick the product it serves. Past lines move to that product too.
 
-Lines with no grouping or an unassigned one go to the product you pick at the top of the page. Revenue follows the same rules. If your workspace has one product, everything goes to it by default. Anything left unassigned appears as **Unassigned** on the overview.
+Each grouping is assigned to one product or left unassigned. Lines that belong to no grouping get their own row, and a provider without groupings, such as Stripe or Twilio, is assigned as a whole. When you connect a provider for a product, or your workspace has one product, the first sync assigns every grouping it finds to that product. Anything unassigned counts under **All** and shows as **Unassigned** on the overview.
 
 ## Add costs that have no API
 

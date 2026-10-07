@@ -118,7 +118,7 @@ export const connections = pgTable(
 );
 
 // A provider sub-unit (OpenAI project, Vercel project, Railway project)
-// assigned to a product. Unmapped lines follow the connection's product.
+// assigned to a product. An unmapped sub-unit is unassigned.
 export const productMappings = pgTable(
 	"product_mappings",
 	{

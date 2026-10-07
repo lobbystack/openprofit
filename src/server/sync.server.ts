@@ -80,14 +80,25 @@ export async function syncConnection(
 			where: eq(schema.productMappings.connectionId, conn.id),
 		});
 		const mapped = new Map(mappings.map((m) => [m.subUnitId, m.productId]));
-		const productFor = (subUnitId?: string) =>
-			(subUnitId && mapped.get(subUnitId)) || conn.productId;
+		// A sub-unit belongs to the product it's mapped to, or to none. The
+		// connection's product covers lines without a sub-unit. On the first
+		// sync of a connection added for a product, every sub-unit it reports
+		// is mapped to that product, so it shows as assigned on its page.
+		const adopt = !conn.lastSyncedAt && conn.productId;
+		const adopted = new Map<string, string | null>();
+		const productFor = (subUnitId?: string, label?: string) => {
+			if (!subUnitId) return conn.productId;
+			const known = mapped.get(subUnitId);
+			if (known || !adopt) return known ?? null;
+			if (!adopted.has(subUnitId)) adopted.set(subUnitId, label ?? null);
+			return conn.productId;
+		};
 
 		if (c.fetchRevenue) {
 			const lines = await c.fetchRevenue(creds, range);
 			for (const l of lines) {
 				const line = {
-					productId: productFor(l.subUnitId),
+					productId: productFor(l.subUnitId, l.subUnitLabel),
 					date: l.date,
 					currency: l.currency,
 					grossCents: l.grossCents,
@@ -140,7 +151,7 @@ export async function syncConnection(
 			const lines = await c.fetchCosts(creds, range);
 			for (const l of lines) {
 				const line = {
-					productId: productFor(l.subUnitId),
+					productId: productFor(l.subUnitId, l.subUnitLabel),
 					date: l.date,
 					currency: l.currency,
 					amountCents: l.amountCents,
@@ -218,6 +229,20 @@ export async function syncConnection(
 				written++;
 			}
 		}
+
+		if (adopt && adopted.size)
+			await db
+				.insert(schema.productMappings)
+				.values(
+					[...adopted].map(([subUnitId, subUnitLabel]) => ({
+						workspaceId: ws.id,
+						connectionId: conn.id,
+						subUnitId,
+						subUnitLabel,
+						productId: adopt,
+					})),
+				)
+				.onConflictDoNothing();
 
 		await db
 			.update(schema.connections)

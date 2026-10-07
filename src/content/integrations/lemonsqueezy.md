@@ -40,4 +40,4 @@ A test mode key reads your test mode data instead.
 
 ## Revenue per product
 
-Each Lemon Squeezy product appears on the connection's page. Assign it to a product and its revenue follows, past sales included. Revenue without a product goes to the product you pick at the top of the same page.
+Each Lemon Squeezy product appears on the connection's page. Assign it to a product and its revenue follows, past sales included. Revenue that isn't tied to a Lemon Squeezy product gets its own row on the same page.

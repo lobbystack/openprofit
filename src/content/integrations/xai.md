@@ -27,4 +27,4 @@ Credit purchases and auto top-ups don't count as costs: prepay $100, spend $40, 
 
 ## Costs per product
 
-xAI's API documents grouping usage by billing description only, so all xAI costs go to the product you pick at the top of the connection's page. If two products share one team, give each its own xAI team and connect both.
+xAI's API documents grouping usage by billing description only, so you assign the whole connection to one product on its page. If two products share one team, give each its own xAI team and connect both.
