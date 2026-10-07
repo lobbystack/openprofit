@@ -1,4 +1,15 @@
-import { and, eq, gte, inArray, isNull, ne, sql } from "drizzle-orm";
+import {
+	type AnyColumn,
+	and,
+	eq,
+	gte,
+	inArray,
+	isNull,
+	ne,
+	type SQL,
+	sql,
+} from "drizzle-orm";
+import { connectors } from "#/connectors";
 import { db, schema } from "#/db";
 import { money } from "#/lib/format";
 import { PROVIDERS, providerName } from "#/lib/providers";
@@ -19,10 +30,47 @@ function window30(now = Date.now()) {
 		prevFrom: ago(59),
 		thirtyAgo: ago(30),
 		today: ago(0),
+		tomorrow: ago(-1),
 		month: ago(0).slice(0, 7),
 		prevMonth: ago(30).slice(0, 7),
 	};
 }
+
+type Window = ReturnType<typeof window30>;
+
+// A line's share of the days [from, to). A monthly connector's line covers
+// the month from its date, or up to today for the current month, so it
+// counts by its days inside the range; any other line is one day's amount.
+function share(
+	w: Window,
+	amount: AnyColumn,
+	date: AnyColumn,
+	monthly: SQL,
+	from: string,
+	to: string,
+) {
+	const start = sql`${date}::date`;
+	const end = sql`least((${start} + interval '1 month')::date, ${w.tomorrow}::date)`;
+	return sql`case
+		when not (${monthly}) then case when ${date} >= ${from} and ${date} < ${to} then ${amount} else 0 end
+		when ${start} >= ${w.tomorrow}::date then 0
+		else round(${amount} * greatest(0, least(${to}::date, ${end}) - greatest(${from}::date, ${start}))::numeric / (${end} - ${start}))
+	end`;
+}
+
+const monthlyIds = () =>
+	connectors()
+		.filter((c) => c.monthly)
+		.map((c) => c.id);
+const monthlyCost = () => inArray(schema.costLines.provider, monthlyIds());
+const monthlyRevenue = () =>
+	inArray(
+		schema.revenueLines.connectionId,
+		db
+			.select({ id: schema.connections.id })
+			.from(schema.connections)
+			.where(inArray(schema.connections.provider, monthlyIds())),
+	);
 
 type Stats = {
 	// Base cents.
@@ -51,8 +99,8 @@ async function stats(
 		db
 			.select({
 				id: r.productId,
-				cur: sql<number>`coalesce(sum(case when ${r.date} >= ${w.from} then ${r.netBaseCents} end), 0)`,
-				prev: sql<number>`coalesce(sum(case when ${r.date} >= ${w.prevFrom} and ${r.date} < ${w.from} then ${r.netBaseCents} end), 0)`,
+				cur: sql<number>`coalesce(sum(${share(w, r.netBaseCents, r.date, monthlyRevenue(), w.from, w.tomorrow)}), 0)`,
+				prev: sql<number>`coalesce(sum(${share(w, r.netBaseCents, r.date, monthlyRevenue(), w.prevFrom, w.from)}), 0)`,
 				first: sql<string | null>`min(${r.date})`,
 			})
 			.from(r)
@@ -61,7 +109,7 @@ async function stats(
 		db
 			.select({
 				id: c.productId,
-				cur: sql<number>`coalesce(sum(case when ${c.date} >= ${w.from} then ${c.amountBaseCents} end), 0)`,
+				cur: sql<number>`coalesce(sum(${share(w, c.amountBaseCents, c.date, monthlyCost(), w.from, w.tomorrow)}), 0)`,
 			})
 			.from(c)
 			.where(
@@ -221,22 +269,25 @@ export async function publicPage(found: Found): Promise<PublicPage> {
 				.select({
 					provider: c.provider,
 					source: c.source,
-					v: sql<number>`sum(${c.amountBaseCents})`,
+					v: sql<number>`sum(${share(w, c.amountBaseCents, c.date, monthlyCost(), w.from, w.tomorrow)})`,
 				})
 				.from(c)
-				.where(and(eq(c.productId, product.id), gte(c.date, w.from)))
+				// From a month earlier: a monthly line can reach into the window.
+				.where(and(eq(c.productId, product.id), gte(c.date, w.prevFrom)))
 				.groupBy(c.provider, c.source),
 			db.query.flatCosts.findMany({
 				where: eq(schema.flatCosts.workspaceId, ws.id),
 			}),
 			db
-				.select({ v: sql<number>`coalesce(sum(${c.amountBaseCents}), 0)` })
+				.select({
+					v: sql<number>`coalesce(sum(${share(w, c.amountBaseCents, c.date, monthlyCost(), w.from, w.tomorrow)}), 0)`,
+				})
 				.from(c)
 				.where(
 					and(
 						eq(c.workspaceId, ws.id),
 						isNull(c.productId),
-						gte(c.date, w.from),
+						gte(c.date, w.prevFrom),
 					),
 				),
 		]);

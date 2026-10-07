@@ -76,6 +76,7 @@ export const revenuecat = register({
 	id: "revenuecat",
 	name: "RevenueCat",
 	kind: "revenue",
+	monthly: true,
 	auth: {
 		kind: "key",
 		fields: [
