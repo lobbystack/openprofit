@@ -88,9 +88,11 @@ function Connection() {
 			<PageHeader title={p?.name ?? c.provider} meta={c.label ?? undefined} />
 			<Card className="mt-4 flex h-11 items-center justify-between px-4 text-[13px]">
 				<span>
-					{c.kind === "revenue"
-						? "Revenue without a product goes to"
-						: "Costs without a product go to"}
+					{`${c.kind === "revenue" ? "Revenue" : "Costs"} ${
+						c.subUnits.length > 0
+							? "not assigned below"
+							: "from this connection"
+					} ${c.kind === "revenue" ? "goes" : "go"} to`}
 				</span>
 				{select(c.productId, assignConnection)}
 			</Card>
