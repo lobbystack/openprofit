@@ -3,6 +3,7 @@ import {
 	ConnectorError,
 	type CostLine,
 	type Credentials,
+	splitByUsage,
 	toCents,
 } from "./types";
 
@@ -18,6 +19,10 @@ const PRICE: Record<string, { perUnit: number; label: string }> = {
 	DISK_USAGE_GB: { perUnit: 0.15 / 43_200, label: "Disk" },
 	BACKUP_USAGE_GB: { perUnit: 0.15 / 43_200, label: "Backups" },
 };
+
+// A plan's fee counts as usage, so a period costs the fee or the usage,
+// whichever is higher: https://docs.railway.com/reference/pricing/plans
+const PLAN_FEE: Record<string, number> = { HOBBY: 5, PRO: 20 };
 
 type Usage = {
 	measurement: string;
@@ -152,6 +157,58 @@ export const railway = register({
 				});
 			}
 		}
+		// The part of the plan fee usage didn't cover, once a billing period
+		// closes, split across projects by their usage so each product carries
+		// its share. Railway's API reports only the current plan.
+		// ponytail: written only the week after a period closes, when the current
+		// plan most likely billed it; earlier periods get none. Invoices would be
+		// exact, but their items carry no names.
+		const billing = await gql<{
+			workspace: {
+				plan: string;
+				customer: { billingPeriod: { start: string } };
+			};
+		}>(
+			c,
+			"query ($id: String!) { workspace(workspaceId: $id) { plan customer { billingPeriod { start } } } }",
+			{ id },
+		).catch(() => null);
+		const fee = PLAN_FEE[billing?.workspace.plan ?? ""];
+		const end = new Date(billing?.workspace.customer.billingPeriod.start ?? 0);
+		if (fee && Date.now() - end.getTime() < 7 * 86_400_000) {
+			const start = new Date(end);
+			start.setUTCMonth(start.getUTCMonth() - 1);
+			const r = await gql<{ usage: Usage[] }>(
+				c,
+				`query ($id: String!, $start: DateTime, $end: DateTime) {
+					usage(workspaceId: $id, startDate: $start, endDate: $end, includeDeleted: true,
+						measurements: [CPU_USAGE, MEMORY_USAGE_GB, NETWORK_TX_GB, DISK_USAGE_GB, BACKUP_USAGE_GB],
+						groupBy: [PROJECT_ID]) { measurement value tags { projectId } }
+				}`,
+				{ id, start: start.toISOString(), end: end.toISOString() },
+			);
+			const byProject = new Map<string, number>();
+			for (const u of r.usage) {
+				const p = u.tags.projectId ?? "";
+				const dollars = u.value * (PRICE[u.measurement]?.perUnit ?? 0);
+				byProject.set(p, (byProject.get(p) ?? 0) + dollars);
+			}
+			const used = [...byProject.values()].reduce((a, b) => a + b, 0);
+			const day = start.toISOString().slice(0, 10);
+			if (fee - used >= 0.005)
+				for (const [p, cents] of splitByUsage(toCents(fee - used), byProject))
+					out.push({
+						externalId: `plan:${day}:${p || "none"}`,
+						date: day,
+						currency: "USD",
+						amountCents: cents,
+						service: "Plan minimum",
+						subUnitId: p || undefined,
+						subUnitLabel: names.get(p),
+					});
+		}
 		return out;
 	},
+	// Never delete: a plan minimum is only returned the week its period closes.
+	historyDays: 0,
 });

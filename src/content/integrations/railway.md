@@ -22,7 +22,9 @@ Railway's API reports usage in resource units rather than dollars. OpenProfit as
 | Volume storage | $0.15 per GB per month |
 | Backups | $0.15 per GB per month |
 
-Plan fees, credits and discounts aren't part of that data, so the total can differ from your invoice. Add the plan fee as a flat monthly cost if you want it counted.
+Each billing period, Railway charges your plan's fee or your usage, whichever is higher: $5 on Hobby, $20 on Pro. When a period closes under the fee, OpenProfit adds the difference as **Plan minimum** lines, dated the day the period starts and split across your projects by their usage, so each product carries its share. Railway's API reports only your current plan, so OpenProfit writes that line in the week after a period closes and skips older periods.
+
+Credits, discounts and domains aren't in the usage data, so the total can still differ from your invoice. Add a domain as a flat yearly cost.
 
 ## Connect it
 
