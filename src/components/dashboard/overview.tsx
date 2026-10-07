@@ -43,6 +43,33 @@ export function OverviewCard({
 	);
 }
 
+// Tax customers paid in the period. Shown only when there is any.
+export function TaxRow({ data }: { data: OverviewData }) {
+	const tax = data.period.tax;
+	if (!tax || (!tax.total && !tax.previous)) return null;
+	const fmt = (n: number) => money(n, { currency: data.currency });
+	const d = ((tax.total - tax.previous) / tax.previous) * 100;
+	return (
+		<Card className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 px-5 py-3 text-[13px]">
+			<span className="text-text-3">Tax collected</span>
+			<span className="num">{fmt(tax.total)}</span>
+			{tax.previous !== 0 && (
+				<span className="num text-[12px] text-text-3">
+					{d >= 0 ? "+" : ""}
+					{d.toFixed(1)}%
+				</span>
+			)}
+			<span className="ml-auto text-text-3">
+				{tax.owed <= 0
+					? "Your providers file it"
+					: tax.owed >= tax.total
+						? "Yours to file"
+						: `${fmt(tax.owed)} is yours to file`}
+			</span>
+		</Card>
+	);
+}
+
 export const providerLabel = (id: string) => {
 	// Flat costs added on the Costs page.
 	if (id === "manual") return "Flat costs";

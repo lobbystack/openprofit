@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { RefreshCw, X } from "lucide-react";
 import { useState } from "react";
 import { useConfirm } from "#/components/app/confirm";
+import { ConnectionItem } from "#/components/app/connection-item";
 import { PageHeader } from "#/components/app/shell";
 import {
 	PROVIDERS,
@@ -11,8 +12,6 @@ import {
 } from "#/components/provider-logo";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
-import { describeError } from "#/lib/errors";
-import { cadenceLabel, money } from "#/lib/format";
 import {
 	deleteConnection,
 	getConnections,
@@ -37,16 +36,6 @@ const ALTERNATIVE: Record<string, { label: string; to: string }> = {
 	appstore: { label: "Via RevenueCat", to: "/app/connect/revenuecat" },
 	googleplay: { label: "Via RevenueCat", to: "/app/connect/revenuecat" },
 	supabase: { label: "As a flat cost", to: "/app/costs" },
-};
-
-const ago = (ts: number | null) => {
-	if (!ts) return "Not synced yet";
-	const m = Math.round((Date.now() - ts) / 60_000);
-	return m < 1
-		? "just now"
-		: m < 60
-			? `${m} min ago`
-			: `${Math.round(m / 60)} h ago`;
 };
 
 function Connections() {
@@ -103,100 +92,37 @@ function Connections() {
 			{rows.length > 0 && (
 				<Card className="mt-4 overflow-hidden">
 					<ul className="divide-y divide-line">
-						{rows.map((r) => {
-							const p = PROVIDERS[r.provider];
-							return (
-								<li
-									key={r.id}
-									className="flex min-h-12 items-center gap-3 px-4 py-2 text-[13px]"
+						{rows.map((r) => (
+							<ConnectionItem key={r.id} row={r} linked>
+								<Button
+									variant="quiet"
+									size="icon-sm"
+									title="Sync now"
+									disabled={busy === r.id}
+									onClick={() => sync(r.id)}
 								>
-									<span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-line bg-paper">
-										{p && <ProviderLogo id={r.provider} size={14} />}
-									</span>
-									<span className="w-32 shrink-0">
-										<Link
-											to="/app/connections/$id"
-											params={{ id: r.id }}
-											className="block hover:underline"
-										>
-											{p?.name ?? r.provider}
-										</Link>
-										{r.label && (
-											<span className="num block text-[11px] text-text-3">
-												{r.label}
-											</span>
-										)}
-									</span>
-									<span className="label-mono hidden w-20 sm:block">
-										{r.kind === "revenue" ? "Revenue" : "Costs"}
-									</span>
-									<span className="hidden min-w-0 items-center gap-1.5 text-[12px] text-text-2 sm:flex">
-										<span
-											className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-												r.status === "active"
-													? "bg-positive"
-													: r.status === "error"
-														? "bg-negative"
-														: "bg-surface-4"
-											}`}
-										/>
-										{r.status === "error" ? (
-											<span
-												className="truncate text-negative"
-												title={r.lastError ?? ""}
-											>
-												{r.lastError
-													? describeError(p?.name ?? r.provider, r.lastError)
-															.text
-													: "Sync failed"}
-											</span>
-										) : (
-											ago(r.lastSyncedAt)
-										)}
-									</span>
-									<span className="num ml-auto hidden shrink-0 whitespace-nowrap text-[12px] text-text-3 sm:inline">
-										{cadenceLabel(r.cadenceMinutes)}
-									</span>
-									<span
-										className={`num ml-auto w-24 shrink-0 text-right sm:ml-0 ${
-											r.amount < 0 ? "text-negative" : ""
-										}`}
-									>
-										{r.amount < 0 ? "−" : ""}
-										{money(Math.abs(r.amount))}
-									</span>
-									<span className="flex shrink-0 items-center gap-1">
-										<Button
-											variant="quiet"
-											size="icon-sm"
-											title="Sync now"
-											disabled={busy === r.id}
-											onClick={() => sync(r.id)}
-										>
-											<RefreshCw
-												size={13}
-												className={
-													busy === r.id
-														? "animate-spin [animation-duration:700ms]"
-														: ""
-												}
-											/>
-										</Button>
-										<Button
-											variant="quiet-destructive"
-											size="icon-sm"
-											title="Remove"
-											disabled={busy === r.id}
-											onClick={() =>
-												remove(r.id, PROVIDERS[r.provider]?.name ?? r.provider)
-											}
-										>
-											<X size={13} />
-										</Button>
-									</span>
-								</li>
-							);
-						})}
+									<RefreshCw
+										size={13}
+										className={
+											busy === r.id
+												? "animate-spin [animation-duration:700ms]"
+												: ""
+										}
+									/>
+								</Button>
+								<Button
+									variant="quiet-destructive"
+									size="icon-sm"
+									title="Remove"
+									disabled={busy === r.id}
+									onClick={() =>
+										remove(r.id, PROVIDERS[r.provider]?.name ?? r.provider)
+									}
+								>
+									<X size={13} />
+								</Button>
+							</ConnectionItem>
+						))}
 					</ul>
 				</Card>
 			)}

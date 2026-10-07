@@ -9,6 +9,7 @@ import { PLANS } from "#/lib/plans";
 import { capture } from "./analytics.server";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
+import { demoWorkspace } from "./demo.server";
 import { lastMonths } from "./overview.server";
 import { syncConnection } from "./sync.server";
 import { currentWorkspace } from "./workspace.server";
@@ -26,9 +27,11 @@ export type ConnectionRow = {
 	amount: number;
 };
 
-export const getConnections = createServerFn({ method: "GET" }).handler(
-	async (): Promise<ConnectionRow[]> => {
-		const ws = await currentWorkspace();
+// `demo` reads the public demo workspace instead of the user's.
+export const getConnections = createServerFn({ method: "GET" })
+	.validator(z.object({ demo: z.boolean() }).optional())
+	.handler(async ({ data }): Promise<ConnectionRow[]> => {
+		const ws = data?.demo ? await demoWorkspace() : await currentWorkspace();
 		const from = `${lastMonths(1)[0]}-01`;
 		const [conns, rev, cost] = await Promise.all([
 			db.query.connections.findMany({
@@ -76,8 +79,7 @@ export const getConnections = createServerFn({ method: "GET" }).handler(
 			lastSyncedAt: c.lastSyncedAt,
 			amount: Math.round(totals.get(c.id) ?? 0) / 100,
 		}));
-	},
-);
+	});
 
 export const getConnectorInfo = createServerFn({ method: "GET" })
 	.validator(z.object({ id: z.string() }))

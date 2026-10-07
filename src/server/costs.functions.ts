@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "#/db";
 import { CURRENCIES } from "#/lib/format";
+import { demoWorkspace } from "./demo.server";
 import { convert } from "./fx.server";
 import { currentWorkspace, type Workspace } from "./workspace.server";
 
@@ -19,12 +20,16 @@ export type FlatCostRow = {
 	endsOn: string | null;
 };
 
-export const getFlatCosts = createServerFn({ method: "GET" }).handler(
-	async (): Promise<{
-		flats: FlatCostRow[];
-		products: { id: string; name: string }[];
-	}> => {
-		const ws = await currentWorkspace();
+type FlatCosts = {
+	flats: FlatCostRow[];
+	products: { id: string; name: string }[];
+};
+
+// `demo` reads the public demo workspace instead of the user's.
+export const getFlatCosts = createServerFn({ method: "GET" })
+	.validator(z.object({ demo: z.boolean() }).optional())
+	.handler(async ({ data }): Promise<FlatCosts> => {
+		const ws = data?.demo ? await demoWorkspace() : await currentWorkspace();
 		const [flats, products] = await Promise.all([
 			db.query.flatCosts.findMany({
 				where: eq(schema.flatCosts.workspaceId, ws.id),
@@ -50,8 +55,7 @@ export const getFlatCosts = createServerFn({ method: "GET" }).handler(
 			})),
 			products: products.map((p) => ({ id: p.id, name: p.name })),
 		};
-	},
-);
+	});
 
 const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 

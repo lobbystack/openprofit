@@ -7,10 +7,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { Pencil, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useConfirm } from "#/components/app/confirm";
+import { CostsCharts, FlatCostItem } from "#/components/app/costs";
 import { PageHeader } from "#/components/app/shell";
-import { AreaChart } from "#/components/dashboard/area-chart";
-import { BreakdownCard } from "#/components/dashboard/breakdown-card";
-import { providerLabel } from "#/components/dashboard/overview";
 import { PeriodSelect } from "#/components/dashboard/period-select";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
@@ -20,7 +18,7 @@ import {
 	NativeSelect,
 	NativeSelectOption,
 } from "#/components/ui/native-select";
-import { CURRENCIES, money, monthLabel } from "#/lib/format";
+import { CURRENCIES, money } from "#/lib/format";
 import { type PeriodKey, periodSchema } from "#/lib/overview";
 import {
 	createFlatCost,
@@ -89,37 +87,7 @@ function Costs() {
 				</Button>
 			</PageHeader>
 
-			<Card className="mt-4 px-3 pt-4 pb-2">
-				<AreaChart
-					data={overview.series.costs}
-					previous={overview.previousSeries.costs}
-					months={overview.months}
-					tone="negative"
-					height={200}
-					currency={overview.currency}
-				/>
-			</Card>
-
-			<div className="mt-4 grid gap-4 md:grid-cols-2">
-				<BreakdownCard
-					tabs={["By provider"]}
-					total={overview.costsByProvider.reduce((a, c) => a + c.amount, 0)}
-					rows={overview.costsByProvider.map((c) => ({
-						label: providerLabel(c.provider),
-						value: c.amount,
-					}))}
-					formatter={fmt}
-				/>
-				<BreakdownCard
-					tabs={["By product"]}
-					total={overview.byProduct.reduce((a, p) => a + p.costs, 0)}
-					rows={overview.byProduct.map((p) => ({
-						label: p.name,
-						value: p.costs,
-					}))}
-					formatter={fmt}
-				/>
-			</div>
+			<CostsCharts overview={overview} />
 
 			<div className="label-mono mt-8">Flat costs</div>
 			<Card className="mt-3 overflow-hidden">
@@ -148,46 +116,26 @@ function Costs() {
 									/>
 								</li>
 							) : (
-								<li
-									key={f.id}
-									className="flex min-h-11 items-center gap-3 px-4 py-2 text-[13px]"
-								>
-									<span className="min-w-0 flex-1">
-										<span className="block truncate">{f.name}</span>
-										<span className="block text-[12px] text-text-3">
-											{span(f)}
-										</span>
-									</span>
-									<span className="hidden w-32 truncate text-text-2 sm:block">
-										{f.product ?? "Shared"}
-									</span>
-									<span className="num w-24 text-right">
-										{money(f.amount, { currency: f.currency, cents: true })}
-									</span>
-									<span className="label-mono w-10 text-right">
-										/ {f.interval === "year" ? "yr" : "mo"}
-									</span>
-									<span className="flex shrink-0 items-center gap-1">
-										<Button
-											variant="quiet"
-											size="icon-sm"
-											title="Edit"
-											aria-label={`Edit ${f.name}`}
-											onClick={() => setEditing(f.id)}
-										>
-											<Pencil size={13} />
-										</Button>
-										<Button
-											variant="quiet-destructive"
-											size="icon-sm"
-											title="Remove"
-											aria-label={`Remove ${f.name}`}
-											onClick={() => remove(f)}
-										>
-											<X size={13} />
-										</Button>
-									</span>
-								</li>
+								<FlatCostItem key={f.id} cost={f}>
+									<Button
+										variant="quiet"
+										size="icon-sm"
+										title="Edit"
+										aria-label={`Edit ${f.name}`}
+										onClick={() => setEditing(f.id)}
+									>
+										<Pencil size={13} />
+									</Button>
+									<Button
+										variant="quiet-destructive"
+										size="icon-sm"
+										title="Remove"
+										aria-label={`Remove ${f.name}`}
+										onClick={() => remove(f)}
+									>
+										<X size={13} />
+									</Button>
+								</FlatCostItem>
 							),
 						)}
 					</ul>
@@ -196,14 +144,6 @@ function Costs() {
 		</>
 	);
 }
-
-const monthYear = (day: string) =>
-	`${monthLabel(day.slice(0, 7))} ${day.slice(0, 4)}`;
-
-const span = (f: FlatCostRow) =>
-	f.endsOn
-		? `${monthYear(f.startsOn)} to ${monthYear(f.endsOn)}`
-		: `Since ${monthYear(f.startsOn)}`;
 
 function FlatCostForm({
 	cost,

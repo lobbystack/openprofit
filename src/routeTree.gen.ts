@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -27,6 +28,10 @@ import { Route as AppCostsRouteImport } from './routes/app/costs'
 import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as CompareSlugRouteImport } from './routes/compare.$slug'
+import { Route as DemoIndexRouteImport } from './routes/demo/index'
+import { Route as DemoConnectionsRouteImport } from './routes/demo/connections'
+import { Route as DemoCostsRouteImport } from './routes/demo/costs'
+import { Route as DemoProductsRouteImport } from './routes/demo/products'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IngestSplatRouteImport } from './routes/ingest.$'
@@ -57,6 +62,11 @@ const ChangelogRoute = ChangelogRouteImport.update({
 const CookiesRoute = CookiesRouteImport.update({
   id: '/cookies',
   path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -129,6 +139,26 @@ const CompareSlugRoute = CompareSlugRouteImport.update({
   path: '/compare/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoIndexRoute = DemoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoConnectionsRoute = DemoConnectionsRouteImport.update({
+  id: '/connections',
+  path: '/connections',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoCostsRoute = DemoCostsRouteImport.update({
+  id: '/costs',
+  path: '/costs',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoProductsRoute = DemoProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => DemoRoute,
+} as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -190,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/cookies': typeof CookiesRoute
+  '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -203,10 +234,14 @@ export interface FileRoutesByFullPath {
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/demo/connections': typeof DemoConnectionsRoute
+  '/demo/costs': typeof DemoCostsRoute
+  '/demo/products': typeof DemoProductsRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
   '/app/': typeof AppIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -232,10 +267,14 @@ export interface FileRoutesByTo {
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/demo/connections': typeof DemoConnectionsRoute
+  '/demo/costs': typeof DemoCostsRoute
+  '/demo/products': typeof DemoProductsRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
   '/app': typeof AppIndexRoute
+  '/demo': typeof DemoIndexRoute
   '/docs': typeof DocsIndexRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -251,6 +290,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/cookies': typeof CookiesRoute
+  '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -264,10 +304,14 @@ export interface FileRoutesById {
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/demo/connections': typeof DemoConnectionsRoute
+  '/demo/costs': typeof DemoCostsRoute
+  '/demo/products': typeof DemoProductsRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
   '/app/': typeof AppIndexRoute
+  '/demo/': typeof DemoIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -284,6 +328,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/changelog'
     | '/cookies'
+    | '/demo'
     | '/docs'
     | '/login'
     | '/onboarding'
@@ -297,10 +342,14 @@ export interface FileRouteTypes {
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/demo/connections'
+    | '/demo/costs'
+    | '/demo/products'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
     | '/app/'
+    | '/demo/'
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
@@ -326,10 +375,14 @@ export interface FileRouteTypes {
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/demo/connections'
+    | '/demo/costs'
+    | '/demo/products'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
     | '/app'
+    | '/demo'
     | '/docs'
     | '/integrations'
     | '/api/auth/$'
@@ -344,6 +397,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/changelog'
     | '/cookies'
+    | '/demo'
     | '/docs'
     | '/login'
     | '/onboarding'
@@ -357,10 +411,14 @@ export interface FileRouteTypes {
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/demo/connections'
+    | '/demo/costs'
+    | '/demo/products'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
     | '/app/'
+    | '/demo/'
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
@@ -376,6 +434,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ChangelogRoute: typeof ChangelogRoute
   CookiesRoute: typeof CookiesRoute
+  DemoRoute: typeof DemoRouteWithChildren
   DocsRoute: typeof DocsRouteWithChildren
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -421,6 +480,13 @@ declare module '@tanstack/react-router' {
       path: '/cookies'
       fullPath: '/cookies'
       preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -520,6 +586,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/compare/$slug'
       preLoaderRoute: typeof CompareSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/demo/': {
+      id: '/demo/'
+      path: '/'
+      fullPath: '/demo/'
+      preLoaderRoute: typeof DemoIndexRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/connections': {
+      id: '/demo/connections'
+      path: '/connections'
+      fullPath: '/demo/connections'
+      preLoaderRoute: typeof DemoConnectionsRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/costs': {
+      id: '/demo/costs'
+      path: '/costs'
+      fullPath: '/demo/costs'
+      preLoaderRoute: typeof DemoCostsRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/products': {
+      id: '/demo/products'
+      path: '/products'
+      fullPath: '/demo/products'
+      preLoaderRoute: typeof DemoProductsRouteImport
+      parentRoute: typeof DemoRoute
     }
     '/docs/': {
       id: '/docs/'
@@ -625,6 +719,22 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface DemoRouteChildren {
+  DemoConnectionsRoute: typeof DemoConnectionsRoute
+  DemoCostsRoute: typeof DemoCostsRoute
+  DemoProductsRoute: typeof DemoProductsRoute
+  DemoIndexRoute: typeof DemoIndexRoute
+}
+
+const DemoRouteChildren: DemoRouteChildren = {
+  DemoConnectionsRoute: DemoConnectionsRoute,
+  DemoCostsRoute: DemoCostsRoute,
+  DemoProductsRoute: DemoProductsRoute,
+  DemoIndexRoute: DemoIndexRoute,
+}
+
+const DemoRouteWithChildren = DemoRoute._addFileChildren(DemoRouteChildren)
+
 interface DocsRouteChildren {
   DocsSlugRoute: typeof DocsSlugRoute
   DocsIndexRoute: typeof DocsIndexRoute
@@ -642,6 +752,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ChangelogRoute: ChangelogRoute,
   CookiesRoute: CookiesRoute,
+  DemoRoute: DemoRouteWithChildren,
   DocsRoute: DocsRouteWithChildren,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
@@ -661,13 +772,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
