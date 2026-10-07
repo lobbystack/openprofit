@@ -41,3 +41,17 @@ export function seo({
 }
 
 export const NOINDEX = { meta: [{ name: "robots", content: "noindex" }] };
+
+// Where to go after signing in (`?redirect=`): a path on this site, never
+// another host. Browsers drop tabs and newlines from URLs, so "/\t/x.com"
+// would become "//x.com"; control characters are out, and the path has to
+// parse back to this origin the way a browser reads it.
+export function isLocalPath(p: string) {
+	if (!/^\/(?![/\\])/.test(p) || [...p].some((c) => c < " " || c === "\x7f"))
+		return false;
+	try {
+		return new URL(p, "http://x").origin === "http://x";
+	} catch {
+		return false;
+	}
+}

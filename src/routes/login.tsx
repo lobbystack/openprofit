@@ -7,7 +7,7 @@ import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
-import { NOINDEX } from "#/lib/app";
+import { isLocalPath, NOINDEX } from "#/lib/app";
 import { authClient } from "#/lib/auth-client";
 import { getAuthOptions, getSession } from "#/server/auth.functions";
 
@@ -16,13 +16,8 @@ export const Route = createFileRoute("/login")({
 		...NOINDEX,
 		meta: [{ title: "Sign in · OpenProfit" }, ...NOINDEX.meta],
 	}),
-	// Where to go after signing in: a path on this site, never another host.
 	validateSearch: z.object({
-		redirect: z
-			.string()
-			.regex(/^\/(?![/\\])/)
-			.optional()
-			.catch(undefined),
+		redirect: z.string().refine(isLocalPath).optional().catch(undefined),
 	}),
 	loaderDeps: ({ search }) => ({ next: search.redirect }),
 	loader: async ({ deps }) => {
@@ -35,7 +30,12 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
 	const { social, mailer } = Route.useLoaderData();
-	const next = Route.useSearch().redirect ?? "/app";
+	const back = Route.useSearch().redirect;
+	const next = back ?? "/app";
+	// A new account creates its workspace first, then continues to `back`.
+	const newUser = back
+		? `/onboarding?redirect=${encodeURIComponent(back)}`
+		: "/onboarding";
 	const [email, setEmail] = useState("");
 	const [state, setState] = useState<"idle" | "sending" | "sent" | "error">(
 		"idle",
@@ -44,10 +44,12 @@ function Login() {
 	async function submit(e: React.FormEvent) {
 		e.preventDefault();
 		setState("sending");
+		// The link's verify step decodes these once more than it encodes them
+		// (better-auth 1.7, plugins/magic-link), so "%" goes in as "%25".
 		const { error } = await authClient.signIn.magicLink({
 			email,
-			callbackURL: next,
-			newUserCallbackURL: "/onboarding",
+			callbackURL: next.replaceAll("%", "%25"),
+			newUserCallbackURL: newUser.replaceAll("%", "%25"),
 		});
 		setState(error ? "error" : "sent");
 	}
@@ -86,7 +88,7 @@ function Login() {
 												authClient.signIn.social({
 													provider: p as "github" | "google",
 													callbackURL: next,
-													newUserCallbackURL: "/onboarding",
+													newUserCallbackURL: newUser,
 												})
 											}
 										>

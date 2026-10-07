@@ -1,6 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
 import {
@@ -15,7 +16,7 @@ import {
 	NativeSelectOption,
 } from "#/components/ui/native-select";
 import { identify } from "#/lib/analytics";
-import { NOINDEX } from "#/lib/app";
+import { isLocalPath, NOINDEX } from "#/lib/app";
 import { CURRENCIES } from "#/lib/format";
 import { getSession } from "#/server/auth.functions";
 import { createWorkspaceFn } from "#/server/onboarding.functions";
@@ -24,6 +25,10 @@ export const Route = createFileRoute("/onboarding")({
 	head: () => ({
 		...NOINDEX,
 		meta: [{ title: "Create your workspace · OpenProfit" }, ...NOINDEX.meta],
+	}),
+	// Set by /login for new accounts: the page they were signing in for.
+	validateSearch: z.object({
+		redirect: z.string().refine(isLocalPath).optional().catch(undefined),
 	}),
 	loader: async () => {
 		const user = await getSession();
@@ -36,6 +41,7 @@ export const Route = createFileRoute("/onboarding")({
 function Onboarding() {
 	const user = Route.useLoaderData();
 	useEffect(() => identify(user.id, user.analytics), [user]);
+	const back = Route.useSearch().redirect;
 	const navigate = useNavigate();
 	const create = useServerFn(createWorkspaceFn);
 	const [name, setName] = useState("");
@@ -47,7 +53,8 @@ function Onboarding() {
 		setBusy(true);
 		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 		await create({ data: { name, currency, timezone } });
-		navigate({ to: "/app/connections" });
+		if (back) navigate({ href: back });
+		else navigate({ to: "/app/connections" });
 	}
 
 	return (

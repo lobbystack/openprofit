@@ -1,4 +1,9 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	redirect,
+	useLocation,
+} from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { z } from "zod";
@@ -36,6 +41,7 @@ function Cli() {
 	const { state, workspaces } = Route.useLoaderData();
 	const { code } = Route.useSearch();
 	const decide = useServerFn(decideCli);
+	const here = useLocation({ select: (l) => l.href });
 	const [workspaceId, setWorkspaceId] = useState(workspaces[0]?.id ?? "");
 	const [done, setDone] = useState<"approved" | "cancelled" | null>(
 		state === "approved" ? "approved" : null,
@@ -68,9 +74,10 @@ function Cli() {
 	else if (!workspaces.length)
 		body = (
 			<>
-				<p>Create a workspace first, then run the login again.</p>
+				<p>Create a workspace first, then approve the code here.</p>
 				<Link
 					to="/onboarding"
+					search={{ redirect: here }}
 					className={buttonVariants({
 						size: "default",
 						className: "mt-4 w-full",
