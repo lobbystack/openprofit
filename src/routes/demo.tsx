@@ -10,7 +10,7 @@ export const Route = createFileRoute("/demo")({
 		seo({
 			title: "OpenProfit demo: profit per product with sample data",
 			description:
-				"Try the OpenProfit dashboard without signing up. It shows three sample products, with revenue from Stripe and Polar and costs from OpenAI, Vercel and Anthropic.",
+				"Try the OpenProfit dashboard without signing up. It shows three sample products, with revenue from Stripe and costs from OpenAI, Anthropic, Vercel, Resend and Firecrawl.",
 			path: "/demo",
 		}),
 	loader: () => getDemoWorkspace(),
