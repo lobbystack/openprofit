@@ -29,8 +29,11 @@ const config = defineConfig({
 			},
 		}),
 		nitro({
-			// PGlite ships wasm and data files next to its JS; bundling drops them.
-			rollupConfig: { external: [/^@electric-sql\/pglite/] },
+			// PGlite and resvg (social images) ship wasm next to their JS;
+			// bundling drops it.
+			rollupConfig: {
+				external: [/^@electric-sql\/pglite/, /^@resvg\/resvg-wasm/],
+			},
 			// Scripts and styles ship as .gz and .br next to the file.
 			compressPublicAssets: { gzip: true, brotli: true },
 			// www, markdown, Link headers and prerendered pages, ahead of the

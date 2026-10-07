@@ -16,6 +16,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as OpenRouteImport } from './routes/open'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -38,6 +39,8 @@ import { Route as AppConnectProviderRouteImport } from './routes/app/connect.$pr
 import { Route as AppConnectionsIndexRouteImport } from './routes/app/connections.index'
 import { Route as AppConnectionsIdRouteImport } from './routes/app/connections.$id'
 import { Route as PWorkspaceProductRouteImport } from './routes/p.$workspace.$product'
+import { Route as PWorkspaceProductBadgeDotsvgRouteImport } from './routes/p.$workspace.$product_.badge[.]svg'
+import { Route as PWorkspaceProductOgDotpngRouteImport } from './routes/p.$workspace.$product_.og[.]png'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -72,6 +75,11 @@ const LoginRoute = LoginRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpenRoute = OpenRouteImport.update({
+  id: '/open',
+  path: '/open',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -184,6 +192,18 @@ const PWorkspaceProductRoute = PWorkspaceProductRouteImport.update({
   path: '/p/$workspace/$product',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PWorkspaceProductBadgeDotsvgRoute =
+  PWorkspaceProductBadgeDotsvgRouteImport.update({
+    id: '/p/$workspace/$product_/badge.svg',
+    path: '/p/$workspace/$product/badge.svg',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const PWorkspaceProductOgDotpngRoute =
+  PWorkspaceProductOgDotpngRouteImport.update({
+    id: '/p/$workspace/$product_/og.png',
+    path: '/p/$workspace/$product/og.png',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -193,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -215,6 +236,8 @@ export interface FileRoutesByFullPath {
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
   '/app/connections/': typeof AppConnectionsIndexRoute
+  '/p/$workspace/$product/badge.svg': typeof PWorkspaceProductBadgeDotsvgRoute
+  '/p/$workspace/$product/og.png': typeof PWorkspaceProductOgDotpngRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -222,6 +245,7 @@ export interface FileRoutesByTo {
   '/cookies': typeof CookiesRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -244,6 +268,8 @@ export interface FileRoutesByTo {
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
   '/app/connections': typeof AppConnectionsIndexRoute
+  '/p/$workspace/$product/badge.svg': typeof PWorkspaceProductBadgeDotsvgRoute
+  '/p/$workspace/$product/og.png': typeof PWorkspaceProductOgDotpngRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -254,6 +280,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRouteWithChildren
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/open': typeof OpenRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -276,6 +303,8 @@ export interface FileRoutesById {
   '/app/connections/$id': typeof AppConnectionsIdRoute
   '/p/$workspace/$product': typeof PWorkspaceProductRoute
   '/app/connections/': typeof AppConnectionsIndexRoute
+  '/p/$workspace/$product_/badge.svg': typeof PWorkspaceProductBadgeDotsvgRoute
+  '/p/$workspace/$product_/og.png': typeof PWorkspaceProductOgDotpngRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -287,6 +316,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/login'
     | '/onboarding'
+    | '/open'
     | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -309,6 +339,8 @@ export interface FileRouteTypes {
     | '/app/connections/$id'
     | '/p/$workspace/$product'
     | '/app/connections/'
+    | '/p/$workspace/$product/badge.svg'
+    | '/p/$workspace/$product/og.png'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -316,6 +348,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/login'
     | '/onboarding'
+    | '/open'
     | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -338,6 +371,8 @@ export interface FileRouteTypes {
     | '/app/connections/$id'
     | '/p/$workspace/$product'
     | '/app/connections'
+    | '/p/$workspace/$product/badge.svg'
+    | '/p/$workspace/$product/og.png'
   id:
     | '__root__'
     | '/'
@@ -347,6 +382,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/login'
     | '/onboarding'
+    | '/open'
     | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -369,6 +405,8 @@ export interface FileRouteTypes {
     | '/app/connections/$id'
     | '/p/$workspace/$product'
     | '/app/connections/'
+    | '/p/$workspace/$product_/badge.svg'
+    | '/p/$workspace/$product_/og.png'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -379,6 +417,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRouteWithChildren
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
+  OpenRoute: typeof OpenRoute
   PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -391,6 +430,8 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiPolarWebhookRoute: typeof ApiPolarWebhookRoute
   PWorkspaceProductRoute: typeof PWorkspaceProductRoute
+  PWorkspaceProductBadgeDotsvgRoute: typeof PWorkspaceProductBadgeDotsvgRoute
+  PWorkspaceProductOgDotpngRoute: typeof PWorkspaceProductOgDotpngRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -442,6 +483,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/open': {
+      id: '/open'
+      path: '/open'
+      fullPath: '/open'
+      preLoaderRoute: typeof OpenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -598,6 +646,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PWorkspaceProductRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p/$workspace/$product_/badge.svg': {
+      id: '/p/$workspace/$product_/badge.svg'
+      path: '/p/$workspace/$product/badge.svg'
+      fullPath: '/p/$workspace/$product/badge.svg'
+      preLoaderRoute: typeof PWorkspaceProductBadgeDotsvgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$workspace/$product_/og.png': {
+      id: '/p/$workspace/$product_/og.png'
+      path: '/p/$workspace/$product/og.png'
+      fullPath: '/p/$workspace/$product/og.png'
+      preLoaderRoute: typeof PWorkspaceProductOgDotpngRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -645,6 +707,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRouteWithChildren,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
+  OpenRoute: OpenRoute,
   PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -657,6 +720,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiPolarWebhookRoute: ApiPolarWebhookRoute,
   PWorkspaceProductRoute: PWorkspaceProductRoute,
+  PWorkspaceProductBadgeDotsvgRoute: PWorkspaceProductBadgeDotsvgRoute,
+  PWorkspaceProductOgDotpngRoute: PWorkspaceProductOgDotpngRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

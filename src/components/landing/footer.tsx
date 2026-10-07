@@ -8,6 +8,7 @@ const COLUMNS: [string, [string, string][]][] = [
 		[
 			["Integrations", "/integrations"],
 			["Public pages", "/docs/public-pages"],
+			["Open profit", "/open"],
 			["Pricing", "/#pricing"],
 			["Changelog", "/changelog"],
 		],

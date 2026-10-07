@@ -1,12 +1,21 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowUpRight, Plus, X } from "lucide-react";
+import { ArrowUpRight, Code, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useConfirm } from "#/components/app/confirm";
 import { PageHeader } from "#/components/app/shell";
+import { BadgeEmbed } from "#/components/badge-embed";
 import { AreaChart } from "#/components/dashboard/area-chart";
 import { Button, buttonVariants } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import {
 	NativeSelect,
@@ -84,7 +93,7 @@ function Products() {
 							<TableHead className="text-right">Profit</TableHead>
 							<TableHead className="text-right">Margin</TableHead>
 							<TableHead className="w-40" />
-							<TableHead className="w-36">Public</TableHead>
+							<TableHead className="w-48">Public</TableHead>
 							<TableHead className="w-10 px-2" />
 						</TableRow>
 					</TableHeader>
@@ -157,18 +166,46 @@ function Products() {
 													</NativeSelectOption>
 												</NativeSelect>
 												{p.publicPage !== "off" && (
-													<a
-														href={`/p/${data.workspaceSlug}/${p.slug}`}
-														target="_blank"
-														rel="noreferrer"
-														title="Open page"
-														className={buttonVariants({
-															variant: "quiet",
-															size: "icon-sm",
-														})}
-													>
-														<ArrowUpRight size={13} />
-													</a>
+													<>
+														<a
+															href={`/p/${data.workspaceSlug}/${p.slug}`}
+															target="_blank"
+															rel="noreferrer"
+															title="Open page"
+															className={buttonVariants({
+																variant: "quiet",
+																size: "icon-sm",
+															})}
+														>
+															<ArrowUpRight size={13} />
+														</a>
+														<Dialog>
+															<DialogTrigger
+																render={
+																	<Button
+																		variant="quiet"
+																		size="icon-sm"
+																		title="Badge"
+																	/>
+																}
+															>
+																<Code size={13} />
+															</DialogTrigger>
+															<DialogContent className="sm:max-w-md">
+																<DialogHeader>
+																	<DialogTitle>{p.name} badge</DialogTitle>
+																	<DialogDescription>
+																		Shows what the public page shows and links
+																		to it.
+																	</DialogDescription>
+																</DialogHeader>
+																<BadgeEmbed
+																	page={`/p/${data.workspaceSlug}/${p.slug}`}
+																	product={p.name}
+																/>
+															</DialogContent>
+														</Dialog>
+													</>
 												)}
 											</span>
 										)}

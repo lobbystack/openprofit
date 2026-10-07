@@ -15,6 +15,8 @@ const integrationsIndex = [
 ].join("\n");
 
 // Markdown version of a public page, or null when the page has none.
+// Pages with live data (/open, /p/...) need the database, which this file
+// can't import, so their routes answer `Accept: text/markdown` themselves.
 export function markdownFor(path: string): string | null {
 	const p = path.replace(/\/+$/, "") || "/";
 	if (p === "/") return home;
