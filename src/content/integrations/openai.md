@@ -1,14 +1,16 @@
 ---
-title: Track OpenAI costs per project
+title: OpenAI usage dashboard by project
 name: OpenAI
 kind: cost
 summary: Daily spend by project and line item, from OpenAI's own billing data.
-description: See your OpenAI API spend by day, by project and by model, next to the revenue each product brings in. Connect with an admin key in two minutes.
+description: Your OpenAI API usage and billing by day, project and model, next to the revenue each product brings in. Connect with an admin key in two minutes.
 ---
 
-# Track OpenAI costs per project
+# OpenAI usage dashboard by project
 
-OpenAI's usage page shows what your organization spent. It doesn't show which of your products spent it, or whether that product makes enough to cover the bill. OpenProfit reads your OpenAI costs on every sync, splits them by project, and puts them next to the revenue of the product each project serves.
+OpenAI's own numbers are on the **Usage** page of the OpenAI platform, and billing is under **Settings → Organization → Billing**. Organization owners and members with the Usage Dashboard permission can open both.
+
+The usage dashboard filters by project. It doesn't show the revenue of the product each project serves, or your other bills. OpenProfit reads your OpenAI costs on every sync, splits them by project, and puts them next to that revenue and the rest of your costs.
 
 ## What it reads
 

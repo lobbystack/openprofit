@@ -1,14 +1,16 @@
 ---
-title: Track Anthropic costs per workspace
+title: Claude API usage and costs by workspace
 name: Anthropic
 kind: cost
 summary: Daily spend by workspace and model from the Claude API's cost report.
-description: See your Claude API spend by day and by workspace, assigned to the products that use it. Connect with an Anthropic admin key.
+description: Your Claude API usage and costs by day, workspace and model, next to the revenue of the product each workspace serves. Connect with an Anthropic admin key.
 ---
 
-# Track Anthropic costs per workspace
+# Claude API usage and costs by workspace
 
-The Claude Console shows what your organization spent on the API. OpenProfit takes the same numbers, splits them by workspace, and sets them against the revenue of the product each workspace serves, so you see the margin, not just the bill.
+Anthropic's own numbers are in the Claude Console at platform.claude.com. The **Usage** page shows tokens by model, workspace and API key, and the **Cost** page shows spend by workspace and model. Members with the Developer, Billing or Admin role can see both.
+
+Neither page shows what a workspace's product earns. OpenProfit reads the same cost report, splits it by workspace, and sets it against the revenue of the product each workspace serves, so you see its margin.
 
 ## What it reads
 
