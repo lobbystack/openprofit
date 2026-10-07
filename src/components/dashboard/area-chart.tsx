@@ -1,47 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { monthLabel } from "#/lib/format";
+import { lazy, Suspense } from "react";
 
-// Values glide from what's on screen to the new target. A new target
-// mid-animation starts from the current frame, so it never jumps.
-function useGlide(target: number[], ms = 280) {
-	const [shown, setShown] = useState(target);
-	const current = useRef(target);
-	const key = target.join(",");
-	// biome-ignore lint/correctness/useExhaustiveDependencies: keyed on values
-	useEffect(() => {
-		const from = current.current;
-		const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
-		if (calm || from.length !== target.length) {
-			current.current = target;
-			setShown(target);
-			return;
-		}
-		const start = performance.now();
-		let frame = 0;
-		const tick = (now: number) => {
-			const k = Math.min(1, (now - start) / ms);
-			// Ease-in-out: the line is moving on screen, not entering.
-			const e = k < 0.5 ? 8 * k ** 4 : 1 - (-2 * k + 2) ** 4 / 2;
-			const next = target.map((v, i) => from[i] + (v - from[i]) * e);
-			current.current = next;
-			setShown(next);
-			if (k < 1) frame = requestAnimationFrame(tick);
-		};
-		frame = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(frame);
-	}, [key]);
-	return shown;
-}
-
-// Hand-rolled SVG area chart. Current period solid, previous period dotted.
-export function AreaChart({
-	data: dataIn,
-	previous: previousIn,
-	months = [],
-	height = 260,
-	tone = "ink",
-	compact = false,
-}: {
+export type AreaChartProps = {
 	data: number[];
 	previous?: number[];
 	// YYYY-MM per point, for the x axis.
@@ -49,140 +8,47 @@ export function AreaChart({
 	height?: number;
 	tone?: "ink" | "positive" | "negative";
 	compact?: boolean;
-}) {
-	// The axis comes from the target values and glides with the line. Worked
-	// out per frame from the in-between values, it snaps between 1-2-5 steps
-	// mid-animation and the line jumps. Axis on 1-2-5 steps that always
-	// includes zero, so losses go below it.
-	const ticks = 4;
-	const targetAll = [...dataIn, ...(previousIn ?? [])];
-	const lo = Math.min(0, ...targetAll);
-	const hi = Math.max(0, ...targetAll);
-	const raw = (hi - lo || ticks) / ticks;
+	// Currency for tooltip amounts; USD when not set.
+	currency?: string;
+};
+
+export const TONES = {
+	ink: "var(--ink)",
+	positive: "var(--positive)",
+	negative: "var(--negative)",
+} as const;
+
+// The full chart keeps the 1000:height proportions it was designed at; a
+// sparkline keeps its pixel height, or it would render 2px tall in a cell.
+export const chartSize = (height: number, compact: boolean) =>
+	compact ? { height } : { aspectRatio: `1000 / ${height}` };
+
+// Axis on 1-2-5 steps that always includes zero, so losses go below it.
+export function axis(values: number[], count = 4) {
+	const lo = Math.min(0, ...values);
+	const hi = Math.max(0, ...values);
+	const raw = (hi - lo || count) / count;
 	const mag = 10 ** Math.floor(Math.log10(raw));
 	const step = [1, 2, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
-	const targetMin = Math.floor(lo / step) * step;
-	const targetMax = Math.max(Math.ceil(hi / step) * step, targetMin + step);
-	const glided = useGlide([targetMin, targetMax, ...targetAll]);
-	const [min, max] = glided;
-	const data = glided.slice(2, 2 + dataIn.length);
-	const previous = previousIn ? glided.slice(2 + dataIn.length) : undefined;
-	const W = 1000;
-	const H = height;
-	const padL = compact ? 0 : 56;
-	const padR = 8;
-	const padT = 12;
-	const padB = compact ? 0 : 28;
-	const x = (i: number) => padL + (i / (data.length - 1)) * (W - padL - padR);
-	const y = (v: number) =>
-		padT + (1 - (v - min) / (max - min)) * (H - padT - padB);
-
-	const line = (s: number[]) =>
-		s
-			.map(
-				(v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`,
-			)
-			.join(" ");
-	// The area fills to the zero line, above it for gains and below for losses.
-	const zero = y(0).toFixed(1);
-	const area = `${line(data)} L${x(data.length - 1).toFixed(1)},${zero} L${padL},${zero} Z`;
-
-	const stroke =
-		tone === "positive"
-			? "var(--positive)"
-			: tone === "negative"
-				? "var(--negative)"
-				: "var(--ink)";
-
-	const tickVals = Array.from(
-		{ length: Math.round((targetMax - targetMin) / step) + 1 },
-		(_, i) => targetMin + step * i,
+	const min = Math.floor(lo / step) * step;
+	const max = Math.max(Math.ceil(hi / step) * step, min + step);
+	const ticks = Array.from(
+		{ length: Math.round((max - min) / step) + 1 },
+		(_, i) => min + step * i,
 	);
-	const fmt = (v: number) =>
-		Math.abs(v) >= 1000
-			? `${Math.round(v / 100) / 10}k`
-			: `${Number(v.toFixed(2))}`;
+	return { min, max, ticks };
+}
 
+// Recharts loads in its own chunk, so the rest of a page (the landing hero
+// in particular) is interactive without waiting for it. The placeholder has
+// the chart's size, so nothing moves when it arrives.
+const Chart = lazy(() => import("./area-chart-recharts"));
+
+export function AreaChart(props: AreaChartProps) {
+	const style = chartSize(props.height ?? 260, !!props.compact);
 	return (
-		<svg
-			viewBox={`0 0 ${W} ${H}`}
-			preserveAspectRatio="none"
-			className="block h-auto w-full"
-			// A sparkline keeps its pixel height; at the full chart's aspect ratio
-			// it would render about 2px tall in a table cell.
-			style={compact ? { height: H } : { aspectRatio: `${W} / ${H}` }}
-			role="img"
-			aria-label="Chart"
-		>
-			{!compact &&
-				tickVals.map((v) => (
-					<g key={v}>
-						<line
-							x1={padL}
-							x2={W - padR}
-							y1={y(v)}
-							y2={y(v)}
-							stroke="var(--line-subtle)"
-							strokeWidth="1"
-							vectorEffect="non-scaling-stroke"
-						/>
-						<text
-							x={padL - 10}
-							y={y(v) + 4}
-							textAnchor="end"
-							fontSize="11"
-							fontFamily="var(--font-mono)"
-							fill="var(--text-3)"
-						>
-							{fmt(v)}
-						</text>
-					</g>
-				))}
-			<path d={area} fill={stroke} fillOpacity="0.06" />
-			{previous && (
-				<path
-					d={line(previous)}
-					fill="none"
-					stroke="var(--text-3)"
-					strokeWidth="1.25"
-					strokeDasharray="2 5"
-					strokeLinecap="round"
-					vectorEffect="non-scaling-stroke"
-				/>
-			)}
-			<path
-				d={line(data)}
-				fill="none"
-				stroke={stroke}
-				strokeWidth="1.75"
-				strokeLinejoin="round"
-				vectorEffect="non-scaling-stroke"
-			/>
-			<circle
-				cx={x(data.length - 1)}
-				cy={y(data[data.length - 1])}
-				r="3.5"
-				fill={stroke}
-				stroke="var(--card)"
-				strokeWidth="2"
-				vectorEffect="non-scaling-stroke"
-			/>
-			{!compact &&
-				months.map((m, i) =>
-					i % 2 === 1 ? (
-						<text
-							key={m}
-							x={x(i)}
-							y={H - 8}
-							textAnchor="middle"
-							fontSize="11"
-							fontFamily="var(--font-mono)"
-							fill="var(--text-3)"
-						>
-							{monthLabel(m)}
-						</text>
-					) : null,
-				)}
-		</svg>
+		<Suspense fallback={<div className="w-full" style={style} />}>
+			<Chart {...props} />
+		</Suspense>
 	);
 }

@@ -91,6 +91,7 @@ function PublicPage() {
 							months={series.months}
 							tone={chart.tone}
 							height={220}
+							currency={series.currency}
 						/>
 					</div>
 				)}

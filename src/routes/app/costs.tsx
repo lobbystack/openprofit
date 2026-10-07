@@ -96,6 +96,7 @@ function Costs() {
 					months={overview.months}
 					tone="negative"
 					height={200}
+					currency={overview.currency}
 				/>
 			</Card>
 

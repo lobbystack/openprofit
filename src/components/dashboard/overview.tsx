@@ -36,6 +36,7 @@ export function OverviewCard({
 					months={data.months}
 					tone={tone}
 					height={chartHeight}
+					currency={data.currency}
 				/>
 			</div>
 		</Card>
