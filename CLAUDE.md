@@ -91,4 +91,4 @@ Before editing files for a substantial task:
 
 ## Deploy
 
-Push to `main` runs CI (`.github/workflows/check.yml`) and publishes `ghcr.io/lobbystack/openprofit:latest`. Railway deploys with `railway up --detach --ci` from the linked project (`openprofit`, service `web`, plus a Postgres service). Railway's edge caches `.xml` responses, so give those an explicit `Cache-Control`.
+Push to `main` runs CI (`.github/workflows/check.yml`) and publishes `ghcr.io/lobbystack/openprofit:latest`. Railway's `web` service (project `openprofit`, plus a Postgres service) deploys from the repo's `main` branch with Wait for CI on: each push waits for the GitHub checks, then deploys, and a failed check blocks it. Don't deploy production with `railway up`; it uploads the local working tree, uncommitted changes included. Railway's edge caches `.xml` responses, so give those an explicit `Cache-Control`.
