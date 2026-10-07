@@ -1,5 +1,5 @@
 import home from "#/content/home.md?raw";
-import { CHANGELOG, COMPARISONS, INTEGRATIONS } from "#/lib/content";
+import { CHANGELOG, COMPARISONS, DATA, INTEGRATIONS } from "#/lib/content";
 import { DOCS } from "#/lib/docs";
 import { LEGAL_MD } from "#/lib/legal";
 
@@ -25,6 +25,12 @@ export function markdownFor(path: string): string | null {
 	if (p === "/privacy") return LEGAL_MD.privacy;
 	if (p === "/terms") return LEGAL_MD.terms;
 	if (p === "/cookies") return LEGAL_MD.cookies;
+	// Hosted only, and never prerendered: the page shows live figures, the
+	// markdown points to the files.
+	if (p === "/data")
+		return process.env.APP_MODE === "cloud"
+			? `# ${DATA.title}\n\n${DATA.description}\n\n${DATA.body}`
+			: null;
 	const [, section, slug] = p.split("/");
 	const list =
 		section === "docs"

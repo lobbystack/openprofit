@@ -7,12 +7,14 @@ import {
 import { PeriodSelect } from "#/components/dashboard/period-select";
 import { buttonVariants } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
+import { bandLabel, formatValue, METRICS, monthName } from "#/lib/benchmarks";
 import { money } from "#/lib/format";
 import {
 	type OverviewData,
 	type PeriodKey,
 	periodSchema,
 } from "#/lib/overview";
+import { getMyBenchmarks } from "#/server/benchmarks.functions";
 import { getOverview } from "#/server/overview.functions";
 
 export const Route = createFileRoute("/app/")({
@@ -21,7 +23,13 @@ export const Route = createFileRoute("/app/")({
 		period: periodSchema.catch("this-month").parse(s.period),
 	}),
 	loaderDeps: ({ search }) => ({ period: search.period ?? "this-month" }),
-	loader: ({ deps }) => getOverview({ data: { period: deps.period } }),
+	loader: async ({ deps }) => {
+		const [data, bench] = await Promise.all([
+			getOverview({ data: { period: deps.period } }),
+			getMyBenchmarks(),
+		]);
+		return { ...data, bench };
+	},
 	component: Overview,
 });
 
@@ -58,6 +66,7 @@ function Overview() {
 				<OverviewCard data={data} />
 			</div>
 			<TaxRow data={data} />
+			<BenchmarkRow bench={data.bench} />
 			<div className="mt-4">
 				<OverviewBreakdowns data={data} full />
 			</div>
@@ -88,6 +97,38 @@ function TaxRow({ data }: { data: OverviewData }) {
 						? "Yours to file"
 						: `${fmt(tax.owed)} is yours to file`}
 			</span>
+		</Card>
+	);
+}
+
+// Hosted: last month's figures next to the medians of workspaces in the
+// same MRR band. Hidden when the workspace opted out or the band has no data.
+function BenchmarkRow({
+	bench,
+}: {
+	bench: Awaited<ReturnType<typeof getMyBenchmarks>>;
+}) {
+	if (!bench) return null;
+	return (
+		<Card className="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-1 px-5 py-3 text-[13px]">
+			<span className="text-text-3">
+				{monthName(bench.month)}, against {bandLabel(bench.band)} MRR
+			</span>
+			{bench.items.map((i) => {
+				const m = METRICS.find((x) => x.key === i.metric);
+				return (
+					<span key={i.metric} title={m?.hint}>
+						{m?.label}{" "}
+						<span className="num">{formatValue(i.metric, i.own)}</span>{" "}
+						<span className="num text-text-3">
+							median {formatValue(i.metric, i.median)}
+						</span>
+					</span>
+				);
+			})}
+			<Link to="/data" className="ml-auto text-text-3 hover:text-ink">
+				All benchmarks
+			</Link>
 		</Card>
 	);
 }

@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
@@ -279,6 +279,33 @@ function Settings() {
 							/>
 						</SettingsRow>
 					)}
+				</SettingsSection>
+			)}
+
+			{s.cloud && (
+				<SettingsSection title="Benchmarks">
+					<SettingsRow
+						label="Include this workspace"
+						description={
+							<>
+								We add this workspace's monthly revenue, margin and cost shares,
+								anonymized, to cohorts of 10 or more and publish only each
+								cohort's medians and percentiles on{" "}
+								<Link to="/data" className="underline hover:text-ink">
+									openprofit.dev/data
+								</Link>
+								. Switch it off and you also lose the comparison on the
+								overview.
+							</>
+						}
+						htmlFor="benchmarks"
+					>
+						<Switch
+							id="benchmarks"
+							checked={s.benchmarks}
+							onCheckedChange={(benchmarks) => save({ benchmarks })}
+						/>
+					</SettingsRow>
 				</SettingsSection>
 			)}
 		</>

@@ -28,6 +28,8 @@ import { Route as AppCostsRouteImport } from './routes/app/costs'
 import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as CompareSlugRouteImport } from './routes/compare.$slug'
+import { Route as DataIndexRouteImport } from './routes/data.index'
+import { Route as DataFileRouteImport } from './routes/data.$file'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IngestSplatRouteImport } from './routes/ingest.$'
@@ -137,6 +139,16 @@ const CompareSlugRoute = CompareSlugRouteImport.update({
   path: '/compare/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DataIndexRoute = DataIndexRouteImport.update({
+  id: '/data/',
+  path: '/data/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataFileRoute = DataFileRouteImport.update({
+  id: '/data/$file',
+  path: '/data/$file',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -224,10 +236,12 @@ export interface FileRoutesByFullPath {
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/data/$file': typeof DataFileRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
   '/app/': typeof AppIndexRoute
+  '/data/': typeof DataIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -256,10 +270,12 @@ export interface FileRoutesByTo {
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/data/$file': typeof DataFileRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
   '/app': typeof AppIndexRoute
+  '/data': typeof DataIndexRoute
   '/docs': typeof DocsIndexRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -291,10 +307,12 @@ export interface FileRoutesById {
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
   '/compare/$slug': typeof CompareSlugRoute
+  '/data/$file': typeof DataFileRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/ingest/$': typeof IngestSplatRoute
   '/integrations/$slug': typeof IntegrationsSlugRoute
   '/app/': typeof AppIndexRoute
+  '/data/': typeof DataIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -327,10 +345,12 @@ export interface FileRouteTypes {
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/data/$file'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
     | '/app/'
+    | '/data/'
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
@@ -359,10 +379,12 @@ export interface FileRouteTypes {
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/data/$file'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
     | '/app'
+    | '/data'
     | '/docs'
     | '/integrations'
     | '/api/auth/$'
@@ -393,10 +415,12 @@ export interface FileRouteTypes {
     | '/app/products'
     | '/app/settings'
     | '/compare/$slug'
+    | '/data/$file'
     | '/docs/$slug'
     | '/ingest/$'
     | '/integrations/$slug'
     | '/app/'
+    | '/data/'
     | '/docs/'
     | '/integrations/'
     | '/api/auth/$'
@@ -424,8 +448,10 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CompareSlugRoute: typeof CompareSlugRoute
+  DataFileRoute: typeof DataFileRoute
   IngestSplatRoute: typeof IngestSplatRoute
   IntegrationsSlugRoute: typeof IntegrationsSlugRoute
+  DataIndexRoute: typeof DataIndexRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiPolarWebhookRoute: typeof ApiPolarWebhookRoute
@@ -567,6 +593,20 @@ declare module '@tanstack/react-router' {
       path: '/compare/$slug'
       fullPath: '/compare/$slug'
       preLoaderRoute: typeof CompareSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data/': {
+      id: '/data/'
+      path: '/data'
+      fullPath: '/data/'
+      preLoaderRoute: typeof DataIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data/$file': {
+      id: '/data/$file'
+      path: '/data/$file'
+      fullPath: '/data/$file'
+      preLoaderRoute: typeof DataFileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/': {
@@ -714,8 +754,10 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
   CompareSlugRoute: CompareSlugRoute,
+  DataFileRoute: DataFileRoute,
   IngestSplatRoute: IngestSplatRoute,
   IntegrationsSlugRoute: IntegrationsSlugRoute,
+  DataIndexRoute: DataIndexRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiPolarWebhookRoute: ApiPolarWebhookRoute,

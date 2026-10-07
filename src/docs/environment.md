@@ -50,7 +50,7 @@ These variables apply only to the hosted version at openprofit.dev. A self-hoste
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `APP_MODE` | `selfhost` | `cloud` turns on plans, billing and the sync cadence limits |
+| `APP_MODE` | `selfhost` | `cloud` turns on plans, billing, the sync cadence limits and the benchmarks at `/data` |
 | `POLAR_ACCESS_TOKEN` | None | Polar organization token used to create checkouts and open the billing portal |
 | `POLAR_PRODUCT_INDIE`, `POLAR_PRODUCT_PRO` | None | Polar product ids for the two paid plans |
 | `POLAR_WEBHOOK_SECRET` | None | Secret that verifies subscription events sent to `/api/polar/webhook` |
