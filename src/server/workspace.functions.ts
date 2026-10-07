@@ -75,7 +75,10 @@ export const getWorkspace = createServerFn({ method: "GET" }).handler(
 export const getDemoWorkspace = createServerFn({ method: "GET" }).handler(
 	async (): Promise<WorkspaceSummary> => {
 		const ws = await demoWorkspace();
-		const data = await overview(ws);
+		const [data, product] = await Promise.all([
+			overview(ws),
+			currentProduct(ws),
+		]);
 		return {
 			id: ws.id,
 			name: ws.name,
@@ -85,11 +88,11 @@ export const getDemoWorkspace = createServerFn({ method: "GET" }).handler(
 			userId: "",
 			email: "",
 			analytics: false,
-			workspaces: [],
+			workspaces: [{ id: ws.id, name: ws.name }],
 			products: data.byProduct
 				.filter((p) => p.id !== "unassigned")
 				.map((p) => ({ id: p.id, name: p.name, profit: p.revenue - p.costs })),
-			productId: null,
+			productId: product?.id ?? null,
 		};
 	},
 );
@@ -106,11 +109,14 @@ export const switchWorkspace = createServerFn({ method: "POST" })
 		return { ok: true };
 	});
 
-// Picks the product the app narrows to, or All with null.
+// Picks the product the app narrows to, or All with null. `demo` picks
+// one of the public demo's products, signed in or not.
 export const switchProduct = createServerFn({ method: "POST" })
-	.validator(z.object({ id: z.string().nullable() }))
+	.validator(
+		z.object({ id: z.string().nullable(), demo: z.boolean().optional() }),
+	)
 	.handler(async ({ data }) => {
-		const ws = await currentWorkspace();
+		const ws = data.demo ? await demoWorkspace() : await currentWorkspace();
 		if (data.id) {
 			const owned = await db.query.products.findFirst({
 				where: and(
@@ -120,6 +126,6 @@ export const switchProduct = createServerFn({ method: "POST" })
 			});
 			if (!owned) throw new Error("Not found");
 		}
-		rememberProduct(data.id);
+		rememberProduct(data.id, ws.demo);
 		return { ok: true };
 	});
