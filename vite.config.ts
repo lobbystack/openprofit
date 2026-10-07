@@ -8,7 +8,7 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 const PRERENDER =
-	/^\/(|changelog|privacy|terms|cookies|integrations|(docs|integrations|compare)\/[\w-]+)\/?$/;
+	/^\/(|changelog|privacy|terms|cookies|security|integrations|(docs|integrations|compare)\/[\w-]+)\/?$/;
 
 const config = defineConfig({
 	resolve: { tsconfigPaths: true },

@@ -40,7 +40,7 @@ export const getChangelog = createServerFn({ method: "GET" }).handler(() =>
 );
 
 export const getLegalPage = createServerFn({ method: "GET" })
-	.validator(z.enum(["privacy", "terms", "cookies"]))
+	.validator(z.enum(["privacy", "terms", "cookies", "security"]))
 	.handler(({ data }) => LEGAL[data]);
 
 export const getIntegrations = createServerFn({ method: "GET" }).handler(() =>
