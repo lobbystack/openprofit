@@ -7,6 +7,10 @@ description: What's new in OpenProfit. Every release, newest first.
 
 Every release, newest first. The full history is in the [commit log on GitHub](https://github.com/lobbystack/openprofit/commits/main).
 
+## October 7, 2026
+
+- **The month in progress runs dashed.** Charts plotted this month's amount so far, so the line dropped at the start of every month. The last point now shows where the month lands at its pace so far, on a dashed line, and the tooltip gives the amount so far. Flat costs count once, not scaled. This covers the overview, the Costs page, the product sparklines and public product pages.
+
 ## October 6, 2026
 
 - **Flat costs.** Add a bill that has no API on the **Costs** page: its monthly or yearly price, a start date, an optional end date and the product it belongs to. OpenProfit converts it to your base currency at the day's rate. Edit or remove it from the same list.

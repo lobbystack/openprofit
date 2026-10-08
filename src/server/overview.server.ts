@@ -23,6 +23,23 @@ import type { Workspace } from "./workspace.server";
 const ym = (d: Date) =>
 	`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 
+// Where a month's synced amount ends up at its pace so far, with flat costs
+// counted once. Null once the month is over, so charts draw it as is.
+export function monthPace(
+	month: string,
+	syncedCents: number,
+	flatCents = 0,
+	now = new Date(),
+) {
+	if (month !== ym(now)) return null;
+	const days = new Date(
+		Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0),
+	).getUTCDate();
+	const elapsed = now.getUTCDate() / days;
+	if (elapsed >= 1) return null;
+	return Math.round(syncedCents / elapsed + flatCents) / 100;
+}
+
 export function lastMonths(n: number, now = new Date()) {
 	const out: string[] = [];
 	for (const i of Array.from({ length: n }, (_, k) => n - 1 - k)) {
@@ -390,6 +407,23 @@ export async function overview(
 		mrr: snapshot("mrr_base_cents"),
 		customers: snapshot("customers"),
 	};
+	const lastMonth = all[all.length - 1];
+	const flatsLast = flats.reduce(
+		(a, f) => a + flatMonthlyCents(f, lastMonth),
+		0,
+	);
+	const revPace = monthPace(lastMonth, revM[lastMonth] ?? 0);
+	const costPace = monthPace(lastMonth, costM[lastMonth] ?? 0, flatsLast);
+	const pace: Record<MetricKey, number | null> = {
+		revenue: revPace,
+		costs: costPace,
+		profit:
+			revPace === null || costPace === null
+				? null
+				: Math.round((revPace - costPace) * 100) / 100,
+		mrr: null,
+		customers: null,
+	};
 	const keys = Object.keys(seriesAll) as MetricKey[];
 	const pick = (f: (v: number[]) => number[]) =>
 		Object.fromEntries(keys.map((k) => [k, f(seriesAll[k])])) as Record<
@@ -435,6 +469,17 @@ export async function overview(
 						.reduce((a, f) => a + flatMonthlyCents(f, m), 0),
 			),
 		);
+	const profitPace = (productId: string | null) => {
+		const r = monthPace(lastMonth, rpm.get(cell(productId, lastMonth)) ?? 0);
+		const c = monthPace(
+			lastMonth,
+			cpm.get(cell(productId, lastMonth)) ?? 0,
+			flats
+				.filter((f) => f.productId === productId)
+				.reduce((a, f) => a + flatMonthlyCents(f, lastMonth), 0),
+		);
+		return r === null || c === null ? null : Math.round((r - c) * 100) / 100;
+	};
 	const byProduct = prods.map((p) => ({
 		id: p.id,
 		name: p.name,
@@ -443,6 +488,7 @@ export async function overview(
 		revenue: units(rp.get(p.id) ?? 0),
 		costs: units((cp.get(p.id) ?? 0) + (flatByProduct.get(p.id) ?? 0)),
 		profit: profitSeries(p.id),
+		profitPace: profitPace(p.id),
 	}));
 	// Lines and flat costs assigned to no product.
 	const unassignedRev = rp.get(null) ?? 0;
@@ -456,6 +502,7 @@ export async function overview(
 			revenue: units(unassignedRev),
 			costs: units(unassignedCost),
 			profit: profitSeries(null),
+			profitPace: profitPace(null),
 		});
 	}
 
@@ -532,6 +579,7 @@ export async function overview(
 		months,
 		series: pick((v) => v.slice(12)),
 		previousSeries: pick((v) => v.slice(0, 12)),
+		pace,
 		period: {
 			key: periodKey,
 			label: PERIODS.find((p) => p.key === periodKey)?.label ?? "",

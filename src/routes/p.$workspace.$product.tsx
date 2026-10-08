@@ -114,6 +114,7 @@ function PublicPage() {
 					<div className="border-t border-line px-3 pt-4 pb-2">
 						<AreaChart
 							data={d.chart.data}
+							pace={d.chart.pace}
 							months={d.chart.months}
 							tone={d.mode === "full" ? "positive" : "ink"}
 							height={220}

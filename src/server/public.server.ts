@@ -190,7 +190,7 @@ export type CostSource = {
 };
 
 export type PublicPage = PublicNumbers & {
-	chart: { months: string[]; data: number[] } | null;
+	chart: { months: string[]; data: number[]; pace: number | null } | null;
 	// Provider ids the numbers were read from, for the verified line.
 	providers: string[];
 	sources: CostSource[];
@@ -286,6 +286,7 @@ export async function publicPage(found: Found): Promise<PublicPage> {
 			? {
 					months: series.months,
 					data: mode === "full" ? series.profit : series.revenue,
+					pace: mode === "full" ? series.pace.profit : series.pace.revenue,
 				}
 			: null,
 		providers: [

@@ -3,6 +3,9 @@ import { lazy, Suspense } from "react";
 export type AreaChartProps = {
 	data: number[];
 	previous?: number[];
+	// The last point at its pace so far while its month is in progress; the
+	// line runs dashed to it.
+	pace?: number | null;
 	// YYYY-MM per point, for the x axis.
 	months?: string[];
 	height?: number;

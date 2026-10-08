@@ -38,6 +38,7 @@ export function OverviewCard({
 				<AreaChart
 					data={series}
 					previous={previous}
+					pace={data.pace?.[metric]}
 					months={data.months}
 					tone={tone}
 					height={chartHeight}

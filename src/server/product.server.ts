@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "#/db";
-import { flatMonthlyCents, lastMonths } from "./overview.server";
+import { flatMonthlyCents, lastMonths, monthPace } from "./overview.server";
 
 export type ProductSeries = {
 	currency: string;
@@ -8,6 +8,8 @@ export type ProductSeries = {
 	revenue: number[];
 	costs: number[];
 	profit: number[];
+	// The last month at its pace so far, while it is in progress.
+	pace: { revenue: number | null; profit: number | null };
 };
 
 const units = (c: number) => Math.round(c) / 100;
@@ -65,11 +67,25 @@ export async function productSeries(
 		const flat = flats.reduce((a, f) => a + flatMonthlyCents(f, m), 0);
 		return units((c.get(m) ?? 0) + flat);
 	});
+	const last = months[months.length - 1];
+	const revPace = monthPace(last, r.get(last) ?? 0);
+	const costPace = monthPace(
+		last,
+		c.get(last) ?? 0,
+		flats.reduce((a, f) => a + flatMonthlyCents(f, last), 0),
+	);
 	return {
 		currency,
 		months,
 		revenue,
 		costs,
 		profit: revenue.map((v, i) => Math.round((v - costs[i]) * 100) / 100),
+		pace: {
+			revenue: revPace,
+			profit:
+				revPace === null || costPace === null
+					? null
+					: Math.round((revPace - costPace) * 100) / 100,
+		},
 	};
 }
