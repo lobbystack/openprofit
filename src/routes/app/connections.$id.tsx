@@ -2,6 +2,11 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { PageHeader } from "#/components/app/shell";
 import {
+	PAID_WITH_HELP,
+	PaidWithPicker,
+	PayerRow,
+} from "#/components/books/settings";
+import {
 	PROVIDERS,
 	type ProviderId,
 	ProviderLogo,
@@ -130,6 +135,19 @@ function Connection() {
 							</li>
 						)}
 					</ul>
+				</Card>
+			)}
+			{c.kind === "cost" && c.incorporated && (
+				<Card className="mt-4">
+					<PayerRow label="Paid with" description={PAID_WITH_HELP}>
+						<PaidWithPicker
+							target="connection"
+							id={c.id}
+							name={p?.name ?? c.provider}
+							paidWith={c.paidWith}
+							paidWithSince={c.paidWithSince}
+						/>
+					</PayerRow>
 				</Card>
 			)}
 			<Link

@@ -31,7 +31,7 @@
 				"noLabelWithoutControl": {
 					"level": "error",
 					"options": {
-						"inputComponents": ["Input", "NativeSelect", "Switch"],
+						"inputComponents": ["Input", "NativeSelect", "Switch", "Checkbox"],
 						"labelComponents": ["FieldLabel", "Label"]
 					}
 				}

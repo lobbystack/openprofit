@@ -23,6 +23,11 @@ export type ConnectionDetail = {
 	withoutSubUnit: { amount: number } | null;
 	subUnits: SubUnit[];
 	products: { id: string; name: string }[];
+	// Books: who pays this provider's bills, shown for incorporated
+	// workspaces.
+	incorporated: boolean;
+	paidWith: "personal" | "company";
+	paidWithSince: string | null;
 };
 
 // The connection, when it is in the workspace and the product (if any) is
@@ -121,6 +126,9 @@ export async function connectionDetail(
 			}))
 			.sort((a, b) => b.amount - a.amount),
 		products: products.map((p) => ({ id: p.id, name: p.name })),
+		incorporated: ws.incorporatedOn !== null,
+		paidWith: conn.paidWith,
+		paidWithSince: conn.paidWithSince,
 	};
 }
 

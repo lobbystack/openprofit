@@ -14,6 +14,12 @@ import { z } from "zod";
 import { connectorInfo, connectors } from "#/connectors";
 import { db, schema } from "#/db";
 import { RULE_NAMES, type RuleKind, ruleScope } from "#/lib/alerts";
+import {
+	BooksSettingsInput,
+	booksSettingsPatch,
+	COST_CATEGORIES,
+	REGIONS,
+} from "#/lib/books-settings";
 import { FlatCostInput, Day as IsoDay } from "#/lib/costs";
 import { CURRENCIES } from "#/lib/format";
 import pkg from "../../package.json";
@@ -189,6 +195,15 @@ const flatRow = (
 	ends_on: f.endsOn,
 	product_id: f.productId,
 	product: f.productId ? (names.get(f.productId) ?? null) : null,
+	category: f.category,
+	paid_with: f.paidWith,
+	paid_with_since: f.paidWithSince,
+});
+
+const booksSettings = (ws: Caller["ws"]) => ({
+	incorporated_on: ws.incorporatedOn,
+	country: ws.country,
+	region: ws.region,
 });
 
 // Allowed thresholds per rule kind. margin_floor is a fraction, so an agent
@@ -459,6 +474,17 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			]);
 			return json(flats.map((f) => flatRow(f, names)));
 		},
+	);
+
+	server.registerTool(
+		"get_books_settings",
+		{
+			title: "Get books settings",
+			description:
+				"What the books and the yearly tax report depend on: incorporated_on (the day the business became a company that files its own tax return; null if it isn't one), country (CA, US, or null for elsewhere) and region (a province or state code such as QC or CA).",
+			annotations: READ,
+		},
+		async () => json(booksSettings(ws)),
 	);
 
 	const LineFilter = {
@@ -810,7 +836,9 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		name: z.string().trim().min(1).max(80),
 		amount: z.number().positive().describe("In whole units, such as 49.99"),
 		currency: z.enum(CURRENCIES),
-		interval: z.enum(["month", "year", "once"]),
+		interval: z
+			.enum(["month", "year", "once"])
+			.describe("once: a one-time cost dated starts_on, with no ends_on"),
 		starts_on: Day,
 		ends_on: Day.nullable().optional().describe("YYYY-MM-DD, or null"),
 		product_id: z
@@ -818,6 +846,22 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			.nullable()
 			.optional()
 			.describe("null or absent: Unassigned"),
+		category: z
+			.enum(COST_CATEGORIES)
+			.nullable()
+			.optional()
+			.describe(
+				"The books account. equipment (a computer) is an asset. null: other",
+			),
+		paid_with: z
+			.enum(["personal", "company"])
+			.optional()
+			.describe(
+				"Who pays, for incorporated workspaces: a personal card or the company account. Defaults to personal",
+			),
+		paid_with_since: Day.nullable()
+			.optional()
+			.describe("The day paid_with changed; before it, the other one paid"),
 	};
 	const saveFlat = async (f: {
 		name: string;
@@ -827,6 +871,9 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		starts_on: string;
 		ends_on?: string | null;
 		product_id?: string | null;
+		category?: (typeof COST_CATEGORIES)[number] | null;
+		paid_with?: "personal" | "company";
+		paid_with_since?: string | null;
 	}) => {
 		const input = FlatCostInput.safeParse({
 			name: f.name,
@@ -836,6 +883,9 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			startsOn: f.starts_on,
 			endsOn: f.ends_on ?? null,
 			productId: f.product_id ?? null,
+			category: f.category,
+			paidWith: f.paid_with,
+			paidWithSince: f.paid_with_since,
 		});
 		if (!input.success) throw new Error(input.error.issues[0].message);
 		return flatValues(ws, input.data);
@@ -925,6 +975,57 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			if (!removed) return fail("No flat cost with that id.");
 			await log("flat_cost.delete", flat_cost_id, { name: removed.name });
 			return json({ deleted: removed.name });
+		},
+	);
+
+	server.registerTool(
+		"update_books_settings",
+		{
+			title: "Update books settings",
+			description:
+				"Changes the books settings. Fields left out keep their value. Passing country also sets region, to null when region is absent, so send both together.",
+			inputSchema: z.object({
+				incorporated_on: Day.nullable()
+					.optional()
+					.describe(
+						"The day the business became a company that files its own tax return; null if it isn't one",
+					),
+				country: z
+					.enum(["CA", "US"])
+					.nullable()
+					.optional()
+					.describe(
+						"null: elsewhere, and the report is a plain profit and loss",
+					),
+				region: z
+					.string()
+					.nullable()
+					.optional()
+					.describe(
+						`Province or state code. Canada: ${Object.keys(REGIONS.CA).join(", ")}. US: two-letter state codes`,
+					),
+			}),
+			annotations: { ...WRITE, idempotentHint: true },
+		},
+		async (q) => {
+			if (Object.values(q).every((v) => v === undefined))
+				return fail("Pass incorporated_on, country or region.");
+			const input = BooksSettingsInput.safeParse({
+				incorporatedOn: q.incorporated_on,
+				country: q.country,
+				region: q.region,
+			});
+			if (!input.success) return fail(input.error.issues[0].message);
+			const [row] = await db
+				.update(schema.workspaces)
+				.set(booksSettingsPatch(input.data))
+				.where(eq(schema.workspaces.id, ws.id))
+				.returning();
+			await log("books_settings.update", ws.id, {
+				name: ws.name,
+				...booksSettings(row),
+			});
+			return json(booksSettings(row));
 		},
 	);
 

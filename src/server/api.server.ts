@@ -187,4 +187,5 @@ const ACTIONS: Record<string, string> = {
 	"flat_cost.update": "Flat cost changed",
 	"flat_cost.delete": "Flat cost removed",
 	"alert_rule.update": "Alert rule changed",
+	"books_settings.update": "Books settings changed",
 };

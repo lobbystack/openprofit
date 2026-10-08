@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
+import { Checkbox } from "#/components/ui/checkbox";
 import {
 	Field,
 	FieldDescription,
@@ -11,12 +12,14 @@ import {
 	FieldLabel,
 } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
+import { Label } from "#/components/ui/label";
 import {
 	NativeSelect,
 	NativeSelectOption,
 } from "#/components/ui/native-select";
 import { identify } from "#/lib/analytics";
 import { isLocalPath, NOINDEX } from "#/lib/app";
+import { localDay } from "#/lib/books-settings";
 import { CURRENCIES } from "#/lib/format";
 import { getSession } from "#/server/auth.functions";
 import { createWorkspaceFn } from "#/server/onboarding.functions";
@@ -46,13 +49,21 @@ function Onboarding() {
 	const create = useServerFn(createWorkspaceFn);
 	const [name, setName] = useState("");
 	const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>("USD");
+	const [incorporated, setIncorporated] = useState(false);
 	const [busy, setBusy] = useState(false);
 
 	async function submit(e: React.FormEvent) {
 		e.preventDefault();
 		setBusy(true);
 		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-		await create({ data: { name, currency, timezone } });
+		await create({
+			data: {
+				name,
+				currency,
+				timezone,
+				incorporatedOn: incorporated ? localDay() : null,
+			},
+		});
 		if (back) navigate({ href: back });
 		else navigate({ to: "/app/connections" });
 	}
@@ -94,6 +105,19 @@ function Onboarding() {
 						<FieldDescription>
 							Every amount converts to this currency at the European Central
 							Bank rate for its day. You can change it in Settings.
+						</FieldDescription>
+					</Field>
+					<Field>
+						<Label>
+							<Checkbox
+								checked={incorporated}
+								onCheckedChange={setIncorporated}
+							/>
+							This is an incorporated company
+						</Label>
+						<FieldDescription className="pl-6">
+							Check this if your company files its own tax return. You can
+							change it in Books.
 						</FieldDescription>
 					</Field>
 					<Button

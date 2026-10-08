@@ -64,9 +64,14 @@ const monthYear = (day: string) =>
 	`${monthLabel(day.slice(0, 7))} ${day.slice(0, 4)}`;
 
 const span = (f: FlatCostRow) =>
-	f.endsOn
-		? `${monthYear(f.startsOn)} to ${monthYear(f.endsOn)}`
-		: `Since ${monthYear(f.startsOn)}`;
+	f.interval === "once"
+		? `One time, ${new Date(`${f.startsOn}T00:00:00Z`).toLocaleDateString(
+				"en-US",
+				{ month: "short", day: "numeric", year: "numeric", timeZone: "UTC" },
+			)}`
+		: f.endsOn
+			? `${monthYear(f.startsOn)} to ${monthYear(f.endsOn)}`
+			: `Since ${monthYear(f.startsOn)}`;
 
 // Downloads /api/export.csv for a date range, this calendar year by default.
 export function ExportCsv() {
@@ -147,7 +152,7 @@ export function FlatCostItem({
 				{money(f.amount, { currency: f.currency, cents: true })}
 			</span>
 			<span className="label-mono w-10 text-right">
-				/ {f.interval === "year" ? "yr" : "mo"}
+				{f.interval !== "once" && `/ ${f.interval === "year" ? "yr" : "mo"}`}
 			</span>
 			{children && (
 				<span className="flex shrink-0 items-center gap-1">{children}</span>
