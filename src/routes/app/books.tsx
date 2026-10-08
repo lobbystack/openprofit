@@ -3,6 +3,7 @@ import { PageHeader } from "#/components/app/shell";
 import { BooksExport } from "#/components/books/export";
 import { BooksSettings } from "#/components/books/settings";
 import { TaxReport } from "#/components/books/tax-report";
+import { getJournalExport } from "#/server/books-export.functions";
 import { getBooksSettings } from "#/server/books-settings.functions";
 import { getTaxReport } from "#/server/tax.functions";
 
@@ -23,22 +24,23 @@ export const Route = createFileRoute("/app/books")({
 			new Date().getUTCFullYear() - (new Date().getUTCMonth() < 4 ? 1 : 0),
 	}),
 	loader: async ({ deps }) => {
-		const [settings, report] = await Promise.all([
+		const [settings, report, exportOptions] = await Promise.all([
 			getBooksSettings(),
 			getTaxReport({ data: { year: deps.year } }),
+			getJournalExport(),
 		]);
-		return { settings, report };
+		return { settings, report, exportOptions };
 	},
 	component: Books,
 });
 
 function Books() {
-	const { settings, report } = Route.useLoaderData();
+	const { settings, report, exportOptions } = Route.useLoaderData();
 	return (
 		<>
 			<PageHeader title="Books" />
 			<div className="mt-4 grid gap-4">
-				<BooksExport />
+				<BooksExport options={exportOptions} />
 				<TaxReport report={report} />
 				<BooksSettings settings={settings} />
 			</div>

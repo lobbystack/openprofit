@@ -28,6 +28,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as DotwellKnownSplatRouteImport } from './routes/[.]well-known/$'
 import { Route as ApiConnectionsRouteImport } from './routes/api/connections'
 import { Route as ApiExportDotcsvRouteImport } from './routes/api/export[.]csv'
+import { Route as ApiJournalDotcsvRouteImport } from './routes/api/journal[.]csv'
 import { Route as ApiProvidersRouteImport } from './routes/api/providers'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as AppIndexRouteImport } from './routes/app/index'
@@ -158,6 +159,11 @@ const ApiConnectionsRoute = ApiConnectionsRouteImport.update({
 const ApiExportDotcsvRoute = ApiExportDotcsvRouteImport.update({
   id: '/api/export.csv',
   path: '/api/export.csv',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiJournalDotcsvRoute = ApiJournalDotcsvRouteImport.update({
+  id: '/api/journal.csv',
+  path: '/api/journal.csv',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProvidersRoute = ApiProvidersRouteImport.update({
@@ -363,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/$': typeof DotwellKnownSplatRoute
   '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/journal.csv': typeof ApiJournalDotcsvRoute
   '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
@@ -417,6 +424,7 @@ export interface FileRoutesByTo {
   '/.well-known/$': typeof DotwellKnownSplatRoute
   '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/journal.csv': typeof ApiJournalDotcsvRoute
   '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
@@ -475,6 +483,7 @@ export interface FileRoutesById {
   '/.well-known/$': typeof DotwellKnownSplatRoute
   '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/journal.csv': typeof ApiJournalDotcsvRoute
   '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
@@ -534,6 +543,7 @@ export interface FileRouteTypes {
     | '/.well-known/$'
     | '/api/connections'
     | '/api/export.csv'
+    | '/api/journal.csv'
     | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
@@ -588,6 +598,7 @@ export interface FileRouteTypes {
     | '/.well-known/$'
     | '/api/connections'
     | '/api/export.csv'
+    | '/api/journal.csv'
     | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
@@ -645,6 +656,7 @@ export interface FileRouteTypes {
     | '/.well-known/$'
     | '/api/connections'
     | '/api/export.csv'
+    | '/api/journal.csv'
     | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
@@ -703,6 +715,7 @@ export interface RootRouteChildren {
   DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
   ApiConnectionsRoute: typeof ApiConnectionsRoute
   ApiExportDotcsvRoute: typeof ApiExportDotcsvRoute
+  ApiJournalDotcsvRoute: typeof ApiJournalDotcsvRoute
   ApiProvidersRoute: typeof ApiProvidersRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CompareSlugRoute: typeof CompareSlugRoute
@@ -858,6 +871,13 @@ declare module '@tanstack/react-router' {
       path: '/api/export.csv'
       fullPath: '/api/export.csv'
       preLoaderRoute: typeof ApiExportDotcsvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/journal.csv': {
+      id: '/api/journal.csv'
+      path: '/api/journal.csv'
+      fullPath: '/api/journal.csv'
+      preLoaderRoute: typeof ApiJournalDotcsvRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/providers': {
@@ -1201,6 +1221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotwellKnownSplatRoute: DotwellKnownSplatRoute,
   ApiConnectionsRoute: ApiConnectionsRoute,
   ApiExportDotcsvRoute: ApiExportDotcsvRoute,
+  ApiJournalDotcsvRoute: ApiJournalDotcsvRoute,
   ApiProvidersRoute: ApiProvidersRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
   CompareSlugRoute: CompareSlugRoute,
