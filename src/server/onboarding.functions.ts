@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { Day } from "#/lib/costs";
 import { CURRENCIES, TimeZone } from "#/lib/format";
 import { capture, identifyWorkspaces } from "./analytics.server";
 import { requireUser } from "./auth.server";
@@ -11,6 +12,9 @@ const Input = z.object({
 	currency: z.enum(CURRENCIES),
 	// The browser's, so the weekly email defaults to Monday 09:00 local time.
 	timezone: TimeZone.optional(),
+	// The browser's today when "incorporated company" is checked; the Books
+	// page changes it.
+	incorporatedOn: Day.nullable().optional(),
 });
 
 export const createWorkspaceFn = createServerFn({ method: "POST" })

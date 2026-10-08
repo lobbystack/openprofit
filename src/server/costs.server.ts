@@ -40,7 +40,12 @@ export async function flatValues(
 		currency: f.currency,
 		interval: f.interval,
 		startsOn: f.startsOn,
-		endsOn: f.endsOn,
+		// A one-time cost has its one date.
+		endsOn: f.interval === "once" ? null : f.endsOn,
 		productId: f.productId,
+		// Left out (undefined), these keep their stored value.
+		category: f.category,
+		paidWith: f.paidWith,
+		paidWithSince: f.interval === "once" ? null : f.paidWithSince,
 	};
 }

@@ -18,6 +18,7 @@ import {
 	NativeSelect,
 	NativeSelectOption,
 } from "#/components/ui/native-select";
+import { COST_CATEGORIES, categoryName, PAID_WITH } from "#/lib/books-settings";
 import { CURRENCIES, money } from "#/lib/format";
 import { type PeriodKey, periodSchema } from "#/lib/overview";
 import {
@@ -46,7 +47,7 @@ export const Route = createFileRoute("/app/costs")({
 });
 
 function Costs() {
-	const { overview, flats, products } = Route.useLoaderData();
+	const { overview, flats, products, incorporated } = Route.useLoaderData();
 	const navigate = useNavigate();
 	const router = useRouter();
 	const del = useServerFn(deleteFlatCost);
@@ -96,13 +97,14 @@ function Costs() {
 					<FlatCostForm
 						products={products}
 						currency={overview.currency}
+						incorporated={incorporated}
 						onDone={close}
 					/>
 				)}
 				{flats.length === 0 && editing !== "new" ? (
 					<p className="px-4 py-4 text-[13px] text-text-2">
 						No flat costs yet. Add hosting plans, domains or tools that have no
-						billing API, at their monthly or yearly price.
+						billing API, and one-time purchases like a computer.
 					</p>
 				) : (
 					<ul className="divide-y divide-line">
@@ -113,6 +115,7 @@ function Costs() {
 										cost={f}
 										products={products}
 										currency={overview.currency}
+										incorporated={incorporated}
 										onDone={close}
 									/>
 								</li>
@@ -150,11 +153,13 @@ function FlatCostForm({
 	cost,
 	products,
 	currency,
+	incorporated,
 	onDone,
 }: {
 	cost?: FlatCostRow;
 	products: { id: string; name: string }[];
 	currency: string;
+	incorporated: boolean;
 	onDone: () => void;
 }) {
 	const create = useServerFn(createFlatCost);
@@ -168,7 +173,11 @@ function FlatCostForm({
 		startsOn: cost?.startsOn ?? thisMonth,
 		endsOn: cost?.endsOn ?? "",
 		productId: cost?.productId ?? "",
+		category: cost?.category ?? "software",
+		paidWith: cost?.paidWith ?? "personal",
+		paidWithSince: cost?.paidWithSince ?? "",
 	});
+	const once = v.interval === "once";
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const set = (k: keyof typeof v) => (e: { target: { value: string } }) =>
@@ -181,7 +190,7 @@ function FlatCostForm({
 			setError("Enter an amount above zero.");
 			return;
 		}
-		if (v.endsOn && v.endsOn < v.startsOn) {
+		if (!once && v.endsOn && v.endsOn < v.startsOn) {
 			setError("The end date is before the start date.");
 			return;
 		}
@@ -189,10 +198,16 @@ function FlatCostForm({
 			name: v.name.trim(),
 			amountCents,
 			currency: v.currency as (typeof CURRENCIES)[number],
-			interval: v.interval as "month" | "year",
+			interval: v.interval,
 			startsOn: v.startsOn,
-			endsOn: v.endsOn || null,
+			endsOn: once ? null : v.endsOn || null,
 			productId: v.productId || null,
+			category: v.category,
+			// Not shown unless incorporated, so left as stored.
+			...(incorporated && {
+				paidWith: v.paidWith,
+				paidWithSince: once ? null : v.paidWithSince || null,
+			}),
 		};
 		setBusy(true);
 		setError(null);
@@ -281,10 +296,26 @@ function FlatCostForm({
 						<NativeSelectOption value="year">
 							Yearly, spread over 12 months
 						</NativeSelectOption>
+						<NativeSelectOption value="once">One time</NativeSelectOption>
 					</NativeSelect>
 				</Field>
-				<Field className="gap-1.5 sm:col-span-3">
-					<FieldLabel htmlFor="flat-6">Starts</FieldLabel>
+				<Field className="gap-1.5 sm:col-span-2">
+					<FieldLabel htmlFor="flat-8">Category</FieldLabel>
+					<NativeSelect
+						id="flat-8"
+						size="sm"
+						value={v.category}
+						onChange={set("category")}
+					>
+						{COST_CATEGORIES.map((c) => (
+							<NativeSelectOption key={c} value={c}>
+								{categoryName(c)}
+							</NativeSelectOption>
+						))}
+					</NativeSelect>
+				</Field>
+				<Field className="gap-1.5 sm:col-span-2">
+					<FieldLabel htmlFor="flat-6">{once ? "Date" : "Starts"}</FieldLabel>
 					<Input
 						id="flat-6"
 						size="sm"
@@ -295,18 +326,52 @@ function FlatCostForm({
 						className="num"
 					/>
 				</Field>
-				<Field className="gap-1.5 sm:col-span-3">
-					<FieldLabel htmlFor="flat-7">Ends (optional)</FieldLabel>
-					<Input
-						id="flat-7"
-						size="sm"
-						type="date"
-						value={v.endsOn}
-						min={v.startsOn}
-						onChange={set("endsOn")}
-						className="num"
-					/>
-				</Field>
+				{!once && (
+					<Field className="gap-1.5 sm:col-span-2">
+						<FieldLabel htmlFor="flat-7">Ends (optional)</FieldLabel>
+						<Input
+							id="flat-7"
+							size="sm"
+							type="date"
+							value={v.endsOn}
+							min={v.startsOn}
+							onChange={set("endsOn")}
+							className="num"
+						/>
+					</Field>
+				)}
+				{incorporated && (
+					<>
+						<Field className="gap-1.5 sm:col-span-2">
+							<FieldLabel htmlFor="flat-9">Paid with</FieldLabel>
+							<NativeSelect
+								id="flat-9"
+								size="sm"
+								value={v.paidWith}
+								onChange={set("paidWith")}
+							>
+								{Object.entries(PAID_WITH).map(([k, label]) => (
+									<NativeSelectOption key={k} value={k}>
+										{label}
+									</NativeSelectOption>
+								))}
+							</NativeSelect>
+						</Field>
+						{!once && (
+							<Field className="gap-1.5 sm:col-span-2">
+								<FieldLabel htmlFor="flat-10">Since (optional)</FieldLabel>
+								<Input
+									id="flat-10"
+									size="sm"
+									type="date"
+									value={v.paidWithSince}
+									onChange={set("paidWithSince")}
+									className="num"
+								/>
+							</Field>
+						)}
+					</>
+				)}
 				<div className="flex flex-wrap items-center gap-2 sm:col-span-6">
 					<Button type="submit" disabled={busy}>
 						{busy ? "Saving…" : cost ? "Save" : "Add cost"}
