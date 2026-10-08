@@ -77,6 +77,9 @@ export type OverviewData = {
 	series: Record<MetricKey, number[]>;
 	// Same months one year earlier, for the dotted line.
 	previousSeries: Record<MetricKey, number[]>;
+	// The last month's value at its pace so far while it is in progress,
+	// drawn dashed. Null for MRR and subscriptions, and once the month ends.
+	pace?: Record<MetricKey, number | null>;
 	// Tiles: the period's totals and the equal period before it. Flows sum;
 	// MRR and customers take the value at the end.
 	period: {
@@ -98,6 +101,7 @@ export type OverviewData = {
 		costs: number;
 		// Monthly profit over `months`, for the product's own trend line.
 		profit: number[];
+		profitPace?: number | null;
 	}[];
 	costsByProvider: { provider: string; amount: number }[];
 	revenueBySource: { provider: string; amount: number }[];

@@ -68,7 +68,7 @@ The demo at `/demo` shows the dashboard with sample numbers. Anyone can open it 
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `DEMO` | `off`, or `on` with `APP_MODE=cloud` | Set to `on` to serve the demo. The instance keeps one demo workspace with no members and rebuilds it every hour, so its twelve months end in the current month. While it's off, `/demo` redirects to `https://openprofit.dev/demo` |
+| `DEMO` | `off`, or `on` with `APP_MODE=cloud` | Set to `on` to serve the demo. The instance keeps one demo workspace with no members and rebuilds it every hour, so its two years of numbers end in the current month. While it's off, `/demo` redirects to `https://openprofit.dev/demo` |
 
 ## Hosted mode
 

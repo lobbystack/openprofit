@@ -16,10 +16,12 @@ import { money, monthLabel } from "#/lib/format";
 import { type AreaChartProps, axis, chartSize, TONES } from "./area-chart";
 
 // Current period solid with a light fill to zero, previous period dotted.
-// Loaded on its own (see area-chart.tsx) so Recharts never delays a page.
+// A month in progress runs dashed to its pace. Loaded on its own (see
+// area-chart.tsx) so Recharts never delays a page.
 export default function AreaChartRecharts({
 	data,
 	previous,
+	pace,
 	months = [],
 	height = 260,
 	tone = "ink",
@@ -27,17 +29,27 @@ export default function AreaChartRecharts({
 	currency,
 }: AreaChartProps) {
 	const color = TONES[tone];
-	const { min, max, ticks } = axis([...data, ...(previous ?? [])]);
+	const last = data.length - 1;
+	const dashed = pace != null && last > 0;
+	const { min, max, ticks } = axis([
+		...data,
+		...(previous ?? []),
+		...(dashed ? [pace] : []),
+	]);
 	const rows = data.map((value, i) => ({
 		month: months[i] ?? String(i),
-		value,
+		value: dashed && i === last ? undefined : value,
+		// The dashed segment from the last full month to the pace.
+		pace: dashed && i >= last - 1 ? (i === last ? pace : value) : undefined,
+		// What the month in progress holds so far, for the tooltip.
+		sofar: dashed && i === last ? value : undefined,
 		previous: previous?.[i],
 	}));
 	const config = {
 		value: { label: "This period", color },
+		pace: { label: "On pace for", color },
 		previous: { label: "A year earlier", color: "var(--text-3)" },
 	} satisfies ChartConfig;
-	const last = data.length - 1;
 	const short = (v: number) =>
 		Math.abs(v) >= 1000
 			? `${Math.round(v / 100) / 10}k`
@@ -86,16 +98,29 @@ export default function AreaChartRecharts({
 				{!compact && (
 					<ChartTooltip
 						cursor={{ strokeDasharray: "2 4" }}
-						content={
+						content={({ active, payload, label }) => (
 							<ChartTooltipContent
+								active={active}
+								label={label}
+								// The pace only shows on the month in progress.
+								payload={payload?.filter(
+									(p) => p.dataKey !== "pace" || p.payload?.sofar != null,
+								)}
 								indicator="line"
 								labelFormatter={(_, p) => {
-									const m = p?.[0]?.payload?.month as string | undefined;
-									return m ? `${monthLabel(m)} ${m.slice(0, 4)}` : "";
+									const row = p?.[0]?.payload as
+										| { month?: string; sofar?: number }
+										| undefined;
+									const m = row?.month;
+									if (!m) return "";
+									const name = `${monthLabel(m)} ${m.slice(0, 4)}`;
+									return row.sofar == null
+										? name
+										: `${name}, ${money(row.sofar, { currency })} so far`;
 								}}
 								valueFormatter={(v) => money(v, { currency })}
 							/>
-						}
+						)}
 					/>
 				)}
 				<Area
@@ -111,7 +136,7 @@ export default function AreaChartRecharts({
 					animationEasing="ease-in-out"
 					activeDot={{ r: 3.5, strokeWidth: 2, stroke: "var(--card)" }}
 					dot={(p: { index: number; cx?: number; cy?: number }) =>
-						p.index === last && p.cx !== undefined ? (
+						!dashed && p.index === last && p.cx !== undefined ? (
 							<circle
 								key="last"
 								cx={p.cx}
@@ -126,6 +151,33 @@ export default function AreaChartRecharts({
 						)
 					}
 				/>
+				{dashed && (
+					<Line
+						dataKey="pace"
+						type="linear"
+						stroke="var(--color-pace)"
+						strokeWidth={1.75}
+						strokeDasharray="4 4"
+						dot={(p: { index: number; cx?: number; cy?: number }) =>
+							p.index === last && p.cx !== undefined ? (
+								<circle
+									key="last"
+									cx={p.cx}
+									cy={p.cy}
+									r={3.5}
+									fill="var(--card)"
+									stroke={color}
+									strokeWidth={1.75}
+								/>
+							) : (
+								<g key={p.index} />
+							)
+						}
+						activeDot={{ r: 3.5, strokeWidth: 2, stroke: "var(--card)" }}
+						animationDuration={280}
+						animationEasing="ease-in-out"
+					/>
+				)}
 				{previous && (
 					<Line
 						dataKey="previous"

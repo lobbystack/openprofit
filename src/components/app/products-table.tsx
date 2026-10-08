@@ -71,6 +71,7 @@ export function ProductsTable({
 									{p.profit.some((v) => v !== 0) && (
 										<AreaChart
 											data={p.profit}
+											pace={p.profitPace}
 											height={28}
 											tone="positive"
 											compact

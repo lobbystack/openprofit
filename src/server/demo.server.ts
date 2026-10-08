@@ -12,7 +12,7 @@ import type { Workspace } from "./workspace.server";
 // version; self-hosted instances turn it on with DEMO=on.
 export const demoEnabled = isCloud || process.env.DEMO === "on";
 
-// Rebuilt when older than this, so the twelve months end this month and
+// Rebuilt when older than this, so the months end this month and
 // connections show a recent sync.
 const MAX_AGE_MS = 60 * 60_000;
 

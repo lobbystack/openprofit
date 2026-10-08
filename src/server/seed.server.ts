@@ -4,27 +4,35 @@ import { splitCents } from "#/connectors/types";
 import { type db, schema } from "#/db";
 import { encrypt } from "#/lib/crypto";
 
-// Sample numbers for `pnpm db:seed` and the public demo: twelve months
-// ending this month, three products, Stripe for revenue, seven cost
-// providers and a few flat costs.
+// Sample numbers for `pnpm db:seed` and the public demo: two years ending
+// this month, so charts have a year-earlier line, three products, Stripe for
+// revenue, seven cost providers and a few flat costs.
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 const REVENUE = [
-	6120, 6480, 7010, 7390, 7820, 8350, 8910, 9420, 10080, 10760, 11540, 12480,
+	2380, 2610, 2850, 3090, 3360, 3640, 3930, 4250, 4590, 4940, 5310, 5700, 6120,
+	6480, 7010, 7390, 7820, 8350, 8910, 9420, 10080, 10760, 11540, 12480,
 ];
 const COSTS = [
-	1480, 1520, 1610, 1740, 1890, 2050, 2210, 2380, 2590, 2770, 2960, 3112,
+	690, 740, 790, 850, 910, 980, 1050, 1120, 1200, 1280, 1360, 1430, 1480, 1520,
+	1610, 1740, 1890, 2050, 2210, 2380, 2590, 2770, 2960, 3112,
 ];
 const MRR = [
-	5900, 6200, 6700, 7050, 7500, 8000, 8550, 9050, 9700, 10350, 11100, 11900,
+	2300, 2520, 2760, 3010, 3270, 3550, 3850, 4170, 4510, 4870, 5250, 5620, 5900,
+	6200, 6700, 7050, 7500, 8000, 8550, 9050, 9700, 10350, 11100, 11900,
 ];
-const CUSTOMERS = [212, 224, 241, 256, 273, 291, 312, 331, 356, 378, 399, 418];
+const CUSTOMERS = [
+	88, 96, 105, 114, 123, 133, 143, 154, 165, 177, 189, 201, 212, 224, 241, 256,
+	273, 291, 312, 331, 356, 378, 399, 418,
+];
 
+// Share of revenue and of mapped costs per product, set apart so each
+// product shows its own margin.
 const PRODUCTS = [
-	{ name: "Draftly", slug: "draftly", share: 0.58 },
-	{ name: "Shipmail", slug: "shipmail", share: 0.29 },
-	{ name: "Quoteflow", slug: "quoteflow", share: 0.13 },
+	{ name: "Draftly", slug: "draftly", share: 0.58, costs: 0.5 },
+	{ name: "Shipmail", slug: "shipmail", share: 0.29, costs: 0.17 },
+	{ name: "Quoteflow", slug: "quoteflow", share: 0.13, costs: 0.33 },
 ];
 const REVENUE_SOURCES = [{ provider: "stripe", share: 1, fee: 0.029 }];
 // Share of synced cost per provider, and whether it maps to products.
@@ -196,7 +204,7 @@ export async function seedWorkspace(
 			if (cp.mapped) {
 				for (const p of PRODUCTS) {
 					const product = products.find((x) => x.slug === p.slug);
-					const cents = Math.round(total * p.share);
+					const cents = Math.round(total * p.costs);
 					for (const [date, amount] of daily(m, cents, today, monthly))
 						costLines.push({
 							workspaceId: ws.id,

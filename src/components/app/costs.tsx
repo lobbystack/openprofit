@@ -28,6 +28,7 @@ export function CostsCharts({ overview }: { overview: OverviewData }) {
 				<AreaChart
 					data={overview.series.costs}
 					previous={overview.previousSeries.costs}
+					pace={overview.pace?.costs}
 					months={overview.months}
 					tone="negative"
 					height={200}
