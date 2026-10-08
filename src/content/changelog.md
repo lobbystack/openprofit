@@ -7,6 +7,13 @@ description: What's new in OpenProfit. Every release, newest first.
 
 Every release, newest first. The full history is in the [commit log on GitHub](https://github.com/lobbystack/openprofit/commits/main).
 
+## October 8, 2026
+
+- **Books.** A new **Books** page exports a month of revenue and costs as a journal for QuickBooks, Xero or any accounting software, and lists the year's numbers on the lines of your tax form: T2125 and TP-80, the T2's GIFI schedules, Schedule C or Form 1120. Tell OpenProfit whether you have a company and who pays each provider, and it records costs on your personal card as money the business owes you. Exporting a month closes it; later changes come as an adjustment in the next export. See [Books](/docs/books).
+- **One-time costs and equipment.** A flat cost can be **One time**, with a category. Equipment is depreciated on the tax report instead of deducted at once.
+- **Payouts and service periods.** Stripe payouts and the period each Stripe and Paddle payment covers now sync, so the books spread a yearly plan over its months. Polar revenue comes from orders, with refunds on the day they happen; reconnect Polar with the **Orders** and **Refunds** read scopes to get them.
+- **Bank of Canada rates.** Workspaces in Canadian dollars convert at the Bank of Canada's daily rate, as the CRA asks, from each connection's next full sync.
+
 ## October 7, 2026
 
 - **The month in progress runs dashed.** Charts plotted this month's amount so far, so the line dropped at the start of every month. The last point now shows where the month lands at its pace so far, on a dashed line, and the tooltip gives the amount so far. Flat costs count once, not scaled. This covers the overview, the Costs page, the product sparklines and public product pages.
