@@ -16,10 +16,22 @@ export type RevenueLine = {
 	// line for the share of tax returned. Default 0.
 	taxCents?: number;
 	kind: "subscription" | "one_time" | "other";
+	// The period the payment pays for, [start, end), YYYY-MM-DD. Unset: the
+	// payment is earned on `date`.
+	serviceStart?: string;
+	serviceEnd?: string;
 	// Provider sub-unit the line belongs to (product id, project id), for
 	// mapping to a product.
 	subUnitId?: string;
 	subUnitLabel?: string;
+};
+
+// Money the provider sent to the seller's bank account.
+export type Payout = {
+	externalId: string;
+	date: string; // the day it arrives in the bank
+	currency: string;
+	amountCents: number; // positive
 };
 
 export type CostLine = {
@@ -73,11 +85,19 @@ export type Connector = {
 	// The provider files and pays the tax it collects (merchant of record,
 	// app stores). Unset: the seller owes the tax on their own lines.
 	remitsTax?: boolean;
+	// Prefix of the revenue line ids an earlier version of the connector
+	// wrote. While a connection has such lines in the history a sync can
+	// read, its syncs read all of it, so lines under the current ids
+	// replace them.
+	legacyIds?: string;
 	// Prove the credentials work. Returns a label for the connection.
 	verify(creds: Credentials): Promise<{ label: string }>;
 	fetchRevenue?(creds: Credentials, range: SyncRange): Promise<RevenueLine[]>;
 	fetchCosts?(creds: Credentials, range: SyncRange): Promise<CostLine[]>;
 	fetchSnapshots?(creds: Credentials, date: string): Promise<Snapshot[]>;
+	// Payouts, dated the day they arrive. It must return every payout that
+	// arrives in the range: sync deletes stored ones in it that are missing.
+	fetchPayouts?(creds: Credentials, range: SyncRange): Promise<Payout[]>;
 };
 
 export class ConnectorError extends Error {
