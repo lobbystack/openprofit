@@ -52,6 +52,15 @@ export const workspaces = pgTable("workspaces", {
 	// The public read-only demo served at /demo. Left out of /open and the
 	// benchmarks.
 	demo: boolean("demo").notNull().default(false),
+	// Books (docs/BOOKS.md). The day the business became a company; null
+	// while it isn't one. Lines dated before it follow the unincorporated
+	// rules.
+	incorporatedOn: text("incorporated_on"),
+	// ISO 3166-1 alpha-2 and a province or state code, for the tax report.
+	country: text("country"),
+	region: text("region"),
+	// Account key to the name the user's accounting software uses.
+	bookAccounts: jsonb("book_accounts").$type<Record<string, string>>(),
 	createdAt: createdAt(),
 });
 
@@ -110,6 +119,12 @@ export const connections = pgTable(
 			onDelete: "set null",
 		}),
 		cadenceMinutes: integer("cadence_minutes").notNull().default(360),
+		// Who pays this provider's bills, for incorporated workspaces. Since
+		// `paid_with_since` (null: always); before it, the other value.
+		paidWith: text("paid_with", { enum: ["personal", "company"] })
+			.notNull()
+			.default("personal"),
+		paidWithSince: text("paid_with_since"),
 		lastSyncedAt: ms("last_synced_at"),
 		lastError: text("last_error"),
 		createdAt: createdAt(),
@@ -161,6 +176,16 @@ export const revenueLines = pgTable(
 		// Tax the customer paid, excluded from gross and net.
 		taxCents: integer("tax_cents").notNull().default(0),
 		taxBaseCents: integer("tax_base_cents").notNull().default(0),
+		// Gross, fees and refunds in base cents, at the line's rate. Null on
+		// rows synced before the columns; readers derive them from the net
+		// rate.
+		grossBaseCents: integer("gross_base_cents"),
+		feesBaseCents: integer("fees_base_cents"),
+		refundsBaseCents: integer("refunds_base_cents"),
+		// The period the payment pays for, [start, end). Null: earned on
+		// `date`.
+		serviceStart: text("service_start"),
+		serviceEnd: text("service_end"),
 		kind: text("kind", { enum: ["subscription", "one_time", "other"] })
 			.notNull()
 			.default("other"),
@@ -222,11 +247,71 @@ export const flatCosts = pgTable("flat_costs", {
 	// was saved or the base currency last changed. Null on rows from before
 	// the column; readers fall back to `amount_cents`.
 	amountBaseCents: integer("amount_base_cents"),
-	interval: text("interval", { enum: ["month", "year"] }).notNull(),
+	// `once`: a one-time cost dated `starts_on`.
+	interval: text("interval", { enum: ["month", "year", "once"] }).notNull(),
 	startsOn: text("starts_on").notNull(),
 	endsOn: text("ends_on"),
+	// The books account it lands in; `equipment` makes it an asset. Null:
+	// from the provider, else `other`.
+	category: text("category", {
+		enum: [
+			"ai_apis",
+			"hosting",
+			"email",
+			"software",
+			"contractors",
+			"other",
+			"equipment",
+		],
+	}),
+	paidWith: text("paid_with", { enum: ["personal", "company"] })
+		.notNull()
+		.default("personal"),
+	paidWithSince: text("paid_with_since"),
 	createdAt: createdAt(),
 });
+
+// Money a payment provider sent to a bank account (Stripe and Polar
+// payouts), dated the day it arrived.
+export const payouts = pgTable(
+	"payouts",
+	{
+		id: id(),
+		workspaceId: text("workspace_id")
+			.notNull()
+			.references(() => workspaces.id, { onDelete: "cascade" }),
+		connectionId: text("connection_id")
+			.notNull()
+			.references(() => connections.id, { onDelete: "cascade" }),
+		date: text("date").notNull(),
+		currency: text("currency").notNull(),
+		amountCents: integer("amount_cents").notNull(),
+		amountBaseCents: integer("amount_base_cents").notNull(),
+		externalId: text("external_id").notNull(),
+		createdAt: createdAt(),
+	},
+	(t) => [
+		uniqueIndex("payouts_conn_ext").on(t.connectionId, t.externalId),
+		index("payouts_ws_date").on(t.workspaceId, t.date),
+	],
+);
+
+// A month whose journal was exported, with the totals as exported, so later
+// changes go out as adjustments instead of rewriting it.
+export const journalExports = pgTable(
+	"journal_exports",
+	{
+		workspaceId: text("workspace_id")
+			.notNull()
+			.references(() => workspaces.id, { onDelete: "cascade" }),
+		month: text("month").notNull(),
+		// The entries as exported (src/lib/books.ts Entry), so exporting the
+		// month again gives the same file.
+		entries: jsonb("entries").$type<unknown[]>().notNull(),
+		exportedAt: ms("exported_at").notNull(),
+	},
+	(t) => [primaryKey({ columns: [t.workspaceId, t.month] })],
+);
 
 // Point-in-time values a provider reports directly: MRR, active customers.
 // Connectors report `mrr_base_cents` in the provider's currency; the sync

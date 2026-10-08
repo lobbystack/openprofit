@@ -2,6 +2,7 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
 	Bell,
+	BookOpen,
 	Cable,
 	Check,
 	ChevronsUpDown,
@@ -43,6 +44,7 @@ const NAV = [
 	{ to: "/app/products", label: "Products", icon: Package },
 	{ to: "/app/connections", label: "Connections", icon: Cable },
 	{ to: "/app/costs", label: "Costs", icon: Receipt },
+	{ to: "/app/books", label: "Books", icon: BookOpen },
 	{ to: "/app/alerts", label: "Alerts", icon: Bell },
 	{ to: "/app/settings", label: "Settings", icon: Settings },
 ] as const;

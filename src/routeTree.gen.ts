@@ -32,6 +32,7 @@ import { Route as ApiProvidersRouteImport } from './routes/api/providers'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppAlertsRouteImport } from './routes/app/alerts'
+import { Route as AppBooksRouteImport } from './routes/app/books'
 import { Route as AppCostsRouteImport } from './routes/app/costs'
 import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
@@ -177,6 +178,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppAlertsRoute = AppAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBooksRoute = AppBooksRouteImport.update({
+  id: '/books',
+  path: '/books',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCostsRoute = AppCostsRouteImport.update({
@@ -360,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/books': typeof AppBooksRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -413,6 +420,7 @@ export interface FileRoutesByTo {
   '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/books': typeof AppBooksRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -470,6 +478,7 @@ export interface FileRoutesById {
   '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/books': typeof AppBooksRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -528,6 +537,7 @@ export interface FileRouteTypes {
     | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
+    | '/app/books'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
@@ -581,6 +591,7 @@ export interface FileRouteTypes {
     | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
+    | '/app/books'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
@@ -637,6 +648,7 @@ export interface FileRouteTypes {
     | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
+    | '/app/books'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
@@ -876,6 +888,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAlertsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/books': {
+      id: '/app/books'
+      path: '/books'
+      fullPath: '/app/books'
+      preLoaderRoute: typeof AppBooksRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/costs': {
       id: '/app/costs'
       path: '/costs'
@@ -1098,6 +1117,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAlertsRoute: typeof AppAlertsRoute
+  AppBooksRoute: typeof AppBooksRoute
   AppCostsRoute: typeof AppCostsRoute
   AppProductsRoute: typeof AppProductsRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -1109,6 +1129,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAlertsRoute: AppAlertsRoute,
+  AppBooksRoute: AppBooksRoute,
   AppCostsRoute: AppCostsRoute,
   AppProductsRoute: AppProductsRoute,
   AppSettingsRoute: AppSettingsRoute,
@@ -1204,13 +1225,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

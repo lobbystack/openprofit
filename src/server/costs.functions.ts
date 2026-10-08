@@ -15,7 +15,7 @@ export type FlatCostRow = {
 	// Source currency, whole units.
 	amount: number;
 	currency: string;
-	interval: "month" | "year";
+	interval: "month" | "year" | "once";
 	startsOn: string;
 	endsOn: string | null;
 };

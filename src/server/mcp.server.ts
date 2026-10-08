@@ -810,7 +810,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		name: z.string().trim().min(1).max(80),
 		amount: z.number().positive().describe("In whole units, such as 49.99"),
 		currency: z.enum(CURRENCIES),
-		interval: z.enum(["month", "year"]),
+		interval: z.enum(["month", "year", "once"]),
 		starts_on: Day,
 		ends_on: Day.nullable().optional().describe("YYYY-MM-DD, or null"),
 		product_id: z
@@ -823,7 +823,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		name: string;
 		amount: number;
 		currency: (typeof CURRENCIES)[number];
-		interval: "month" | "year";
+		interval: "month" | "year" | "once";
 		starts_on: string;
 		ends_on?: string | null;
 		product_id?: string | null;
