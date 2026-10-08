@@ -380,7 +380,12 @@ export function tp80(a: Amounts): Form {
 				ours: "No line names AI, hosting, software or contractors; 246 takes what no other line covers.",
 			}),
 			line("248", "Expenses related to your business activities", a.expenses),
-			line("250", "Line 148 minus line 248", a.profit),
+			// Line 148 adds other income to line 130; OpenProfit has none.
+			line(
+				"250",
+				"Net income: line 148 (here, line 130) minus line 248",
+				a.profit,
+			),
 			line("73", "Drawings during the fiscal period", a.draws),
 			line("75", "Investments during the fiscal period", a.contributions),
 		],

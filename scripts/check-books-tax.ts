@@ -2,12 +2,11 @@
 // database. Run: DATABASE_URL=/tmp/books-tax-check SYNC_SCHEDULER=off npx tsx scripts/check-books-tax.ts
 import assert from "node:assert/strict";
 
-const R = "../src";
-const { db, schema } = await import(`${R}/db/index.ts`);
-const { yearEntries } = await import(`${R}/server/books.server.ts`);
-const { taxReport, byAccount } = await import(`${R}/server/tax.server.ts`);
-const { depreciation, amounts } = await import(`${R}/lib/tax.ts`);
-const { balanced } = await import(`${R}/lib/books.ts`);
+const { db, schema } = await import("../src/db/index.ts");
+const { yearEntries } = await import("../src/server/books.server.ts");
+const { taxReport, byAccount } = await import("../src/server/tax.server.ts");
+const { depreciation, amounts } = await import("../src/lib/tax.ts");
+const { balanced } = await import("../src/lib/books.ts");
 
 type WsOpts = { country: string; region?: string; incorporatedOn?: string; big?: boolean };
 let n = 0;
@@ -47,7 +46,7 @@ async function seed(o: WsOpts) {
 		cost(openai, "2025-01-31", 4_200), cost(openai, "2025-06-30", 8_800), cost(openai, "2025-12-31", 6_100),
 		cost(vercel, "2025-03-31", 2_000), cost(vercel, "2025-09-30", 2_000),
 	]);
-	const flat = (name: string, amount: number, interval: "month" | "year" | "once", startsOn: string, category: string) => ({
+	const flat = (name: string, amount: number, interval: "month" | "year" | "once", startsOn: string, category: "ai_apis" | "hosting" | "email" | "software" | "contractors" | "other" | "equipment") => ({
 		workspaceId: ws.id, provider: "manual", name, amountCents: amount, amountBaseCents: amount, currency: ws.baseCurrency, interval, startsOn, category,
 	});
 	await db.insert(schema.flatCosts).values([
