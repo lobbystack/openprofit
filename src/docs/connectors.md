@@ -23,7 +23,7 @@ Each connector needs a key with specific permissions. The table lists what each 
 | Provider | What it reads | Key |
 | --- | --- | --- |
 | [Stripe](/integrations/stripe) | Balance transactions, and active subscriptions for monthly recurring revenue (MRR) and the subscription count | Restricted key with read access to Balance, Balance transaction sources, Charges, Checkout Sessions, Invoices and Subscriptions |
-| [Polar](/integrations/polar) | Daily revenue and net revenue, MRR, active subscriptions | Organization access token with `organizations:read` and `metrics:read` |
+| [Polar](/integrations/polar) | Paid orders without tax, Polar’s fee, refunds, MRR, active subscriptions | Organization access token with `organizations:read`, `metrics:read`, `orders:read` and `refunds:read` |
 | [Paddle](/integrations/paddle) | Completed transactions without tax, Paddle’s fee, refunds, credits and chargebacks, MRR, paying subscribers | API key with `transaction.read`, `adjustment.read` and `metrics.read` |
 | [Lemon Squeezy](/integrations/lemonsqueezy) | Orders and subscription renewals without tax, refunds, MRR, active subscriptions. No fees: the API doesn’t report them | API key, which has full access |
 | [RevenueCat](/integrations/revenuecat) | Monthly revenue net of taxes and proceeds after store commission, MRR, active subscriptions | Secret API key (v2) with `project_configuration:projects:read` and `charts_metrics:overview:read` |

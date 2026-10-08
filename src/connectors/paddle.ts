@@ -33,6 +33,9 @@ export type PaddleTxn = {
 	currency_code: string;
 	subscription_id: string | null;
 	billed_at: string | null;
+	// Set on subscription transactions: the period they pay for.
+	// https://developer.paddle.com/api-reference/transactions/get-transaction
+	billing_period: { starts_at: string; ends_at: string } | null;
 	items: { id: string; price: { product_id: string } }[];
 	details: {
 		totals: { tax: string; total: string; fee: string | null };
@@ -75,7 +78,8 @@ async function* list<T>(c: Credentials, path: string) {
 // which Paddle collects and remits as merchant of record; it is reported as
 // taxCents. Paddle reports
 // one fee per transaction; it is split across products by revenue. Free
-// trial transactions total zero and are skipped.
+// trial transactions total zero and are skipped. A period ends on the
+// instant the next one starts, so its day is the exclusive end.
 export function paddleTxnLines(t: PaddleTxn): RevenueLine[] {
 	const lines = t.details.line_items.map((li) => ({
 		gross: int(li.totals.total) - int(li.totals.tax),
@@ -104,6 +108,10 @@ export function paddleTxnLines(t: PaddleTxn): RevenueLine[] {
 			netCents: l.gross - f,
 			taxCents: l.tax,
 			kind: t.subscription_id ? "subscription" : "one_time",
+			serviceStart: t.billing_period
+				? day(t.billing_period.starts_at)
+				: undefined,
+			serviceEnd: t.billing_period ? day(t.billing_period.ends_at) : undefined,
 			subUnitId: l.product.id,
 			subUnitLabel: l.product.name,
 		};

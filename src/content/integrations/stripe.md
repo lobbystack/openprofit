@@ -12,7 +12,7 @@ Stripe's dashboard leads with gross volume. What reaches your bank is less: Stri
 
 ## What it reads
 
-- **Balance transactions:** every charge, refund, fee and dispute, with its gross amount, fee and net. Payouts and transfers are movements of money you already earned, so they're skipped.
+- **Balance transactions:** every charge, refund, fee and dispute, with its gross amount, fee and net. Payouts and transfers move money you already earned, so they don't count as revenue. **Books** records each payout on the day it reaches your bank.
 - **Invoices and Checkout Sessions:** the sales tax or VAT on each payment, from the invoice or Checkout Session it paid. Payment Links count, because they run on Checkout. OpenProfit takes that tax out of the payment and shows it as **Tax collected** on the overview. A refund takes back the same share of tax. A payment with neither, such as a PaymentIntent your code creates, carries no tax figure, so its tax stays in revenue.
 - **Subscriptions:** active subscriptions give your MRR and subscription count. Yearly and weekly prices are converted to a monthly figure. Metered prices are left out of MRR because their amount isn't known until the period ends.
 

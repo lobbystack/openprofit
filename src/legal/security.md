@@ -31,7 +31,7 @@ Give each key the least access its provider allows. These providers offer keys l
 | Provider | Key | Access to give it |
 | --- | --- | --- |
 | Stripe | Restricted key | Read on Balance, Balance transaction sources, Charges, Checkout Sessions, Invoices and Subscriptions |
-| Polar | Organization access token | `organizations:read`, `metrics:read` |
+| Polar | Organization access token | `organizations:read`, `metrics:read`, `orders:read`, `refunds:read` |
 | Paddle | API key | `transaction.read`, `adjustment.read`, `metrics.read` |
 | RevenueCat | Secret API key (v2) | `project_configuration:projects:read`, `charts_metrics:overview:read` |
 | Cloudflare | API token | Account · Billing · Read and Account · Account Settings · Read |
