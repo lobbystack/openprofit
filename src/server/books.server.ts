@@ -12,6 +12,7 @@ import {
 	totals,
 } from "#/lib/books";
 import { providerName } from "#/lib/providers";
+import { depreciation, equipmentOf, total } from "#/lib/tax";
 import type { Workspace } from "./workspace.server";
 
 // Loads the data for the books (docs/BOOKS.md) and runs the journal in
@@ -167,7 +168,22 @@ export async function booksInput(
 	};
 }
 
-// The month's journal, summarized: one entry per source.
+// The year's depreciation under the workspace's tax rules (src/lib/tax.ts),
+// booked in December.
+export const yearDepreciation = (ws: Workspace, input: BooksIn) =>
+	input.month.endsWith("-12")
+		? total(
+				depreciation(
+					ws.country,
+					ws.incorporatedOn,
+					equipmentOf(input.manual),
+					Number(input.month.slice(0, 4)),
+				),
+			)
+		: undefined;
+
+// The month's journal, summarized: one entry per source. December carries
+// the year's depreciation unless `depreciation` overrides it.
 export async function monthEntries(
 	ws: Workspace,
 	month: string,
@@ -175,7 +191,13 @@ export async function monthEntries(
 	depreciation?: number,
 ) {
 	const input = await booksInput(ws, month, productId);
-	return summarize(journal({ ...input, depreciation }), month);
+	return summarize(
+		journal({
+			...input,
+			depreciation: depreciation ?? yearDepreciation(ws, input),
+		}),
+		month,
+	);
 }
 
 // The journal for an export. A whole-workspace export closes the month:

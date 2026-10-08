@@ -94,34 +94,37 @@ Yearly, by calendar year, from the journal totals. It ends with: "OpenProfit pre
 
 ### Canada, not incorporated: T2125 (federal), TP-80 (Quebec)
 
-| Account | T2125 (2025) | TP-80 |
+| Account | T2125 (2025) | TP-80-V (2025-10) |
 |---|---|---|
-| `sales` − `refunds` | 8000 Adjusted gross sales | 110 Sales |
-| `payment_fees` | 8710 Interest and bank charges* | 246 Other* |
-| `ai_apis`, `hosting`, `email`, `software` | 9270 Other expenses, itemized* | 246 Other, itemized* |
-| `contractors` | 8860 Professional fees | 246 Other* |
-| `other` | 9270 Other expenses | 246 Other |
-| Equipment (computers) | 9936 Capital cost allowance, class 50, 55% with the half-year rule | 240 Capital cost allowance |
-| `owner_draws`, `owner_contributions` | 9932 Drawings, 9933 Capital contributions | |
+| `sales`, `refunds` | 3A Gross sales, 3B returns, 8000 Adjusted gross sales | 110 Sales, 113 Sales returns, 130 Gross income |
+| `payment_fees` | 8710 Interest and bank charges* | 216 Management and administration fees* (IN-155-V puts bank charges here) |
+| `ai_apis`, `hosting`, `email`, `software` | 9270 Other expenses, itemized* | 246 Other expenses, itemized* |
+| `contractors` | 8860 Professional fees (T4002: "external professional advice, services and consulting fees") | 246 Other expenses* |
+| `other` | 9270 Other expenses | 246 Other expenses |
+| Equipment (computers) | 9936 Capital cost allowance, class 50 | 240 Capital cost allowance |
+| `owner_draws`, `owner_contributions` | 9932 Drawings, 9933 Capital contributions (Part 9) | 73 Drawings, 75 Investments (Part 2) |
 
-Sales exclude GST/HST and QST collected. The proposed 100% first-year rate for class 50 is not law in the 2025 guide; the report uses 55% and mentions the proposal.
+Sales exclude GST/HST and QST collected. Class 50 is 55% declining balance. The first year depends on the date: 100% for computers acquired and in use after April 15, 2024 and before 2027 (T4002 2025 calls it proposed; Bill C-15 enacted it on March 26, 2026, and Quebec's TPW-130.G-V applies it for 2025 and 2026), 1.5 times the rate for accelerated investment incentive property in use before 2024, and the full rate without the half-year rule for other incentive property in use before 2034. A company's first year shorter than 365 days prorates CCA by days.
 
 ### Canada, incorporated: GIFI (T2 schedules 125 and 100; CO-17 in Quebec)
 
-| Account | GIFI |
+| Account | GIFI (RC4088) |
 |---|---|
-| `sales` − `refunds` | 8000 Trade sales of goods and services |
-| `payment_fees` | 8716 Credit card charges |
-| `ai_apis`, `hosting`, `software` | 9150 Computer-related expenses* |
-| `email` | 9150 Computer-related expenses* |
+| `sales` − `refunds` | 8000 Trade sales of goods and services, 8299 Total revenue |
+| `payment_fees` | 8716 Credit card charges* |
+| `ai_apis`, `hosting`, `email`, `software` | 9150 Computer-related expenses* |
 | `contractors` | 9110 Sub-contracts |
 | `depreciation` | 8670 Amortization of tangible assets |
 | `other` | 9270 Other expenses |
+| Profit before income tax | 9970 Net income/loss before taxes and extraordinary items |
 | `company_bank` | 1001 Cash |
-| `equipment`, `accumulated_depreciation` | 1774, 1775 Computer equipment and its amortization |
+| `balance:<provider>` | 1480 Other current assets* |
+| `equipment`, `accumulated_depreciation` | 1774, 1775 Computer equipment and its amortization (negative) |
 | `sales_tax_owed` | 2680 Taxes payable |
+| `deferred_revenue` | 2770 Deferred income |
 | `owed_to_founder` | 2781 Due to individual shareholder(s) |
-| `deferred_revenue` | 2620 Amounts payable and accrued liabilities* |
+| Balances held before incorporation | 3541 Contributed surplus* |
+| Profit since incorporation | 3600 Retained earnings/deficit |
 
 ### US, not incorporated (and single-member LLCs): Schedule C
 
@@ -131,15 +134,17 @@ Sales exclude GST/HST and QST collected. The proposed 100% first-year rate for c
 | `refunds` | Line 2 Returns and allowances |
 | `contractors` | Line 11 Contract labor |
 | `payment_fees`, `ai_apis`, `hosting`, `email`, `software`, `other` | Line 27b Other expenses, itemized in Part V* |
-| Equipment | Up to $2,500 per item: Part V under the de minimis safe harbor, with the election statement written for the user. Above: line 13 through Form 4562. |
+| Equipment | Up to $2,500 per item: Part V under the de minimis safe harbor (the instructions say "Only deduct these amounts as other expenses"), with the election statement written for the user. Above: line 13 through Form 4562, with the 100% special allowance for property acquired after January 19, 2025 (Pub 946). |
 
 The books use the accrual method, which the IRS allows for a sole proprietor as long as income and expenses use the same method.
 
 ### US, incorporated: Forms 1120, 1120-S, 1065
 
-Income on line 1a (gross receipts), 1b (returns); deductions on the other-deductions line (1120 line 26, 1120-S line 20, 1065 line 21) except depreciation (1120 line 20, 1120-S line 14). Schedule L (balance sheet) only when receipts or assets reach $250,000; `owed_to_founder` is line 19, loans from shareholders.
+Income on line 1a (gross receipts), 1b (returns); deductions on the other-deductions line (1120 line 26, 1120-S line 20, 1065 line 21) except depreciation (1120 line 20, 1120-S line 14, 1065 line 16a). Schedule L (balance sheet) only when receipts or assets reach $250,000 (1120 Schedule K question 13); Form 1065 also needs assets under $1 million and two other conditions to skip it. On Schedule L, `owed_to_founder` is line 19, loans from shareholders; provider balances are line 6, other current assets*; balances held before incorporation are line 23, additional paid-in capital*.
 
-\* Judgment call: no CRA or IRS guidance names this line.
+A workspace that incorporates during the year gets two parts, split at the incorporation date. The year's depreciation goes to the company's part.
+
+\* Judgment call: no CRA, Revenu Québec or IRS guidance names this line.
 
 ## Judgment calls
 
