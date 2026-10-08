@@ -520,3 +520,13 @@ export function adjustments(
 
 export const balanced = (e: Entry) =>
 	e.lines.reduce((a, l) => a + l.debit - l.credit, 0) === 0;
+
+// The journal export formats (src/server/books-export.server.ts).
+export const JOURNAL_FORMATS = ["quickbooks", "xero", "plain"] as const;
+export type JournalFormat = (typeof JOURNAL_FORMATS)[number];
+
+// Xero settings kept beside the account names in workspaces.book_accounts:
+// the tracking category that holds products, and the tax rate every line
+// gets (one with no tax: sales tax already has its own lines).
+export const XERO_TRACKING = "xero:tracking";
+export const XERO_TAX_RATE = "xero:tax_rate";

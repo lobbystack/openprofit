@@ -14,6 +14,7 @@ import { z } from "zod";
 import { connectorInfo, connectors } from "#/connectors";
 import { db, schema } from "#/db";
 import { RULE_NAMES, type RuleKind, ruleScope } from "#/lib/alerts";
+import { JOURNAL_FORMATS } from "#/lib/books";
 import {
 	BooksSettingsInput,
 	booksSettingsPatch,
@@ -30,6 +31,7 @@ import {
 	type Caller,
 	providerError,
 } from "./api.server";
+import { journalCsv, Month } from "./books-export.server";
 import { connectLinkStatus, createConnectLink } from "./connect.server";
 import { connectionRows } from "./connections.server";
 import { flatValues } from "./costs.server";
@@ -540,6 +542,31 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 				q.to ?? `${year}-12-31`,
 			);
 			return { content: [{ type: "text", text }] };
+		},
+	);
+
+	// Like downloading the file in the app, any token can export, and a
+	// whole-workspace export closes the month: hence not read-only.
+	server.registerTool(
+		"export_journal",
+		{
+			title: "Export journal",
+			description:
+				"One month's journal entries as CSV: quickbooks (QuickBooks Online journal entry import), xero (Xero manual journal import) or plain (any accounting software). quickbooks and xero leave out payouts and costs paid from the company bank account, which the bank feed brings in. Exporting the whole workspace closes the month: exporting it again returns the same file, and later changes to it come as adjustments in the next month's export. A one-product export leaves out shared and unassigned costs and closes nothing.",
+			inputSchema: z.object({
+				month: Month.describe("YYYY-MM, a month that has ended"),
+				format: z.enum(JOURNAL_FORMATS),
+				product_id: Id("Product")
+					.optional()
+					.describe("Product id; leave out for the whole workspace"),
+			}),
+			annotations: { ...WRITE, idempotentHint: true },
+		},
+		async (q) => {
+			const out = await journalCsv(ws, q.month, q.format, q.product_id ?? null);
+			return "error" in out
+				? fail(out.error)
+				: { content: [{ type: "text", text: out.csv }] };
 		},
 	);
 
