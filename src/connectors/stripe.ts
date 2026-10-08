@@ -64,6 +64,10 @@ const SKIP = new Set([
 	"transfer",
 	"payout_failure",
 	"payout_cancel",
+	// Money Stripe holds back from a payout and releases later: not revenue.
+	// https://docs.stripe.com/api/balance_transactions/object#balance_transaction_object-type
+	"payout_minimum_balance_hold",
+	"payout_minimum_balance_release",
 	"topup",
 ]);
 

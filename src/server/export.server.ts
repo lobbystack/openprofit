@@ -177,6 +177,27 @@ export async function csvText(
 	// spread over 12, as on the Costs page. Never past this month.
 	const thisMonth = new Date().toISOString().slice(0, 7);
 	for (const f of flats) {
+		// A one-time cost counts once, on its own date.
+		if (f.interval === "once") {
+			if (
+				f.startsOn >= from &&
+				f.startsOn <= to &&
+				f.startsOn.slice(0, 7) <= thisMonth
+			)
+				rows.push([
+					f.startsOn,
+					"Flat cost",
+					f.provider === "manual" ? null : providerName(f.provider),
+					null,
+					product(f.productId),
+					f.name,
+					-f.amountCents,
+					f.currency,
+					-(f.amountBaseCents ?? f.amountCents),
+					ws.baseCurrency,
+				]);
+			continue;
+		}
 		const first = from > f.startsOn ? from : f.startsOn;
 		const d = new Date(`${first.slice(0, 7)}-01T00:00:00Z`);
 		for (; ; d.setUTCMonth(d.getUTCMonth() + 1)) {

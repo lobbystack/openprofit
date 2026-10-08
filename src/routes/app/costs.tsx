@@ -290,7 +290,19 @@ function FlatCostForm({
 						id="flat-5"
 						size="sm"
 						value={v.interval}
-						onChange={set("interval")}
+						onChange={(e) => {
+							const interval = e.target.value as typeof v.interval;
+							// A new one-time cost happened today, not on the 1st.
+							const today = new Date().toLocaleDateString("en-CA");
+							setV({
+								...v,
+								interval,
+								startsOn:
+									interval === "once" && !cost && v.startsOn === thisMonth
+										? today
+										: v.startsOn,
+							});
+						}}
 					>
 						<NativeSelectOption value="month">Monthly</NativeSelectOption>
 						<NativeSelectOption value="year">
