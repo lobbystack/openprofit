@@ -5,6 +5,7 @@ import { Cta } from "#/components/landing/cta";
 import {
 	FeatureCosts,
 	FeatureProfit,
+	FeatureTaxes,
 	FeatureWeekly,
 } from "#/components/landing/features";
 import { Footer } from "#/components/landing/footer";
@@ -43,7 +44,7 @@ const LD = {
 export const Route = createFileRoute("/")({
 	head: () => ({
 		...seo({
-			title: "OpenProfit: open-source profit dashboard for developers",
+			title: "OpenProfit: open-source finance for developers",
 			path: "/",
 		}),
 		scripts: [{ type: "application/ld+json", children: JSON.stringify(LD) }],
@@ -60,6 +61,7 @@ function Landing() {
 				<Connectors />
 				<FeatureProfit />
 				<FeatureCosts />
+				<FeatureTaxes />
 				<FeatureWeekly />
 				<OpenSource />
 				<Pricing />

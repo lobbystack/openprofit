@@ -15,7 +15,7 @@
 
 ## About OpenProfit
 
-OpenProfit is the open-source finance dashboard for developers. It brings your revenue and every bill you pay into one place, so you know what each product earns after costs.
+Connect Stripe, OpenAI, Vercel and every other bill. See what each product earns after costs, and get the numbers for your tax return.
 
 Revenue lives in your payment processor. Costs live in a dozen billing pages: AI providers, hosting, databases, email, domains. Each shows its own slice, in its own currency. OpenProfit pulls them together and assigns every line to the product it belongs to.
 
@@ -124,7 +124,7 @@ The [self-host guide](https://openprofit.dev/docs/self-host) covers updates and 
 
 ## How it works
 
-One TanStack Start app serves the landing page, the docs and the dashboard. A scheduler inside the server pulls each connection on its cadence, converts amounts to the workspace's base currency, and upserts lines by the provider's own ids, so re-running a range never double-counts. The overview is grouped sums over those lines.
+One TanStack Start app serves the landing page, the docs and the app. A scheduler inside the server pulls each connection on its cadence, converts amounts to the workspace's base currency, and upserts lines by the provider's own ids, so re-running a range never double-counts. The overview is grouped sums over those lines.
 
 ```
 src/connectors/   one file per provider: verify, fetchRevenue, fetchCosts, fetchSnapshots

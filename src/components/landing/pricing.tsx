@@ -14,6 +14,7 @@ const PLANS = [
 			"12 months of history",
 			"Weekly email and alerts",
 			"Public pages",
+			"Tax report, QuickBooks and Xero export",
 		],
 		cta: "Start for free",
 		primary: false,
