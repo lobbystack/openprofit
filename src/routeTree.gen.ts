@@ -44,6 +44,7 @@ import { Route as ConnectTokenRouteImport } from './routes/connect.$token'
 import { Route as DataIndexRouteImport } from './routes/data.index'
 import { Route as DataFileRouteImport } from './routes/data.$file'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
+import { Route as DemoBooksRouteImport } from './routes/demo/books'
 import { Route as DemoConnectionsRouteImport } from './routes/demo/connections'
 import { Route as DemoCostsRouteImport } from './routes/demo/costs'
 import { Route as DemoProductsRouteImport } from './routes/demo/products'
@@ -243,6 +244,11 @@ const DemoIndexRoute = DemoIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DemoRoute,
 } as any)
+const DemoBooksRoute = DemoBooksRouteImport.update({
+  id: '/books',
+  path: '/books',
+  getParentRoute: () => DemoRoute,
+} as any)
 const DemoConnectionsRoute = DemoConnectionsRouteImport.update({
   id: '/connections',
   path: '/connections',
@@ -393,6 +399,7 @@ export interface FileRoutesByFullPath {
   '/compare/$slug': typeof CompareSlugRoute
   '/connect/$token': typeof ConnectTokenRoute
   '/data/$file': typeof DataFileRoute
+  '/demo/books': typeof DemoBooksRoute
   '/demo/connections': typeof DemoConnectionsRoute
   '/demo/costs': typeof DemoCostsRoute
   '/demo/products': typeof DemoProductsRoute
@@ -450,6 +457,7 @@ export interface FileRoutesByTo {
   '/compare/$slug': typeof CompareSlugRoute
   '/connect/$token': typeof ConnectTokenRoute
   '/data/$file': typeof DataFileRoute
+  '/demo/books': typeof DemoBooksRoute
   '/demo/connections': typeof DemoConnectionsRoute
   '/demo/costs': typeof DemoCostsRoute
   '/demo/products': typeof DemoProductsRoute
@@ -511,6 +519,7 @@ export interface FileRoutesById {
   '/compare/$slug': typeof CompareSlugRoute
   '/connect/$token': typeof ConnectTokenRoute
   '/data/$file': typeof DataFileRoute
+  '/demo/books': typeof DemoBooksRoute
   '/demo/connections': typeof DemoConnectionsRoute
   '/demo/costs': typeof DemoCostsRoute
   '/demo/products': typeof DemoProductsRoute
@@ -573,6 +582,7 @@ export interface FileRouteTypes {
     | '/compare/$slug'
     | '/connect/$token'
     | '/data/$file'
+    | '/demo/books'
     | '/demo/connections'
     | '/demo/costs'
     | '/demo/products'
@@ -630,6 +640,7 @@ export interface FileRouteTypes {
     | '/compare/$slug'
     | '/connect/$token'
     | '/data/$file'
+    | '/demo/books'
     | '/demo/connections'
     | '/demo/costs'
     | '/demo/products'
@@ -690,6 +701,7 @@ export interface FileRouteTypes {
     | '/compare/$slug'
     | '/connect/$token'
     | '/data/$file'
+    | '/demo/books'
     | '/demo/connections'
     | '/demo/costs'
     | '/demo/products'
@@ -1011,6 +1023,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoIndexRouteImport
       parentRoute: typeof DemoRoute
     }
+    '/demo/books': {
+      id: '/demo/books'
+      path: '/books'
+      fullPath: '/demo/books'
+      preLoaderRoute: typeof DemoBooksRouteImport
+      parentRoute: typeof DemoRoute
+    }
     '/demo/connections': {
       id: '/demo/connections'
       path: '/connections'
@@ -1202,6 +1221,7 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface DemoRouteChildren {
+  DemoBooksRoute: typeof DemoBooksRoute
   DemoConnectionsRoute: typeof DemoConnectionsRoute
   DemoCostsRoute: typeof DemoCostsRoute
   DemoProductsRoute: typeof DemoProductsRoute
@@ -1209,6 +1229,7 @@ interface DemoRouteChildren {
 }
 
 const DemoRouteChildren: DemoRouteChildren = {
+  DemoBooksRoute: DemoBooksRoute,
   DemoConnectionsRoute: DemoConnectionsRoute,
   DemoCostsRoute: DemoCostsRoute,
   DemoProductsRoute: DemoProductsRoute,

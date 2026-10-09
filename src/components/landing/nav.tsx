@@ -10,6 +10,7 @@ const LINKS = [
 	["Integrations", "/integrations"],
 	["Pricing", "/#pricing"],
 	["Docs", "/docs"],
+	["Blog", "/blog"],
 ];
 
 // Fixed, 56px, white, links 14px, Sign in bordered + Start free black, both 32px.

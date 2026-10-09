@@ -4,7 +4,7 @@ export const APP_DOMAIN = "openprofit.dev";
 export const GITHUB_URL = "https://github.com/lobbystack/openprofit";
 export const SITE_URL = "https://openprofit.dev";
 export const SITE_DESCRIPTION =
-	"Open-source dashboard that puts your Stripe or Paddle revenue next to your OpenAI, Vercel and other bills, and shows profit per product.";
+	"Open-source app that puts your revenue next to your OpenAI, Vercel and other bills, shows profit per app, and gives you the numbers for your tax return.";
 
 // Title, description, canonical and social tags for a public page. `image`
 // replaces the root's 1200x630 social image.

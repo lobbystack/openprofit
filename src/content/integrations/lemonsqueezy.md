@@ -20,7 +20,7 @@ OpenProfit reads every store your API key can see:
 - **Tax:** the sales tax or VAT on each order and renewal, less the share refunded. It shows as **Tax collected** on the overview, kept apart from revenue. Lemon Squeezy files it.
 - **Subscriptions:** monthly recurring revenue (MRR) from active subscriptions at their price, and the number of active subscriptions. Prices with tiers or usage billing have no fixed amount, so MRR leaves them out.
 
-The first sync goes back two years, or one year on the hosted Free plan. Amounts in other currencies convert to your base currency at the European Central Bank rate for the day of the sale.
+The first sync goes back two years, or one year on the hosted Free plan. Amounts in other currencies convert to your base currency at the European Central Bank rate for the day of the sale. A workspace in Canadian dollars uses the Bank of Canada's rate instead.
 
 ## Limitations
 

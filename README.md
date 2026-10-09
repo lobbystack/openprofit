@@ -15,7 +15,7 @@
 
 ## About OpenProfit
 
-OpenProfit is the open-source finance dashboard for developers. It brings your revenue and every bill you pay into one place, so you know what each product earns after costs.
+Connect Stripe, OpenAI, Vercel and every other bill. See what each of your apps earns after costs, and get the numbers for your tax return.
 
 Revenue lives in your payment processor. Costs live in a dozen billing pages: AI providers, hosting, databases, email, domains. Each shows its own slice, in its own currency. OpenProfit pulls them together and assigns every line to the product it belongs to.
 
@@ -29,7 +29,7 @@ Revenue from your payment processor. Costs from your AI providers, hosting and i
 
 ### Measure what you keep
 
-Revenue minus fees, refunds, AI bills and hosting, for every product you run. The number on screen is the one you keep.
+Revenue minus fees, refunds, AI bills and hosting, for every app you run. The number on screen is the one you keep.
 
 - **Net of fees and refunds.** Processor fees and refunds come off before any number is shown.
 - **One currency.** Paid in euros, billed in dollars. Everything converts at that day's rate.
@@ -61,8 +61,9 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 - **Breakdowns** by product, by revenue source and by cost provider.
 - **Connectors** that take an API key with the narrowest access each provider offers, test it before saving, and store it encrypted. OpenProfit only reads with it. Two years of history on the first sync, incremental after that. [Security](https://openprofit.dev/security) lists what each key can do.
 - **Product mapping** per provider sub-unit, with an Unassigned bucket for the rest.
-- **Flat costs** for subscriptions, domains and anything without an API.
-- **Multi-currency** workspaces with daily rates and a base currency you can change later.
+- **Flat costs** for subscriptions, domains, one-time purchases and anything without an API.
+- **Multi-currency** workspaces with daily rates and a base currency you can change later. Workspaces in Canadian dollars use the Bank of Canada's rates.
+- **Books**: a monthly journal for QuickBooks, Xero or any accounting software, and the year's numbers on the lines of your tax form (T2125 and TP-80, the T2's GIFI schedules, Schedule C or Form 1120).
 - **Alerts** for cost spikes, margin floors and sync failures.
 - **Weekly email** with last week against the week before.
 - **Public pages** per product, server-rendered from the same data.
@@ -93,7 +94,7 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 | xAI | Cost | Daily cost by billing description |
 | Neon | Cost | Monthly usage per project at published rates |
 | MongoDB Atlas | Cost | Daily invoice line items per project |
-| Flat costs | Cost | Any monthly or yearly amount, typed in |
+| Flat costs | Cost | Any monthly, yearly or one-time amount, typed in |
 
 App Store, Google Play and Supabase are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.
 
@@ -123,7 +124,7 @@ The [self-host guide](https://openprofit.dev/docs/self-host) covers updates and 
 
 ## How it works
 
-One TanStack Start app serves the landing page, the docs and the dashboard. A scheduler inside the server pulls each connection on its cadence, converts amounts to the workspace's base currency, and upserts lines by the provider's own ids, so re-running a range never double-counts. The overview is grouped sums over those lines.
+One TanStack Start app serves the landing page, the docs and the app. A scheduler inside the server pulls each connection on its cadence, converts amounts to the workspace's base currency, and upserts lines by the provider's own ids, so re-running a range never double-counts. The overview is grouped sums over those lines.
 
 ```
 src/connectors/   one file per provider: verify, fetchRevenue, fetchCosts, fetchSnapshots

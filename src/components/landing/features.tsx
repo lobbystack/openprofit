@@ -1,7 +1,10 @@
 import {
 	Bell,
 	Coins,
+	CreditCard,
+	FileText,
 	Globe,
+	Landmark,
 	Layers,
 	Mail,
 	Receipt,
@@ -36,7 +39,7 @@ export function FeatureProfit() {
 						href="/docs/connectors#sales-tax-and-vat"
 					>
 						Revenue after processor fees, refunds and sales tax, minus your AI,
-						hosting and other bills, for each product you run.
+						hosting and other bills, for each app you run.
 					</SectionHeader>
 				</div>
 				<div className="mt-14 rounded-xl border border-line bg-card">
@@ -65,8 +68,8 @@ export function FeatureProfit() {
 						},
 						{
 							icon: <Layers size={16} />,
-							title: "Profit per product",
-							text: "Three products on one OpenAI account, and you still see which one pays for itself.",
+							title: "Profit per app",
+							text: "Three apps on one OpenAI account, and you still see which one pays for itself.",
 						},
 					]}
 				/>
@@ -156,13 +159,99 @@ export function FeatureCosts() {
 						},
 						{
 							icon: <Receipt size={16} />,
-							title: "Flat subscriptions",
-							text: "Enter Supabase, a domain or a design tool once, at its monthly or yearly price, with an optional end date.",
+							title: "Bills without an API",
+							text: "Enter Supabase, a domain or a laptop once, at its monthly, yearly or one-time price.",
 						},
 						{
 							icon: <Tag size={16} />,
 							title: "Mapped to products",
-							text: "Point each OpenAI or Vercel project at the product it serves. The rest stays shared until you decide.",
+							text: "Point each OpenAI or Vercel project at the app it serves. The rest stays unassigned until you decide.",
+						},
+					]}
+				/>
+			</Container>
+		</Section>
+	);
+}
+
+// A year on the T2125, in dollars: sales minus the four expense lines is the
+// net income line.
+const TAX_LINES = [
+	["8000", "Adjusted gross sales", 14280],
+	["8871", "Management and administration fees", 512],
+	["8860", "Professional fees", 600],
+	["9270", "Other expenses", 2184],
+	["9936", "Capital cost allowance", 1366],
+	["9369", "Net income before adjustments", 9618],
+] as const;
+
+// Synced totals, a line down to the tax report, then the form's lines.
+export function FeatureTaxes() {
+	return (
+		<Section>
+			<Container className="py-24">
+				<SectionHeader
+					eyebrow="Taxes"
+					tone="ink"
+					title="Your tax numbers, from your API keys"
+					cta="How the tax report works"
+					href="/docs/books"
+				>
+					As your accounts sync, OpenProfit sorts every sale and bill onto the
+					lines of your tax return. At tax time, copy the numbers in, export
+					them to QuickBooks or Xero, or hand them to your accountant.
+				</SectionHeader>
+				<div className="mt-14 flex flex-col items-center rounded-xl border border-line bg-surface-1 px-4 py-10">
+					<div className="grid w-full max-w-[240px] grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line">
+						{[
+							["Revenue", 14280],
+							["Costs", 4662],
+						].map(([label, amount]) => (
+							<div key={label} className="bg-paper px-3 py-2.5">
+								<div className="label-mono">{label}</div>
+								<div className="num mt-1 text-[15px]">
+									{money(amount as number)}
+								</div>
+							</div>
+						))}
+					</div>
+					<span className="h-5 w-px bg-line-strong" />
+					<div className="flex h-8 items-center gap-2 rounded-lg bg-ink pr-1.5 pl-3 text-[13px] text-paper">
+						Tax report
+						<span className="rounded-md bg-paper/15 px-1.5 py-0.5 text-[12px]">
+							T2125
+						</span>
+					</div>
+					<span className="h-5 w-px bg-line-strong" />
+					<ul className="w-full max-w-[420px] space-y-1.5">
+						{TAX_LINES.map(([line, name, amount]) => (
+							<li
+								key={line}
+								className="flex min-h-10 items-center gap-3 rounded-md border border-line bg-paper px-3 py-2 text-[13px]"
+							>
+								<span className="num w-9 shrink-0 text-text-3">{line}</span>
+								<span className="min-w-0">{name}</span>
+								<span className="num ml-auto">{money(amount)}</span>
+							</li>
+						))}
+					</ul>
+				</div>
+				<Triplet
+					items={[
+						{
+							icon: <FileText size={16} />,
+							title: "Line-by-line totals",
+							text: "Get the number for each line of your return, with or without a company.",
+						},
+						{
+							icon: <CreditCard size={16} />,
+							title: "Personal card costs",
+							text: "Count the bills you paid yourself as business costs.",
+						},
+						{
+							icon: <Landmark size={16} />,
+							title: "Official sources",
+							text: "See the government guide behind every number.",
 						},
 					]}
 				/>
@@ -258,7 +347,7 @@ export function FeatureWeekly() {
 						{
 							icon: <Coins size={16} />,
 							title: "Public pages",
-							text: "Share a product's numbers on a page anyone can open. You choose what shows.",
+							text: "Share an app's numbers on a page anyone can open. You choose what shows.",
 						},
 					]}
 				/>

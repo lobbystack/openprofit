@@ -55,6 +55,7 @@ const DEMO_NAV = [
 	{ to: "/demo/products", label: "Products", icon: Package },
 	{ to: "/demo/connections", label: "Connections", icon: Cable },
 	{ to: "/demo/costs", label: "Costs", icon: Receipt },
+	{ to: "/demo/books", label: "Books", icon: BookOpen },
 ] as const;
 
 function signOut() {
