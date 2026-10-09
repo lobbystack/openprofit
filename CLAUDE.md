@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-OpenProfit: open-source finance dashboard for developers. Pulls revenue (Stripe, Polar) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway) from provider APIs, assigns them to products, shows profit per product. One TanStack Start app serves the landing page, docs, marketing content and the dashboard. Hosted at openprofit.dev (Railway), self-hostable as one Docker image. Repo: github.com/lobbystack/openprofit. Operator: Lobbystack Inc.
+OpenProfit: open-source finance for developers. Pulls revenue (Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway and more) from provider APIs, assigns them to products, shows profit per product, and turns the same lines into books and tax-form numbers. One TanStack Start app serves the landing page, docs, blog, marketing content and the app. Hosted at openprofit.dev (Railway), self-hostable as one Docker image. Repo: github.com/lobbystack/openprofit. Operator: Lobbystack Inc.
 
 ## Commands
 
@@ -16,7 +16,9 @@ pnpm db:generate         # write a migration after editing src/db/schema.ts
 pnpm db:seed             # demo workspace; `pnpm db:seed --owner=you@example.com` attaches it to a user
 ```
 
-There is no test suite. Verify changes in the browser and with a production build when touching bundling, the database or `src/start.ts`.
+There is no test suite. Verify changes in the browser and with a production build when touching bundling, the database or `src/start.ts`. Books has assert scripts: `DATABASE_URL=/tmp/op-check SYNC_SCHEDULER=off npx tsx scripts/check-books-tax.ts` (also `check-books`, `check-books-close`, `check-books-export`).
+
+`biome.json` excludes every path under `.claude`, so `pnpm check` inside a worktree in `.claude/worktrees/` checks nothing. Run Biome on each changed file through stdin there: `npx biome check --write --stdin-file-path=<file> < <file>`.
 
 Production-build smoke test with a throwaway embedded DB:
 
@@ -52,7 +54,7 @@ Before editing files for a substantial task:
 - Migrations in `./drizzle` run at import time of `src/db/index.ts` (skip with `SKIP_MIGRATIONS=1`). Don't use `drizzle-kit push`; PGlite rejects its multi-statement queries.
 - **PGlite allows one process per data directory.** Running a script (`db:seed`, a tsx one-off) while `pnpm dev` is up hangs or fails. Killing a process mid-write (`kill -9`) can corrupt the directory. Stop dev cleanly first. One-off scripts must end with `process.exit(0)` or PGlite keeps them alive. SIGTERM and SIGINT close the database and exit (`src/db/index.ts`); without that, PGlite's timer keeps the process alive until Docker kills it.
 - PGlite is excluded from Vite `optimizeDeps` and externalized from the Nitro server bundle in `vite.config.ts`; bundling it drops its wasm/data files and the server crashes on start. Keep both. `@resvg/resvg-wasm` (social images, `src/server/images.server.ts`) is externalized for the same reason.
-- Money is integer cents. Each line stores the source amount and a `*_base_cents` amount in the workspace's base currency (Frankfurter/ECB daily rates, cached in `fx_rates`). Changing the base currency reconverts every line (`settings.functions.ts`).
+- Money is integer cents. Each line stores the source amount and a `*_base_cents` amount in the workspace's base currency (Frankfurter/ECB daily rates, cached in `fx_rates`; conversions into CAD use the Bank of Canada's rates, as the CRA asks, in `src/server/fx.server.ts`). Changing the base currency reconverts every line (`settings.functions.ts`).
 - Every table carries `workspace_id`.
 
 ## Architecture
@@ -63,6 +65,7 @@ Before editing files for a substantial task:
 - **Sync** (`src/server/sync.server.ts`): upserts lines by the provider's external id, so re-running a range is safe. First sync backfills 730 days (365 on the hosted free plan), later syncs reread the last 3 days. In-process croner scheduler (`scheduler.ts`): sync every 5 minutes for due connections, weekly email checked hourly against each workspace's day, hour and timezone, daily opt-in telemetry. `SYNC_SCHEDULER=off` disables it.
 - **Product mapping.** Cost lines carry a provider sub-unit (OpenAI project, Vercel project, Anthropic workspace, Railway project, Cloudflare zone). `product_mappings` maps sub-units to products, and an unmapped sub-unit is unassigned: there is no fallback. `connections.product_id` covers lines with no sub-unit (every line, for providers without sub-units); on a connection's first sync, every sub-unit it reports is mapped to that product. Unassigned lines fall into an "Unassigned" bucket (id `unassigned`). The sidebar switcher picks a product (cookie `op_product`, `currentProduct()`); Overview, Costs and Connections narrow to it, and none picked means All.
 - **Overview** (`src/server/overview.server.ts`): grouped monthly sums over 24 months; tiles compare the selected period with the equal period before, the chart's dotted line is the same months a year earlier. Period comes from the `?period=` search param.
+- **Books** (spec: `docs/BOOKS.md`; user docs: `src/docs/books.md`). `src/lib/books.ts` is the pure journal engine: accounts, who paid (personal card or company, before or after `incorporated_on`), yearly plans spread over their service period, and adjustments for closed months. `src/server/books.server.ts` loads a month's lines; a whole-workspace export stores it in `journal_exports` and closes the month, and later changes go out as adjustments in the next export. `src/lib/tax.ts` maps the year's totals to T2125, TP-80, GIFI, Schedule C and Form 1120 lines; every mapping cites its official source in a comment, and a line no source names is a judgment call marked `ours`. Changing a tax line means re-reading the source and updating `docs/BOOKS.md`, `src/docs/books.md` and `src/content/blog/tax-lines-for-software-costs.md`. QuickBooks, Xero and plain writers are in `books-export.server.ts`, downloaded from `/api/journal.csv`.
 - **Cloud mode** (`APP_MODE=cloud`): plans and limits in `src/lib/plans.ts`, Polar checkout/portal and webhook in `src/server/billing.server.ts` and `src/routes/api/polar/webhook.ts` (Standard Webhooks signature, `whsec_` secrets are base64). Inert in self-host.
 - **Public demo** (`/demo`, `src/server/demo.server.ts`): the app's pages over one `demo = true` workspace with no members, rebuilt hourly by the seed generator (`src/server/seed.server.ts`, also behind `pnpm db:seed`). Read server functions take `{ demo: true }`; `currentWorkspace()` never returns the demo, so mutations can't reach it. On with `APP_MODE=cloud` or `DEMO=on`.
 - **Edge middleware** in `src/server/edge.server.ts` (a Nitro plugin that puts itself ahead of Nitro's static files): www to apex redirect, markdown responses for `Accept: text/markdown` (sources mapped in `src/server/markdown.server.ts`; add new public pages there), RFC 8288 `Link` headers, and serving the prerendered pages. It must stay free of database imports, so pages with live data (`/open`, `/p/...`) answer markdown from their own route `GET` handler and call `next()` for HTML.
@@ -72,7 +75,7 @@ Before editing files for a substantial task:
 
 ## Content and SEO
 
-- Docs: `src/docs/*.md` (order in `src/lib/docs.ts`). Marketing pages: `src/content/integrations/*.md`, `src/content/compare/*.md`, `src/content/changelog.md`, with `key: value` front matter, loaded by `src/lib/content.ts` (server-only) and served to route loaders by `src/server/content.functions.ts`, so markdown and `marked` stay out of the client bundle. Legal: `src/legal/*.md`.
+- Docs: `src/docs/*.md` (order in `src/lib/docs.ts`). Marketing pages: `src/content/integrations/*.md`, `src/content/compare/*.md`, `src/content/changelog.md`, blog posts in `src/content/blog/*.md` (front matter `title`, `description`, `date`, `author`; listed newest first at /blog), with `key: value` front matter, loaded by `src/lib/content.ts` (server-only) and served to route loaders by `src/server/content.functions.ts`, so markdown and `marked` stay out of the client bundle. Legal: `src/legal/*.md`.
 - Public pages use `seo()` from `src/lib/app.ts` for title, description, canonical and social tags. App, login and onboarding use `NOINDEX`. `src/routes/sitemap[.]xml.ts` lists static pages plus public product pages from the db; add new public routes there.
 - Comparison pages state competitor facts only from their official pages, cite them, and say "Not listed" rather than "not offered".
 

@@ -25,7 +25,8 @@ A setting with a start date supports one change. Two changes in a year would nee
 
 - `revenue_lines.gross_base_cents`, `fees_base_cents`, `refunds_base_cents`: written by the sync at the line's rate, like `net_base_cents`. Older rows are null until the next full sync; readers derive them from the net rate when net is not zero.
 - `revenue_lines.service_start`, `service_end`: the period a payment covers, `[start, end)`. Null means the payment is earned on its date.
-- `payouts`: money a payment provider sent to a bank account. Stripe and Polar.
+- `payouts`: money a payment provider sent to a bank account. Stripe only: Polar's API doesn't share payouts.
+- Polar revenue from orders and refunds. A token without `orders:read` and `refunds:read` (Polar answers 403) keeps syncing Polar's daily totals from its metrics.
 - Bank of Canada daily rates for workspaces in CAD (Income Tax Folio S5-F4-C1, ¶1.4). Other currencies keep ECB rates.
 
 ## Accounts
@@ -75,7 +76,7 @@ Merchant of record sales (Polar, Paddle, Lemon Squeezy) carry no tax in the book
 
 **Formats and the bank feed.** QuickBooks and Xero users usually have a bank feed for the company account. Those two formats leave out the entries that move money in or out of `company_bank` (payouts and company-paid costs) so the bank feed books them against the same provider balance. The plain journal and the tax report include them.
 
-**Months.** A journal covers one calendar month. Exporting a month closes it: OpenProfit stores the exported totals in `journal_exports`. When provider data for a closed month changes later, the next export adds an adjustment entry for the difference, dated the first day of the month being exported.
+**Months.** A journal covers one calendar month. Exporting a month closes it: OpenProfit stores the exported totals in `journal_exports`. That includes an `export_journal` call over MCP from a read token. When provider data for a closed month changes later, the next export adds an adjustment entry for the difference, dated the first day of the month being exported.
 
 **Fiscal year.** Calendar year. Corporations with another year end aren't supported yet.
 
@@ -85,8 +86,7 @@ Opens from the Books page. Format (CSV, QuickBooks journal, Xero journal, plain 
 
 - CSV: the existing lines export.
 - QuickBooks: Journal No., Journal Date, Account Name, Description, Debits, Credits, Class. Account names must match the company's chart of accounts.
-- Xero: manual journal import template (Narration, Date, Description, AccountCode, TaxRate, Amount, Tracking). Verify the headers against Xero's template before shipping.
-- Plain: Date, Account, Product, Description, Debit, Credit.
+- Xero: manual journal import template (Narration, Date, Description, AccountCode, TaxRate, Amount, Tracking).- Plain: Date, Account, Product, Description, Debit, Credit.
 
 ## Tax report
 
@@ -152,3 +152,11 @@ A workspace that incorporates during the year gets two parts, split at the incor
 - Merchant of record sales at the customer's price with the merchant's fee as an expense. Profit is the same either way.
 - Usage booked as paid on the day it's used, because only xAI reports credit top-ups.
 - Monthly and yearly manual costs booked as paid each month.
+
+## Known gaps
+
+- Polar payouts: not in the books until Polar's API shares them, or until a manual "Record payout" exists.
+- Xero imports: users report a limit of about 300 lines per manual journal import. The export doesn't split files, and Xero's own help page wasn't readable to confirm the limit.
+- Xero headers: checked against Xero's help excerpts, not a downloaded template.
+- Read tokens can close a month through `export_journal`.
+- No MCP tool sets a connection's Paid with.
