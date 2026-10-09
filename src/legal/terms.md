@@ -1,6 +1,6 @@
 # Terms of Service
 
-Last updated: October 6, 2026
+Last updated: October 9, 2026
 
 These terms are a contract between you and Lobbystack Inc. (Montreal, Quebec, Canada), which operates OpenProfit ("we", "us"). They cover the hosted service at openprofit.dev and its subdomains (the "Service"). By creating an account or using the Service you accept them. If you use the Service for a company, you confirm you can bind that company, and "you" means the company.
 
@@ -8,9 +8,11 @@ The open-source code at github.com/lobbystack/openprofit is licensed under the M
 
 ## 1. The Service
 
-OpenProfit reads revenue and cost data from third-party providers you connect (for example Stripe, Polar, OpenAI, Anthropic, Vercel, Cloudflare, Railway), stores it, and shows revenue, costs and profit per product, with alerts, a weekly email and optional public pages.
+OpenProfit reads revenue and cost data from third-party providers you connect (for example Stripe, Polar, OpenAI, Anthropic, Vercel, Cloudflare, Railway), stores it, and shows revenue, costs and profit per product, with alerts, a weekly email and optional public pages. Its Books feature prepares monthly journal entries and the year's figures on the lines of tax forms.
 
-The Service is a reporting tool. It is not accounting, tax, legal or investment advice, and it is not a system of record. Figures depend on what providers report, on exchange rates from the European Central Bank, and on how you map costs to products. Check important numbers against the provider before you rely on them.
+The Service is a reporting tool. It is not accounting, tax, legal or investment advice, and it does not replace an accountant. Books assigns your figures to accounts and tax-form lines based on our reading of official guides; some of those assignments are judgment calls, and the Service marks them. You are responsible for your books and for everything you file.
+
+The Service is not a system of record. Keep the files you export and your providers' invoices, which tax authorities may ask for. Figures depend on what providers report, on exchange rates from the European Central Bank and the Bank of Canada, and on the settings you choose, such as how you map costs to products, your incorporation date and who paid each cost. Check important numbers against the provider, and with an accountant, before you rely on them.
 
 ## 2. Accounts
 
@@ -82,13 +84,13 @@ A self-hosted copy sends nothing to us unless you switch on the usage ping in it
 
 The Service is provided "as is" and "as available". To the fullest extent the law allows, we disclaim all warranties, express or implied, including merchantability, fitness for a particular purpose, title and non-infringement, and any warranty that the Service will be uninterrupted, error-free, secure or accurate. No advice or information from us creates a warranty.
 
-Figures in the Service are derived from third-party data and currency conversions and may be incomplete, delayed or wrong. You use them at your own risk.
+Figures in the Service are derived from third-party data, currency conversions and our assignment of amounts to accounts and tax-form lines, and may be incomplete, delayed or wrong. You use them at your own risk.
 
 ## 13. Limitation of liability
 
 To the fullest extent the law allows:
 
-- we are not liable for indirect, incidental, special, consequential or punitive damages, or for lost profits, revenue, data, goodwill or business opportunity, however caused and under any theory of liability, even if we were told such damages were possible;
+- we are not liable for indirect, incidental, special, consequential or punitive damages, or for lost profits, revenue, data, goodwill or business opportunity, or for taxes, penalties or interest assessed against you, however caused and under any theory of liability, even if we were told such damages were possible;
 - our total liability for all claims arising from or related to the Service or these terms is limited to the greater of (a) the fees you paid us in the 12 months before the event giving rise to the claim and (b) 100 US dollars.
 
 Some jurisdictions do not allow some of these limits. In that case they apply to the extent permitted. Nothing in these terms excludes liability that cannot be excluded by law, such as liability for fraud or for death or personal injury caused by negligence.
