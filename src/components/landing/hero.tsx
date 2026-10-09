@@ -38,7 +38,8 @@ export function Hero() {
 						style={{ "--rise-delay": "120ms" } as React.CSSProperties}
 					>
 						Connect Stripe, OpenAI, Vercel and every other bill. See what each
-						product earns after costs, and get the numbers for your tax return.
+						of your apps earns after costs, and get the numbers for your tax
+						return.
 					</p>
 					<div
 						className="rise mt-8 flex gap-3"

@@ -15,7 +15,7 @@
 
 ## About OpenProfit
 
-Connect Stripe, OpenAI, Vercel and every other bill. See what each product earns after costs, and get the numbers for your tax return.
+Connect Stripe, OpenAI, Vercel and every other bill. See what each of your apps earns after costs, and get the numbers for your tax return.
 
 Revenue lives in your payment processor. Costs live in a dozen billing pages: AI providers, hosting, databases, email, domains. Each shows its own slice, in its own currency. OpenProfit pulls them together and assigns every line to the product it belongs to.
 
@@ -29,7 +29,7 @@ Revenue from your payment processor. Costs from your AI providers, hosting and i
 
 ### Measure what you keep
 
-Revenue minus fees, refunds, AI bills and hosting, for every product you run. The number on screen is the one you keep.
+Revenue minus fees, refunds, AI bills and hosting, for every app you run. The number on screen is the one you keep.
 
 - **Net of fees and refunds.** Processor fees and refunds come off before any number is shown.
 - **One currency.** Paid in euros, billed in dollars. Everything converts at that day's rate.

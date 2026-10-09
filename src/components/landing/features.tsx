@@ -39,7 +39,7 @@ export function FeatureProfit() {
 						href="/docs/connectors#sales-tax-and-vat"
 					>
 						Revenue after processor fees, refunds and sales tax, minus your AI,
-						hosting and other bills, for each product you run.
+						hosting and other bills, for each app you run.
 					</SectionHeader>
 				</div>
 				<div className="mt-14 rounded-xl border border-line bg-card">
@@ -68,8 +68,8 @@ export function FeatureProfit() {
 						},
 						{
 							icon: <Layers size={16} />,
-							title: "Profit per product",
-							text: "Three products on one OpenAI account, and you still see which one pays for itself.",
+							title: "Profit per app",
+							text: "Three apps on one OpenAI account, and you still see which one pays for itself.",
 						},
 					]}
 				/>
@@ -165,7 +165,7 @@ export function FeatureCosts() {
 						{
 							icon: <Tag size={16} />,
 							title: "Mapped to products",
-							text: "Point each OpenAI or Vercel project at the product it serves. The rest stays unassigned until you decide.",
+							text: "Point each OpenAI or Vercel project at the app it serves. The rest stays unassigned until you decide.",
 						},
 					]}
 				/>
@@ -347,7 +347,7 @@ export function FeatureWeekly() {
 						{
 							icon: <Coins size={16} />,
 							title: "Public pages",
-							text: "Share a product's numbers on a page anyone can open. You choose what shows.",
+							text: "Share an app's numbers on a page anyone can open. You choose what shows.",
 						},
 					]}
 				/>

@@ -50,7 +50,7 @@ export function Footer() {
 					<div>
 						<Logo />
 						<p className="mt-3 max-w-[240px] text-[13px] text-text-2">
-							Revenue, costs and profit for every product you run.
+							Revenue, costs and profit for every app you run.
 						</p>
 					</div>
 					{COLUMNS.map(([title, links]) => (
