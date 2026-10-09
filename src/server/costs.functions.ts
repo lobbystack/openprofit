@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "#/db";
+import { type CostCategory, expenseAccount } from "#/lib/books";
 import { FlatCostInput } from "#/lib/costs";
 import { flatValues } from "./costs.server";
 import { demoWorkspace } from "./demo.server";
@@ -15,14 +16,20 @@ export type FlatCostRow = {
 	// Source currency, whole units.
 	amount: number;
 	currency: string;
-	interval: "month" | "year";
+	interval: "month" | "year" | "once";
 	startsOn: string;
 	endsOn: string | null;
+	// The books account, as the journal reads it when none was picked.
+	category: CostCategory;
+	paidWith: "personal" | "company";
+	paidWithSince: string | null;
 };
 
 type FlatCosts = {
 	flats: FlatCostRow[];
 	products: { id: string; name: string }[];
+	// Shows "Paid with" in the cost form.
+	incorporated: boolean;
 };
 
 // `demo` reads the public demo workspace instead of the user's.
@@ -57,8 +64,14 @@ export const getFlatCosts = createServerFn({ method: "GET" })
 				interval: f.interval,
 				startsOn: f.startsOn,
 				endsOn: f.endsOn,
+				category:
+					f.category ??
+					(f.provider === "manual" ? "other" : expenseAccount(f.provider)),
+				paidWith: f.paidWith,
+				paidWithSince: f.paidWithSince,
 			})),
 			products: products.map((p) => ({ id: p.id, name: p.name })),
+			incorporated: ws.incorporatedOn !== null,
 		};
 	});
 

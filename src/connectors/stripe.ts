@@ -5,6 +5,7 @@ import {
 	dayOf,
 	getJson,
 	mrrSnapshots,
+	type Payout,
 	type RevenueLine,
 	type Snapshot,
 	type SyncRange,
@@ -41,7 +42,12 @@ type InvoicePayment = {
 	id: string;
 	payment: { payment_intent?: string };
 	// Expanded. https://docs.stripe.com/api/invoices/object
-	invoice: { total: number; total_taxes: { amount: number }[] | null };
+	invoice: {
+		total: number;
+		total_taxes: { amount: number }[] | null;
+		// https://docs.stripe.com/api/invoices/line_item
+		lines: { data: { period: { start: number; end: number } }[] };
+	};
 };
 // https://docs.stripe.com/api/checkout/sessions/object
 type Session = {
@@ -58,6 +64,10 @@ const SKIP = new Set([
 	"transfer",
 	"payout_failure",
 	"payout_cancel",
+	// Money Stripe holds back from a payout and releases later: not revenue.
+	// https://docs.stripe.com/api/balance_transactions/object#balance_transaction_object-type
+	"payout_minimum_balance_hold",
+	"payout_minimum_balance_release",
 	"topup",
 ]);
 
@@ -96,14 +106,18 @@ type Sub = {
 	};
 };
 
+// What a payment's invoice or Checkout Session tells about it: the share
+// of tax in its amount, and the period an invoice pays for.
+type Paid = { share: number; serviceStart?: string; serviceEnd?: string };
+
 // Balance transactions include tax in `amount`. The tax share comes from
 // the payment's invoice or Checkout Session; a refund or dispute returns
 // tax in the same share. Payments with neither, such as direct
-// PaymentIntents, count no tax.
+// PaymentIntents, count no tax. A refund or dispute has no period.
 export function stripeLine(
 	t: StripeTxn,
 	refund: boolean,
-	share: number,
+	{ share, serviceStart, serviceEnd }: Paid,
 ): RevenueLine {
 	const tax = Math.round(t.amount * share);
 	return {
@@ -116,26 +130,47 @@ export function stripeLine(
 		netCents: t.net - tax,
 		taxCents: tax,
 		kind: "other",
+		...(refund ? {} : { serviceStart, serviceEnd }),
 	};
 }
 
-const invoiceShare = (i: InvoicePayment["invoice"]) =>
-	i.total > 0
-		? (i.total_taxes ?? []).reduce((a, t) => a + t.amount, 0) / i.total
-		: 0;
-const sessionShare = (s: Session) =>
-	s.amount_total ? (s.total_details?.amount_tax ?? 0) / s.amount_total : 0;
+// The invoice's period runs from its lines' earliest start to their latest
+// end. A subscription line covers its billing period and a proration runs
+// to the period's end; a one-off item is dated at one instant and covers
+// none. Line periods end inclusive on the second the next period starts,
+// so that day is the exclusive end.
+// https://docs.stripe.com/api/invoices/line_item#invoice_line_item_object-period
+export function invoicePaid(i: InvoicePayment["invoice"]): Paid {
+	const share =
+		i.total > 0
+			? (i.total_taxes ?? []).reduce((a, t) => a + t.amount, 0) / i.total
+			: 0;
+	const periods = (i.lines?.data ?? [])
+		.map((l) => l.period)
+		.filter((p) => p && p.end > p.start);
+	if (!periods.length) return { share };
+	return {
+		share,
+		serviceStart: dayOf(Math.min(...periods.map((p) => p.start))),
+		serviceEnd: dayOf(Math.max(...periods.map((p) => p.end))),
+	};
+}
+const sessionPaid = (s: Session): Paid => ({
+	share: s.amount_total
+		? (s.total_details?.amount_tax ?? 0) / s.amount_total
+		: 0,
+});
 
-// Tax share by payment intent, for one sync. Two lists cover the range:
-// paid invoice payments and completed Checkout Sessions, from 3 days
-// before it (a session lasts at most a day). A payment they miss is looked
-// up on its own: an invoice paid long after it was issued, or a refund of
-// an older payment. A key without Invoices or Checkout Sessions read access
-// counts no tax from that source.
+// Tax share and period by payment intent, for one sync. Two lists cover
+// the range: paid invoice payments and completed Checkout Sessions, from 3
+// days before it (a session lasts at most a day). A payment they miss is
+// looked up on its own: an invoice paid long after it was issued, or a
+// refund of an older payment. A key without Invoices or Checkout Sessions
+// read access counts no tax (and no period) from that source.
 // ponytail: a payment with neither costs one lookup per sync while it is in
 // the 3-day reread; cache "no tax" across syncs if that shows in rate limits.
 async function taxShares(c: Credentials, range: SyncRange) {
-	const shares = new Map<string, number>();
+	const shares = new Map<string, Paid>();
 	const denied = new Set<string>();
 	const read = async (source: string, f: () => Promise<void>) => {
 		if (denied.has(source)) return;
@@ -154,7 +189,7 @@ async function taxShares(c: Credentials, range: SyncRange) {
 			c,
 		))
 			if (p.payment.payment_intent)
-				shares.set(p.payment.payment_intent, invoiceShare(p.invoice));
+				shares.set(p.payment.payment_intent, invoicePaid(p.invoice));
 	});
 	// https://docs.stripe.com/api/checkout/sessions/list
 	await read("checkout", async () => {
@@ -162,14 +197,14 @@ async function taxShares(c: Credentials, range: SyncRange) {
 			`${BASE}/v1/checkout/sessions?status=complete&${created}`,
 			c,
 		))
-			if (s.payment_intent) shares.set(s.payment_intent, sessionShare(s));
+			if (s.payment_intent) shares.set(s.payment_intent, sessionPaid(s));
 	});
 	// `listed`: the payment falls inside the range, so the session list
 	// already covered it.
 	return async (pi: string, listed: boolean) => {
-		let share = shares.get(pi);
-		if (share !== undefined) return share;
-		share = 0;
+		let paid = shares.get(pi);
+		if (paid) return paid;
+		paid = { share: 0 };
 		let found = false;
 		await read("invoices", async () => {
 			const r = await getJson<List<InvoicePayment>>(
@@ -177,7 +212,7 @@ async function taxShares(c: Credentials, range: SyncRange) {
 				{ headers: headers(c) },
 			);
 			if (r.data[0]) {
-				share = invoiceShare(r.data[0].invoice);
+				paid = invoicePaid(r.data[0].invoice);
 				found = true;
 			}
 		});
@@ -187,10 +222,31 @@ async function taxShares(c: Credentials, range: SyncRange) {
 					`${BASE}/v1/checkout/sessions?payment_intent=${pi}`,
 					{ headers: headers(c) },
 				);
-				if (r.data[0]) share = sessionShare(r.data[0]);
+				if (r.data[0]) paid = sessionPaid(r.data[0]);
 			});
-		shares.set(pi, share);
-		return share;
+		shares.set(pi, paid);
+		return paid;
+	};
+}
+
+// https://docs.stripe.com/api/payouts/object
+export type StripePayout = {
+	id: string;
+	amount: number;
+	arrival_date: number;
+	currency: string;
+	status: "paid" | "pending" | "in_transit" | "canceled" | "failed";
+};
+
+// A payout that failed or was canceled never reached the bank. One still
+// pending or in transit is dated when Stripe expects it to arrive.
+export function stripePayout(p: StripePayout): Payout | null {
+	if (p.status === "failed" || p.status === "canceled") return null;
+	return {
+		externalId: p.id,
+		date: dayOf(p.arrival_date),
+		currency: p.currency.toUpperCase(),
+		amountCents: p.amount,
 	};
 }
 
@@ -245,8 +301,29 @@ export const stripe = register({
 			const refund = t.type.includes("refund") || t.type === "dispute";
 			const charge = t.source?.object === "charge";
 			const pi = t.source?.payment_intent;
-			const share = pi && (refund || charge) ? await tax(pi, charge) : 0;
-			out.push(stripeLine(t, refund, share));
+			out.push(
+				stripeLine(
+					t,
+					refund,
+					pi && (refund || charge) ? await tax(pi, charge) : { share: 0 },
+				),
+			);
+		}
+		return out;
+	},
+	// From the payout balance transactions, so the key needs no Payouts
+	// access: the expanded source is the payout. Listed by creation, which
+	// can come days before arrival, so the read starts 14 days early.
+	// https://docs.stripe.com/api/balance_transactions/list
+	async fetchPayouts(c, range: SyncRange) {
+		const out: Payout[] = [];
+		for await (const t of paginate<StripeTxn>(
+			`${BASE}/v1/balance_transactions?type=payout&created[gte]=${unix(range.from) - 14 * 86_400}&created[lt]=${unix(range.to) + 86_400}&expand[]=data.source`,
+			c,
+		)) {
+			if (t.source?.object !== "payout") continue;
+			const p = stripePayout(t.source as unknown as StripePayout);
+			if (p) out.push(p);
 		}
 		return out;
 	},

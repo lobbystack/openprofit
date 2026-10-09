@@ -75,7 +75,7 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 | Provider | Kind | What it reads |
 | --- | --- | --- |
 | Stripe | Revenue | Balance transactions, active subscriptions, MRR, customers |
-| Polar | Revenue | Daily revenue and net revenue, MRR, active subscriptions |
+| Polar | Revenue | Paid orders without tax, Polar's fee, refunds, MRR, active subscriptions |
 | Paddle | Revenue | Completed transactions without tax, fees, refunds and chargebacks, MRR, paying subscribers |
 | Lemon Squeezy | Revenue | Orders and renewals without tax, refunds, MRR, active subscriptions (no fees in the API) |
 | RevenueCat | Revenue | Monthly revenue and proceeds after store commission, MRR, active subscriptions |

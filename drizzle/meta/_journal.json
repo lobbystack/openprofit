@@ -71,6 +71,20 @@
       "when": 1791346861024,
       "tag": "0009_explicit_sub_unit_products",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791430694579,
+      "tag": "0010_books",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791431020772,
+      "tag": "0011_boc_rates",
+      "breakpoints": true
     }
   ]
 }

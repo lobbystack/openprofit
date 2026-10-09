@@ -14,6 +14,13 @@ import { z } from "zod";
 import { connectorInfo, connectors } from "#/connectors";
 import { db, schema } from "#/db";
 import { RULE_NAMES, type RuleKind, ruleScope } from "#/lib/alerts";
+import { JOURNAL_FORMATS } from "#/lib/books";
+import {
+	BooksSettingsInput,
+	booksSettingsPatch,
+	COST_CATEGORIES,
+	REGIONS,
+} from "#/lib/books-settings";
 import { FlatCostInput, Day as IsoDay } from "#/lib/costs";
 import { CURRENCIES } from "#/lib/format";
 import pkg from "../../package.json";
@@ -24,6 +31,7 @@ import {
 	type Caller,
 	providerError,
 } from "./api.server";
+import { journalCsv, Month } from "./books-export.server";
 import { connectLinkStatus, createConnectLink } from "./connect.server";
 import { connectionRows } from "./connections.server";
 import { flatValues } from "./costs.server";
@@ -189,6 +197,15 @@ const flatRow = (
 	ends_on: f.endsOn,
 	product_id: f.productId,
 	product: f.productId ? (names.get(f.productId) ?? null) : null,
+	category: f.category,
+	paid_with: f.paidWith,
+	paid_with_since: f.paidWithSince,
+});
+
+const booksSettings = (ws: Caller["ws"]) => ({
+	incorporated_on: ws.incorporatedOn,
+	country: ws.country,
+	region: ws.region,
 });
 
 // Allowed thresholds per rule kind. margin_floor is a fraction, so an agent
@@ -461,6 +478,17 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		},
 	);
 
+	server.registerTool(
+		"get_books_settings",
+		{
+			title: "Get books settings",
+			description:
+				"What the books and the yearly tax report depend on: incorporated_on (the day the business became a company that files its own tax return; null if it isn't one), country (CA, US, or null for elsewhere) and region (a province or state code such as QC or CA).",
+			annotations: READ,
+		},
+		async () => json(booksSettings(ws)),
+	);
+
 	const LineFilter = {
 		kind: z.enum(["revenue", "cost"]),
 		from: Day.optional(),
@@ -514,6 +542,31 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 				q.to ?? `${year}-12-31`,
 			);
 			return { content: [{ type: "text", text }] };
+		},
+	);
+
+	// Like downloading the file in the app, any token can export, and a
+	// whole-workspace export closes the month: hence not read-only.
+	server.registerTool(
+		"export_journal",
+		{
+			title: "Export journal",
+			description:
+				"One month's journal entries as CSV: quickbooks (QuickBooks Online journal entry import), xero (Xero manual journal import) or plain (any accounting software). quickbooks and xero leave out payouts and costs paid from the company bank account, which the bank feed brings in. Exporting the whole workspace closes the month: exporting it again returns the same file, and later changes to it come as adjustments in the next month's export. A one-product export leaves out shared and unassigned costs and closes nothing.",
+			inputSchema: z.object({
+				month: Month.describe("YYYY-MM, a month that has ended"),
+				format: z.enum(JOURNAL_FORMATS),
+				product_id: Id("Product")
+					.optional()
+					.describe("Product id; leave out for the whole workspace"),
+			}),
+			annotations: { ...WRITE, idempotentHint: true },
+		},
+		async (q) => {
+			const out = await journalCsv(ws, q.month, q.format, q.product_id ?? null);
+			return "error" in out
+				? fail(out.error)
+				: { content: [{ type: "text", text: out.csv }] };
 		},
 	);
 
@@ -810,7 +863,9 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 		name: z.string().trim().min(1).max(80),
 		amount: z.number().positive().describe("In whole units, such as 49.99"),
 		currency: z.enum(CURRENCIES),
-		interval: z.enum(["month", "year"]),
+		interval: z
+			.enum(["month", "year", "once"])
+			.describe("once: a one-time cost dated starts_on, with no ends_on"),
 		starts_on: Day,
 		ends_on: Day.nullable().optional().describe("YYYY-MM-DD, or null"),
 		product_id: z
@@ -818,15 +873,34 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			.nullable()
 			.optional()
 			.describe("null or absent: Unassigned"),
+		category: z
+			.enum(COST_CATEGORIES)
+			.nullable()
+			.optional()
+			.describe(
+				"The books account. equipment (a computer) is an asset. null: other",
+			),
+		paid_with: z
+			.enum(["personal", "company"])
+			.optional()
+			.describe(
+				"Who pays, for incorporated workspaces: a personal card or the company account. Defaults to personal",
+			),
+		paid_with_since: Day.nullable()
+			.optional()
+			.describe("The day paid_with changed; before it, the other one paid"),
 	};
 	const saveFlat = async (f: {
 		name: string;
 		amount: number;
 		currency: (typeof CURRENCIES)[number];
-		interval: "month" | "year";
+		interval: "month" | "year" | "once";
 		starts_on: string;
 		ends_on?: string | null;
 		product_id?: string | null;
+		category?: (typeof COST_CATEGORIES)[number] | null;
+		paid_with?: "personal" | "company";
+		paid_with_since?: string | null;
 	}) => {
 		const input = FlatCostInput.safeParse({
 			name: f.name,
@@ -836,6 +910,9 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			startsOn: f.starts_on,
 			endsOn: f.ends_on ?? null,
 			productId: f.product_id ?? null,
+			category: f.category,
+			paidWith: f.paid_with,
+			paidWithSince: f.paid_with_since,
 		});
 		if (!input.success) throw new Error(input.error.issues[0].message);
 		return flatValues(ws, input.data);
@@ -925,6 +1002,57 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 			if (!removed) return fail("No flat cost with that id.");
 			await log("flat_cost.delete", flat_cost_id, { name: removed.name });
 			return json({ deleted: removed.name });
+		},
+	);
+
+	server.registerTool(
+		"update_books_settings",
+		{
+			title: "Update books settings",
+			description:
+				"Changes the books settings. Fields left out keep their value. Passing country also sets region, to null when region is absent, so send both together.",
+			inputSchema: z.object({
+				incorporated_on: Day.nullable()
+					.optional()
+					.describe(
+						"The day the business became a company that files its own tax return; null if it isn't one",
+					),
+				country: z
+					.enum(["CA", "US"])
+					.nullable()
+					.optional()
+					.describe(
+						"null: elsewhere, and the report is a plain profit and loss",
+					),
+				region: z
+					.string()
+					.nullable()
+					.optional()
+					.describe(
+						`Province or state code. Canada: ${Object.keys(REGIONS.CA).join(", ")}. US: two-letter state codes`,
+					),
+			}),
+			annotations: { ...WRITE, idempotentHint: true },
+		},
+		async (q) => {
+			if (Object.values(q).every((v) => v === undefined))
+				return fail("Pass incorporated_on, country or region.");
+			const input = BooksSettingsInput.safeParse({
+				incorporatedOn: q.incorporated_on,
+				country: q.country,
+				region: q.region,
+			});
+			if (!input.success) return fail(input.error.issues[0].message);
+			const [row] = await db
+				.update(schema.workspaces)
+				.set(booksSettingsPatch(input.data))
+				.where(eq(schema.workspaces.id, ws.id))
+				.returning();
+			await log("books_settings.update", ws.id, {
+				name: ws.name,
+				...booksSettings(row),
+			});
+			return json(booksSettings(row));
 		},
 	);
 

@@ -5,6 +5,7 @@ import {
 	gte,
 	inArray,
 	isNotNull,
+	like,
 	lte,
 	ne,
 	or,
@@ -67,7 +68,6 @@ export async function syncConnection(
 		.values({ connectionId: conn.id, startedAt: Date.now(), status: "running" })
 		.returning();
 
-	const range = syncRange(conn.lastSyncedAt, historyDays(ws), opts.full);
 	// A paused connection stays paused; Sync now still runs it.
 	const paused = conn.status === "paused";
 	let written = 0;
@@ -75,6 +75,24 @@ export async function syncConnection(
 	try {
 		const c = connector(conn.provider);
 		const creds = await decrypt<Credentials>(conn.credentials);
+		// Lines under the connector's legacy ids, inside the history a full
+		// sync reads, make this sync a full one, which deletes them. Older
+		// ones stay: nothing replaces them.
+		const legacy =
+			c.legacyIds !== undefined &&
+			!!(await db.query.revenueLines.findFirst({
+				columns: { id: true },
+				where: and(
+					eq(schema.revenueLines.connectionId, conn.id),
+					like(schema.revenueLines.externalId, `${c.legacyIds}%`),
+					gte(schema.revenueLines.date, syncRange(null, historyDays(ws)).from),
+				),
+			}));
+		const range = syncRange(
+			conn.lastSyncedAt,
+			historyDays(ws),
+			opts.full || legacy,
+		);
 		const window = deletionWindow(range, c.historyDays);
 		const mappings = await db.query.productMappings.findMany({
 			where: eq(schema.productMappings.connectionId, conn.id),
@@ -97,6 +115,8 @@ export async function syncConnection(
 		if (c.fetchRevenue) {
 			const lines = await c.fetchRevenue(creds, range);
 			for (const l of lines) {
+				const base = (cents: number) =>
+					convert(cents, l.currency, ws.baseCurrency, l.date);
 				const line = {
 					productId: productFor(l.subUnitId, l.subUnitLabel),
 					date: l.date,
@@ -105,19 +125,14 @@ export async function syncConnection(
 					feesCents: l.feesCents,
 					refundsCents: l.refundsCents,
 					netCents: l.netCents,
-					netBaseCents: await convert(
-						l.netCents,
-						l.currency,
-						ws.baseCurrency,
-						l.date,
-					),
+					netBaseCents: await base(l.netCents),
+					grossBaseCents: await base(l.grossCents),
+					feesBaseCents: await base(l.feesCents),
+					refundsBaseCents: await base(l.refundsCents),
 					taxCents: l.taxCents ?? 0,
-					taxBaseCents: await convert(
-						l.taxCents ?? 0,
-						l.currency,
-						ws.baseCurrency,
-						l.date,
-					),
+					taxBaseCents: await base(l.taxCents ?? 0),
+					serviceStart: l.serviceStart ?? null,
+					serviceEnd: l.serviceEnd ?? null,
 					kind: l.kind,
 					subUnitId: l.subUnitId ?? null,
 					subUnitLabel: l.subUnitLabel ?? null,
@@ -144,6 +159,44 @@ export async function syncConnection(
 				conn.id,
 				window,
 				new Set(lines.map((l) => l.externalId)),
+			);
+		}
+
+		if (c.fetchPayouts) {
+			const payouts = await c.fetchPayouts(creds, range);
+			for (const p of payouts) {
+				const row = {
+					date: p.date,
+					currency: p.currency,
+					amountCents: p.amountCents,
+					// A payout still on its way is dated when it should arrive;
+					// it converts at today's rate until then.
+					amountBaseCents: await convert(
+						p.amountCents,
+						p.currency,
+						ws.baseCurrency,
+						p.date < range.to ? p.date : range.to,
+					),
+				};
+				await db
+					.insert(schema.payouts)
+					.values({
+						...row,
+						workspaceId: ws.id,
+						connectionId: conn.id,
+						externalId: p.externalId,
+					})
+					.onConflictDoUpdate({
+						target: [schema.payouts.connectionId, schema.payouts.externalId],
+						set: row,
+					});
+				written++;
+			}
+			await deleteMissing(
+				schema.payouts,
+				conn.id,
+				window,
+				new Set(payouts.map((p) => p.externalId)),
 			);
 		}
 
@@ -334,14 +387,17 @@ function deletionWindow(range: SyncRange, days?: number) {
 	return { from: from > range.from ? from : range.from, to: range.to };
 }
 
-// Deletes the connection's synced lines that the provider no longer returns,
-// dated inside the window. A monthly line is dated the 1st, so a window that
-// starts mid-month never deletes it. Runs only after the whole range was
-// fetched without error. A fetch that returned nothing deletes nothing: an
-// empty answer is more often a provider hiccup than every line going away,
-// and the next fetch with lines cleans up.
+// Deletes the connection's synced lines (or payouts) that the provider no
+// longer returns, dated inside the window. A monthly line is dated the 1st,
+// so a window that starts mid-month never deletes it. Runs only after the
+// whole range was fetched without error. A fetch that returned nothing
+// deletes nothing: an empty answer is more often a provider hiccup than
+// every line going away, and the next fetch with lines cleans up.
 async function deleteMissing(
-	table: typeof schema.revenueLines | typeof schema.costLines,
+	table:
+		| typeof schema.revenueLines
+		| typeof schema.costLines
+		| typeof schema.payouts,
 	connectionId: string,
 	window: SyncRange | null,
 	keep: Set<string>,

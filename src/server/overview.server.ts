@@ -130,12 +130,14 @@ export const monthlyRevenue = () =>
 	);
 
 // Flat costs count once per month they are active, in base cents. Yearly
-// ones spread over 12.
+// ones spread over 12; one-time ones count whole in their month.
 export function flatMonthlyCents(
 	f: typeof schema.flatCosts.$inferSelect,
 	month: string,
 ) {
 	const start = f.startsOn.slice(0, 7);
+	if (f.interval === "once")
+		return month === start ? (f.amountBaseCents ?? f.amountCents) : 0;
 	const end = f.endsOn?.slice(0, 7);
 	if (month < start || (end && month > end)) return 0;
 	const cents = f.amountBaseCents ?? f.amountCents;

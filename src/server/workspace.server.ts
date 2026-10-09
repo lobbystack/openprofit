@@ -91,7 +91,12 @@ const slugify = (s: string) =>
 
 export async function createWorkspace(
 	userId: string,
-	input: { name: string; currency: string; timezone?: string },
+	input: {
+		name: string;
+		currency: string;
+		timezone?: string;
+		incorporatedOn?: string | null;
+	},
 ) {
 	const base = slugify(input.name);
 	let slug = base;
@@ -109,6 +114,7 @@ export async function createWorkspace(
 			slug,
 			baseCurrency: input.currency,
 			timezone: input.timezone,
+			incorporatedOn: input.incorporatedOn,
 		})
 		.returning();
 	await db

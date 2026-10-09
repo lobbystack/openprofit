@@ -28,10 +28,12 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as DotwellKnownSplatRouteImport } from './routes/[.]well-known/$'
 import { Route as ApiConnectionsRouteImport } from './routes/api/connections'
 import { Route as ApiExportDotcsvRouteImport } from './routes/api/export[.]csv'
+import { Route as ApiJournalDotcsvRouteImport } from './routes/api/journal[.]csv'
 import { Route as ApiProvidersRouteImport } from './routes/api/providers'
 import { Route as ApiTelemetryRouteImport } from './routes/api/telemetry'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppAlertsRouteImport } from './routes/app/alerts'
+import { Route as AppBooksRouteImport } from './routes/app/books'
 import { Route as AppCostsRouteImport } from './routes/app/costs'
 import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
@@ -159,6 +161,11 @@ const ApiExportDotcsvRoute = ApiExportDotcsvRouteImport.update({
   path: '/api/export.csv',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiJournalDotcsvRoute = ApiJournalDotcsvRouteImport.update({
+  id: '/api/journal.csv',
+  path: '/api/journal.csv',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiProvidersRoute = ApiProvidersRouteImport.update({
   id: '/api/providers',
   path: '/api/providers',
@@ -177,6 +184,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppAlertsRoute = AppAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBooksRoute = AppBooksRouteImport.update({
+  id: '/books',
+  path: '/books',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCostsRoute = AppCostsRouteImport.update({
@@ -357,9 +369,11 @@ export interface FileRoutesByFullPath {
   '/.well-known/$': typeof DotwellKnownSplatRoute
   '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/journal.csv': typeof ApiJournalDotcsvRoute
   '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/books': typeof AppBooksRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -410,9 +424,11 @@ export interface FileRoutesByTo {
   '/.well-known/$': typeof DotwellKnownSplatRoute
   '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/journal.csv': typeof ApiJournalDotcsvRoute
   '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/books': typeof AppBooksRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -467,9 +483,11 @@ export interface FileRoutesById {
   '/.well-known/$': typeof DotwellKnownSplatRoute
   '/api/connections': typeof ApiConnectionsRoute
   '/api/export.csv': typeof ApiExportDotcsvRoute
+  '/api/journal.csv': typeof ApiJournalDotcsvRoute
   '/api/providers': typeof ApiProvidersRoute
   '/api/telemetry': typeof ApiTelemetryRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/books': typeof AppBooksRoute
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
@@ -525,9 +543,11 @@ export interface FileRouteTypes {
     | '/.well-known/$'
     | '/api/connections'
     | '/api/export.csv'
+    | '/api/journal.csv'
     | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
+    | '/app/books'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
@@ -578,9 +598,11 @@ export interface FileRouteTypes {
     | '/.well-known/$'
     | '/api/connections'
     | '/api/export.csv'
+    | '/api/journal.csv'
     | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
+    | '/app/books'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
@@ -634,9 +656,11 @@ export interface FileRouteTypes {
     | '/.well-known/$'
     | '/api/connections'
     | '/api/export.csv'
+    | '/api/journal.csv'
     | '/api/providers'
     | '/api/telemetry'
     | '/app/alerts'
+    | '/app/books'
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
@@ -691,6 +715,7 @@ export interface RootRouteChildren {
   DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
   ApiConnectionsRoute: typeof ApiConnectionsRoute
   ApiExportDotcsvRoute: typeof ApiExportDotcsvRoute
+  ApiJournalDotcsvRoute: typeof ApiJournalDotcsvRoute
   ApiProvidersRoute: typeof ApiProvidersRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
   CompareSlugRoute: typeof CompareSlugRoute
@@ -848,6 +873,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiExportDotcsvRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/journal.csv': {
+      id: '/api/journal.csv'
+      path: '/api/journal.csv'
+      fullPath: '/api/journal.csv'
+      preLoaderRoute: typeof ApiJournalDotcsvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/providers': {
       id: '/api/providers'
       path: '/api/providers'
@@ -874,6 +906,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts'
       fullPath: '/app/alerts'
       preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/books': {
+      id: '/app/books'
+      path: '/books'
+      fullPath: '/app/books'
+      preLoaderRoute: typeof AppBooksRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/costs': {
@@ -1098,6 +1137,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAlertsRoute: typeof AppAlertsRoute
+  AppBooksRoute: typeof AppBooksRoute
   AppCostsRoute: typeof AppCostsRoute
   AppProductsRoute: typeof AppProductsRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -1109,6 +1149,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAlertsRoute: AppAlertsRoute,
+  AppBooksRoute: AppBooksRoute,
   AppCostsRoute: AppCostsRoute,
   AppProductsRoute: AppProductsRoute,
   AppSettingsRoute: AppSettingsRoute,
@@ -1180,6 +1221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotwellKnownSplatRoute: DotwellKnownSplatRoute,
   ApiConnectionsRoute: ApiConnectionsRoute,
   ApiExportDotcsvRoute: ApiExportDotcsvRoute,
+  ApiJournalDotcsvRoute: ApiJournalDotcsvRoute,
   ApiProvidersRoute: ApiProvidersRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
   CompareSlugRoute: CompareSlugRoute,

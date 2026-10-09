@@ -1,5 +1,6 @@
 import "@tanstack/react-start/server-only";
 import { and, eq, gte, lte } from "drizzle-orm";
+import type { PgColumn } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { db, schema } from "#/db";
 import { Day } from "#/lib/costs";
@@ -46,13 +47,22 @@ export function csvCell(v: string | number | null) {
 	return /[",\r\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
 }
 
-// A signed-in session, or `Authorization: Bearer op_...` for scripts.
-export async function exportCsv(request: Request) {
+// The BOM tells Excel the file is UTF-8.
+export const csvFile = (rows: (string | number | null)[][]) =>
+	`\uFEFF${rows.map((r) => r.map(csvCell).join(",")).join("\r\n")}\r\n`;
+
+// The workspace a download is for: a signed-in session, or
+// `Authorization: Bearer op_...` for scripts. Null when neither.
+export async function exportWorkspace(request: Request) {
 	const caller = await authenticate(request);
-	if (!caller && !(await sessionUser())) {
-		return new Response("Sign in to export.", { status: 401 });
-	}
-	const ws = caller ? caller.ws : await currentWorkspace();
+	if (caller) return caller.ws;
+	return (await sessionUser()) ? currentWorkspace() : null;
+}
+
+// ?product= narrows the file to one product.
+export async function exportCsv(request: Request) {
+	const ws = await exportWorkspace(request);
+	if (!ws) return new Response("Sign in to export.", { status: 401 });
 
 	const year = new Date().getUTCFullYear();
 	const params = new URL(request.url).searchParams;
@@ -69,7 +79,7 @@ export async function exportCsv(request: Request) {
 		});
 	}
 	const { from, to } = range.data;
-	return new Response(await csvText(ws, from, to), {
+	return new Response(await csvText(ws, from, to, params.get("product")), {
 		headers: {
 			"Content-Type": "text/csv; charset=utf-8",
 			"Content-Disposition": `attachment; filename="openprofit-${ws.slug}-${from}-to-${to}.csv"`,
@@ -79,7 +89,13 @@ export async function exportCsv(request: Request) {
 }
 
 // The file itself, shared with the MCP export_csv tool.
-export async function csvText(ws: Workspace, from: string, to: string) {
+export async function csvText(
+	ws: Workspace,
+	from: string,
+	to: string,
+	productId: string | null = null,
+) {
+	const only = (col: PgColumn) => (productId ? eq(col, productId) : undefined);
 	const [revenue, costs, flats, products] = await Promise.all([
 		db
 			.select({
@@ -101,6 +117,7 @@ export async function csvText(ws: Workspace, from: string, to: string) {
 			.where(
 				and(
 					eq(schema.revenueLines.workspaceId, ws.id),
+					only(schema.revenueLines.productId),
 					gte(schema.revenueLines.date, from),
 					lte(schema.revenueLines.date, to),
 				),
@@ -108,12 +125,16 @@ export async function csvText(ws: Workspace, from: string, to: string) {
 		db.query.costLines.findMany({
 			where: and(
 				eq(schema.costLines.workspaceId, ws.id),
+				only(schema.costLines.productId),
 				gte(schema.costLines.date, from),
 				lte(schema.costLines.date, to),
 			),
 		}),
 		db.query.flatCosts.findMany({
-			where: eq(schema.flatCosts.workspaceId, ws.id),
+			where: and(
+				eq(schema.flatCosts.workspaceId, ws.id),
+				only(schema.flatCosts.productId),
+			),
 		}),
 		db.query.products.findMany({
 			where: eq(schema.products.workspaceId, ws.id),
@@ -156,6 +177,27 @@ export async function csvText(ws: Workspace, from: string, to: string) {
 	// spread over 12, as on the Costs page. Never past this month.
 	const thisMonth = new Date().toISOString().slice(0, 7);
 	for (const f of flats) {
+		// A one-time cost counts once, on its own date.
+		if (f.interval === "once") {
+			if (
+				f.startsOn >= from &&
+				f.startsOn <= to &&
+				f.startsOn.slice(0, 7) <= thisMonth
+			)
+				rows.push([
+					f.startsOn,
+					"Flat cost",
+					f.provider === "manual" ? null : providerName(f.provider),
+					null,
+					product(f.productId),
+					f.name,
+					-f.amountCents,
+					f.currency,
+					-(f.amountBaseCents ?? f.amountCents),
+					ws.baseCurrency,
+				]);
+			continue;
+		}
 		const first = from > f.startsOn ? from : f.startsOn;
 		const d = new Date(`${first.slice(0, 7)}-01T00:00:00Z`);
 		for (; ; d.setUTCMonth(d.getUTCMonth() + 1)) {

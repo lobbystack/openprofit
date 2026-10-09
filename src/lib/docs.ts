@@ -13,6 +13,7 @@ const ORDER = [
 	"environment",
 	"public-pages",
 	"alerts",
+	"books",
 	"agents",
 	"billing",
 ];
