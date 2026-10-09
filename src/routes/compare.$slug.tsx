@@ -6,11 +6,14 @@ import { getContentPage } from "#/server/content.functions";
 export const Route = createFileRoute("/compare/$slug")({
 	loader: ({ params }) =>
 		getContentPage({ data: { section: "compare", slug: params.slug } }),
+	// No loader data on a 404.
 	head: ({ loaderData: p }) =>
-		seo({
-			title: `${p?.title} · OpenProfit`,
-			description: p?.description,
-			path: `/compare/${p?.slug}`,
-		}),
+		p
+			? seo({
+					title: `${p.title} · OpenProfit`,
+					description: p.description,
+					path: `/compare/${p.slug}`,
+				})
+			: {},
 	component: () => <ContentPage html={Route.useLoaderData().html} />,
 });

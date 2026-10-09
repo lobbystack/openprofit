@@ -97,7 +97,7 @@ Yearly, by calendar year, from the journal totals. It ends with: "OpenProfit pre
 | Account | T2125 (2025) | TP-80-V (2025-10) |
 |---|---|---|
 | `sales`, `refunds` | 3A Gross sales, 3B returns, 8000 Adjusted gross sales | 110 Sales, 113 Sales returns, 130 Gross income |
-| `payment_fees` | 8710 Interest and bank charges* | 216 Management and administration fees* (IN-155-V puts bank charges here) |
+| `payment_fees` | 8871 Management and administration fees* (T4002 puts bank charges here) | 216 Management and administration fees* (IN-155-V puts bank charges here) |
 | `ai_apis`, `hosting`, `email`, `software` | 9270 Other expenses, itemized* | 246 Other expenses, itemized* |
 | `contractors` | 8860 Professional fees (T4002: "external professional advice, services and consulting fees") | 246 Other expenses* |
 | `other` | 9270 Other expenses | 246 Other expenses |
@@ -111,7 +111,7 @@ Sales exclude GST/HST and QST collected. Class 50 is 55% declining balance. The 
 | Account | GIFI (RC4088) |
 |---|---|
 | `sales` − `refunds` | 8000 Trade sales of goods and services, 8299 Total revenue |
-| `payment_fees` | 8716 Credit card charges* |
+| `payment_fees` | 8715 Bank charges* (8716's only example is credit card interest) |
 | `ai_apis`, `hosting`, `email`, `software` | 9150 Computer-related expenses* |
 | `contractors` | 9110 Sub-contracts |
 | `depreciation` | 8670 Amortization of tangible assets |
