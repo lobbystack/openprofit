@@ -78,8 +78,10 @@ function cca(e: Equipment, y: number, incorporatedOn: string | null) {
 }
 
 // US: up to $2,500 an item is deducted in full under the de minimis safe
-// harbor (Schedule C 2025 instructions, Part V; Treas. Reg.
-// §1.263(a)-1(f); https://www.irs.gov/instructions/i1040sc). Above it,
+// harbor (Schedule C 2025 instructions, Part V,
+// https://www.irs.gov/instructions/i1040sc; Notice 2015-82 raised the $500
+// in Treas. Reg. §1.263(a)-1(f), https://www.irs.gov/businesses/small-businesses-self-employed/tangible-property-final-regulations).
+// The taxpayer must expense such items from the start of the year. Above it,
 // computers are 5-year property (Pub 946 2025, table B-1 class 00.12): the
 // special depreciation allowance the year they're placed in service, then
 // MACRS half-year convention on the rest (table A-1).
@@ -304,7 +306,8 @@ const deMinimisItem = (a: Amounts) =>
 // https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/t2125/t2125-25e.pdf
 // https://www.canada.ca/content/dam/cra-arc/formspubs/pub/t4002/t4002-25e.pdf
 // (8860 covers "external professional advice, services and consulting
-// fees"; 9270 "other expenses ... as long as you did not include them on a
+// fees"; 8871 "management and administration fees including bank charges";
+// 9270 "other expenses ... as long as you did not include them on a
 // previous line"; Part 9, details of equity)
 const T2125_OTHER = [
 	"ai_apis",
@@ -324,8 +327,8 @@ export function t2125(a: Amounts): Form {
 				a.refunds,
 			),
 			line("8000", "Adjusted gross sales", a.income),
-			line("8710", "Interest and bank charges", a.payment_fees, {
-				ours: "No line names payment processing fees; this one covers bank charges.",
+			line("8871", "Management and administration fees", a.payment_fees, {
+				ours: "No line names payment processing fees; the guide puts bank charges here.",
 			}),
 			line(
 				"8860",
@@ -381,21 +384,21 @@ export function tp80(a: Amounts): Form {
 			}),
 			line("248", "Expenses related to your business activities", a.expenses),
 			// Line 148 adds other income to line 130; OpenProfit has none.
-			line(
-				"250",
-				"Net income: line 148 (here, line 130) minus line 248",
-				a.profit,
-			),
+			// Line 250 has no name on the form.
+			line("250", "Line 148 (here, line 130) minus line 248", a.profit),
 			line("73", "Drawings during the fiscal period", a.draws),
 			line("75", "Investments during the fiscal period", a.contributions),
 		],
+		note: "Net income on line 264 equals line 250 unless you claim home office expenses or partnership amounts.",
 	};
 }
 
 // Canada, incorporated: GIFI schedules 125 and 100 (RC4088 Rev. 23).
 // https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/rc4088/general-index-financial-information-gifi.html
-// (8670 includes "amounts referred to as depreciation"; 9110 "contract
-// labour, contract work"; 2680 includes GST/HST; 2770 "unearned income";
+// (8670 includes "amounts referred to as depreciation"; 8716's only example
+// is credit card interest, so payment fees go under 8715 Bank charges, as
+// on the T2125 and TP-80; 9110 "contract labour, contract work"; 2680
+// includes GST/HST; 2770 "unearned income";
 // negative amounts take a minus sign; whole dollars)
 // Québec corporations file the same GIFI with the CO-17 (CO-17.G 2025-07,
 // 3.6.1: https://www.revenuquebec.ca/documents/fr/formulaires/co/CO-17.G(2025-07).pdf).
@@ -407,8 +410,8 @@ export function gifi125(a: Amounts): Form {
 			line("8000", "Trade sales of goods and services", a.income),
 			line("8299", "Total revenue", a.income),
 			line("8670", "Amortization of tangible assets", a.depreciation),
-			line("8716", "Credit card charges", a.payment_fees, {
-				ours: "No code names payment processing fees; card charges is the closest.",
+			line("8715", "Bank charges", a.payment_fees, {
+				ours: "No code names payment processing fees; bank charges is the closest.",
 			}),
 			line("9110", "Sub-contracts", a.contractors),
 			line("9150", "Computer-related expenses", sum(a, GIFI_COMPUTER), {
@@ -497,7 +500,7 @@ export function scheduleC(a: Amounts): Form {
 				sum(a, SCHEDULE_C_OTHER) + a.deMinimis,
 				{
 					items: [...itemize(a, SCHEDULE_C_OTHER), ...deMinimisItem(a)],
-					ours: "No line names payment fees, AI or hosting; Part V lists what no other line covers.",
+					ours: "Part V names software subscriptions under technology and software tools. No line names payment fees, AI or hosting; Part V lists what no other line covers.",
 				},
 			),
 			line(
@@ -507,7 +510,7 @@ export function scheduleC(a: Amounts): Form {
 			),
 			line("29", "Tentative profit or (loss)", a.profit),
 		],
-		note: "List each item of line 27b in Part V. Depreciation goes through Form 4562.",
+		note: `List each item of line 27b in Part V. Depreciation goes through Form 4562.${a.deMinimis ? " The de minimis safe harbor needs a practice, in place on January 1, of expensing items up to $2,500." : ""}`,
 	};
 }
 
