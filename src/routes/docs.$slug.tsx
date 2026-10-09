@@ -5,12 +5,15 @@ import { getContentPage } from "#/server/content.functions";
 export const Route = createFileRoute("/docs/$slug")({
 	loader: ({ params }) =>
 		getContentPage({ data: { section: "docs", slug: params.slug } }),
-	head: ({ loaderData }) =>
-		seo({
-			title: `${loaderData?.title} · OpenProfit docs`,
-			description: loaderData?.description,
-			path: `/docs/${loaderData?.slug}`,
-		}),
+	// No loader data on a 404.
+	head: ({ loaderData: p }) =>
+		p
+			? seo({
+					title: `${p.title} · OpenProfit docs`,
+					description: p.description,
+					path: `/docs/${p.slug}`,
+				})
+			: {},
 	component: Page,
 });
 

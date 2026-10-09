@@ -7,12 +7,15 @@ import { getContentPage } from "#/server/content.functions";
 export const Route = createFileRoute("/integrations/$slug")({
 	loader: ({ params }) =>
 		getContentPage({ data: { section: "integrations", slug: params.slug } }),
+	// No loader data on a 404.
 	head: ({ loaderData: p }) =>
-		seo({
-			title: `${p?.title} · OpenProfit`,
-			description: p?.description,
-			path: `/integrations/${p?.slug}`,
-		}),
+		p
+			? seo({
+					title: `${p.title} · OpenProfit`,
+					description: p.description,
+					path: `/integrations/${p.slug}`,
+				})
+			: {},
 	component: Integration,
 });
 
