@@ -61,8 +61,9 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 - **Breakdowns** by product, by revenue source and by cost provider.
 - **Connectors** that take an API key with the narrowest access each provider offers, test it before saving, and store it encrypted. OpenProfit only reads with it. Two years of history on the first sync, incremental after that. [Security](https://openprofit.dev/security) lists what each key can do.
 - **Product mapping** per provider sub-unit, with an Unassigned bucket for the rest.
-- **Flat costs** for subscriptions, domains and anything without an API.
-- **Multi-currency** workspaces with daily rates and a base currency you can change later.
+- **Flat costs** for subscriptions, domains, one-time purchases and anything without an API.
+- **Multi-currency** workspaces with daily rates and a base currency you can change later. Workspaces in Canadian dollars use the Bank of Canada's rates.
+- **Books**: a monthly journal for QuickBooks, Xero or any accounting software, and the year's numbers on the lines of your tax form (T2125 and TP-80, the T2's GIFI schedules, Schedule C or Form 1120).
 - **Alerts** for cost spikes, margin floors and sync failures.
 - **Weekly email** with last week against the week before.
 - **Public pages** per product, server-rendered from the same data.
@@ -93,7 +94,7 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 | xAI | Cost | Daily cost by billing description |
 | Neon | Cost | Monthly usage per project at published rates |
 | MongoDB Atlas | Cost | Daily invoice line items per project |
-| Flat costs | Cost | Any monthly or yearly amount, typed in |
+| Flat costs | Cost | Any monthly, yearly or one-time amount, typed in |
 
 App Store, Google Play and Supabase are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.
 

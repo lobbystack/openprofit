@@ -14,7 +14,7 @@ When you press **Test**, OpenProfit calls the provider once to check the key wor
 
 ## What OpenProfit stores
 
-For each line a provider reports, OpenProfit keeps the date, the amount and currency, fees, refunds and tax, the provider's id for the line, and the project or workspace it belongs to. From revenue sources it also keeps daily MRR and subscription counts.
+For each line a provider reports, OpenProfit keeps the date, the amount and currency, fees, refunds and tax, the provider's id for the line, and the project or workspace it belongs to. From revenue sources it also keeps daily MRR and subscription counts, the period each payment covers, and Stripe payouts to your bank. For [Books](/docs/books), it keeps your incorporation date, country and region, and a copy of each month you export.
 
 It doesn't store your customers' names, emails or card details.
 

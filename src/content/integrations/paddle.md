@@ -20,7 +20,7 @@ OpenProfit reads three things from Paddle Billing:
 
 The tax shows as **Tax collected** on the overview, kept apart from revenue. Paddle files it, so you don't owe it.
 
-Transactions stay in the currency the customer paid in and convert to your base currency at the European Central Bank rate for that day. The first sync goes back two years, or one year on the hosted Free plan. Invoices you send manually get paid later than they're billed, so each sync rereads 90 days of them.
+Transactions stay in the currency the customer paid in and convert to your base currency at the European Central Bank rate for that day. A workspace in Canadian dollars uses the Bank of Canada's rate instead. The first sync goes back two years, or one year on the hosted Free plan. Invoices you send manually get paid later than they're billed, so each sync rereads 90 days of them.
 
 ## Connect it
 
