@@ -77,7 +77,8 @@ export function Pricing() {
 									</li>
 								))}
 							</ul>
-							<div className="mt-8">
+							{/* Pinned to the card's bottom, so the three buttons line up. */}
+							<div className="mt-auto pt-8">
 								<Href
 									href="/login"
 									className={buttonVariants({
