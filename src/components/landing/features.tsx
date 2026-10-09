@@ -240,18 +240,18 @@ export function FeatureTaxes() {
 					items={[
 						{
 							icon: <FileText size={16} />,
-							title: "Your country's forms",
-							text: "T2125 and TP-80 in Canada, Schedule C in the US, and your company's return once you incorporate.",
+							title: "Line-by-line totals",
+							text: "Get the number for each line of your return, with or without a company.",
 						},
 						{
 							icon: <CreditCard size={16} />,
-							title: "Bills on your personal card",
-							text: "Paid OpenAI with your own card? It still counts, as money the company owes you.",
+							title: "Personal card costs",
+							text: "Count the bills you paid yourself as business costs.",
 						},
 						{
 							icon: <Landmark size={16} />,
-							title: "Sources on every line",
-							text: "Each line cites the CRA, Revenu Québec or IRS guide it comes from, and judgment calls say why.",
+							title: "Official sources",
+							text: "See the government guide behind every number.",
 						},
 					]}
 				/>
