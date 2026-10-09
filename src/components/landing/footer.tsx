@@ -11,6 +11,7 @@ const COLUMNS: [string, [string, string][]][] = [
 			["Open profit", "/open"],
 			["Pricing", "/#pricing"],
 			["Changelog", "/changelog"],
+			["Blog", "/blog"],
 		],
 	],
 	[

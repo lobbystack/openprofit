@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq, ne } from "drizzle-orm";
 import { SITE_URL } from "#/lib/app";
-import { COMPARISONS, INTEGRATIONS } from "#/lib/content";
+import { COMPARISONS, INTEGRATIONS, POSTS } from "#/lib/content";
 import { DOCS } from "#/lib/docs";
 
 const STATIC = [
@@ -10,6 +10,8 @@ const STATIC = [
 	...INTEGRATIONS.map((p) => `/integrations/${p.slug}`),
 	...COMPARISONS.map((p) => `/compare/${p.slug}`),
 	...DOCS.map((d) => `/docs/${d.slug}`),
+	"/blog",
+	...POSTS.map((p) => `/blog/${p.slug}`),
 	"/changelog",
 	"/privacy",
 	"/terms",

@@ -51,3 +51,12 @@ export function monthLabel(ym: string) {
 		timeZone: "UTC",
 	});
 }
+
+// "2026-10-08" → "October 8, 2026".
+export const dayLabel = (day: string) =>
+	new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", {
+		month: "long",
+		day: "numeric",
+		year: "numeric",
+		timeZone: "UTC",
+	});

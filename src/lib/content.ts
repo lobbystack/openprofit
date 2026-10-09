@@ -97,6 +97,15 @@ export const COMPARISONS = load(
 	}) as Record<string, string>,
 );
 
+// Newest first, by the `date: YYYY-MM-DD` line in each post's front matter.
+export const POSTS = load(
+	import.meta.glob("../content/blog/*.md", {
+		query: "?raw",
+		import: "default",
+		eager: true,
+	}) as Record<string, string>,
+).sort((a, b) => b.meta.date.localeCompare(a.meta.date));
+
 export const CHANGELOG = load(
 	import.meta.glob("../content/changelog.md", {
 		query: "?raw",
