@@ -10,6 +10,9 @@ import {
 
 const BASE = "https://api.vercel.com";
 const headers = (c: Credentials) => ({ Authorization: `Bearer ${c.token}` });
+const DAY = 86_400_000;
+// 365 days fits the 1-year limit in leap years too.
+const YEAR = 365 * DAY;
 
 type Charge = {
 	BilledCost: number;
@@ -64,22 +67,31 @@ export const vercel = register({
 		const team = await teamId(c);
 		return { label: `${u.user.username} · ${team}` };
 	},
-	// FOCUS charges, one JSON object per line.
+	// FOCUS charges, one JSON object per line. One request covers at most a
+	// year, so a two-year backfill takes several, each [from, to) in UTC.
+	// https://vercel.com/docs/rest-api/reference/endpoints/billing/list-focus-billing-charges
 	async fetchCosts(c, range: SyncRange) {
 		const team = await teamId(c);
-		const to = new Date(
-			Date.parse(`${range.to}T00:00:00Z`) + 86_400_000,
-		).toISOString();
-		const res = await fetch(
-			`${BASE}/v1/billing/charges?teamId=${team}&from=${range.from}T00:00:00.000Z&to=${to}`,
-			{ headers: headers(c) },
-		);
-		if (!res.ok)
-			throw new ConnectorError(
-				`${res.status} ${await res.text().catch(() => "")}`.slice(0, 200),
-				res.status,
+		const end = Date.parse(`${range.to}T00:00:00Z`) + DAY;
+		let text = "";
+		for (
+			let start = Date.parse(`${range.from}T00:00:00Z`);
+			start < end;
+			start += YEAR
+		) {
+			const from = new Date(start).toISOString();
+			const to = new Date(Math.min(start + YEAR, end)).toISOString();
+			const res = await fetch(
+				`${BASE}/v1/billing/charges?teamId=${team}&from=${from}&to=${to}`,
+				{ headers: headers(c) },
 			);
-		const text = await res.text();
+			if (!res.ok)
+				throw new ConnectorError(
+					`${res.status} ${await res.text().catch(() => "")}`.slice(0, 200),
+					res.status,
+				);
+			text += `${await res.text()}\n`;
+		}
 		const out: CostLine[] = [];
 		for (const line of text.split("\n")) {
 			if (!line.trim()) continue;
