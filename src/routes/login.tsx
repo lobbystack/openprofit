@@ -29,7 +29,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
-	const { social, mailer } = Route.useLoaderData();
+	const { social, mailer, cloud } = Route.useLoaderData();
 	const back = Route.useSearch().redirect;
 	const next = back ?? "/app";
 	// A new account creates its workspace first, then continues to `back`.
@@ -144,6 +144,19 @@ function Login() {
 							{state === "error" && (
 								<p className="text-[12px] text-negative">
 									Could not send the link. Try again.
+								</p>
+							)}
+							{cloud && (
+								<p className="text-center text-[12px] text-text-2">
+									By continuing, you agree to the{" "}
+									<Link to="/terms" className="underline hover:text-ink">
+										Terms
+									</Link>{" "}
+									and{" "}
+									<Link to="/privacy" className="underline hover:text-ink">
+										Privacy Policy
+									</Link>
+									.
 								</p>
 							)}
 						</FieldGroup>
