@@ -11,6 +11,7 @@ export const SITE_DESCRIPTION =
 export const HEARD_FROM = [
 	"reddit",
 	"x",
+	"tiktok",
 	"google",
 	"ai",
 	"hacker_news",
@@ -21,6 +22,7 @@ export const HEARD_FROM = [
 export const HEARD_FROM_LABELS: Record<(typeof HEARD_FROM)[number], string> = {
 	reddit: "Reddit",
 	x: "X",
+	tiktok: "TikTok",
 	google: "Google search",
 	ai: "ChatGPT, Claude or another AI",
 	hacker_news: "Hacker News",
