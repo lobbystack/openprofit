@@ -92,7 +92,7 @@ function Login() {
 												})
 											}
 										>
-											{p === "github" && (
+											{p === "github" ? (
 												<svg
 													viewBox="0 0 24 24"
 													width="14"
@@ -103,6 +103,14 @@ function Login() {
 												>
 													<path d={siGithub.path} />
 												</svg>
+											) : (
+												<img
+													src="/logos/google.svg"
+													alt=""
+													width="14"
+													height="14"
+													className="size-3.5 shrink-0"
+												/>
 											)}
 											{p === "github"
 												? "Continue with GitHub"

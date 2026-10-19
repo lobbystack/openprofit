@@ -17,6 +17,7 @@ We changed only the `viewBox` of `stripe`, `revenuecat`, `openai`, `resend` and 
 | `revenuecat.svg` | RevenueCat press kit logomark, [revenuecat.com/press-kit](https://www.revenuecat.com/press-kit). SVGL has no RevenueCat logo. | [revenuecat.com/press-kit](https://www.revenuecat.com/press-kit) |
 | `appstore.svg` | SVGL `appstore.svg` | |
 | `googleplay.svg` | SVGL `googleplay.svg` | |
+| `google.svg` | SVGL `google.svg`. The sign-in button uses it; Google isn't a connector. | |
 | `openai.svg`, `openai-dark.svg` | SVGL `openai.svg`, `openai_dark.svg` | [openai.com/brand](https://openai.com/brand/) |
 | `anthropic.svg`, `anthropic-dark.svg` | SVGL `anthropic_black.svg`, `anthropic_white.svg` | |
 | `openrouter.svg`, `openrouter-dark.svg` | SVGL `openrouter_light.svg`, `openrouter_dark.svg` | |
