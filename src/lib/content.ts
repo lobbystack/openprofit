@@ -15,6 +15,13 @@ const marked = new Marked({
 			return `<h${depth} id="${id}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
 		},
 	},
+	// Wide tables scroll inside their own box on a phone instead of widening the page.
+	hooks: {
+		postprocess: (html) =>
+			html
+				.replaceAll("<table>", '<div class="table-scroll"><table>')
+				.replaceAll("</table>", "</table></div>"),
+	},
 });
 
 export function toHtml(md: string) {
