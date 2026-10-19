@@ -13,7 +13,7 @@ import { Hero } from "#/components/landing/hero";
 import { Nav } from "#/components/landing/nav";
 import { OpenSource } from "#/components/landing/open-source";
 import { Pricing } from "#/components/landing/pricing";
-import { SITE_DESCRIPTION, SITE_URL, seo } from "#/lib/app";
+import { GITHUB_URL, SITE_DESCRIPTION, SITE_URL, seo } from "#/lib/app";
 
 const LD = {
 	"@context": "https://schema.org",
@@ -25,6 +25,7 @@ const LD = {
 			operatingSystem: "Web",
 			url: SITE_URL,
 			description: SITE_DESCRIPTION,
+			sameAs: [GITHUB_URL, "https://www.npmjs.com/package/openprofit"],
 			offers: [
 				{ "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
 				{ "@type": "Offer", name: "Indie", price: "19", priceCurrency: "USD" },
@@ -36,7 +37,16 @@ const LD = {
 			name: "Lobbystack Inc.",
 			url: SITE_URL,
 			logo: `${SITE_URL}/apple-touch-icon.png`,
-			sameAs: ["https://github.com/morencyr/openprofit"],
+			sameAs: [GITHUB_URL],
+		},
+		// The name Google shows for the site in results, and the other names
+		// people search for it by:
+		// https://developers.google.com/search/docs/appearance/site-names
+		{
+			"@type": "WebSite",
+			name: "OpenProfit",
+			alternateName: ["Open Profit", "openprofit.dev"],
+			url: `${SITE_URL}/`,
 		},
 	],
 };
@@ -44,7 +54,7 @@ const LD = {
 export const Route = createFileRoute("/")({
 	head: () => ({
 		...seo({
-			title: "OpenProfit: open-source finance for developers",
+			title: "OpenProfit: Open-source profit tracking for developers",
 			path: "/",
 		}),
 		scripts: [{ type: "application/ld+json", children: JSON.stringify(LD) }],
