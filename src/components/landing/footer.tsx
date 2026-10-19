@@ -9,6 +9,7 @@ const COLUMNS: [string, [string, string][]][] = [
 			["Integrations", "/integrations"],
 			["Public pages", "/docs/public-pages"],
 			["Profit database", "/open"],
+			["Benchmarks", "/data"],
 			["Pricing", "/#pricing"],
 			["Changelog", "/changelog"],
 			["Blog", "/blog"],
@@ -17,7 +18,7 @@ const COLUMNS: [string, [string, string][]][] = [
 	[
 		"Developers",
 		[
-			["Docs", "/docs"],
+			["Docs", "/docs/connectors"],
 			["Self-host", "/docs/self-host"],
 			["GitHub", GITHUB_URL],
 		],
@@ -55,7 +56,7 @@ export function Footer() {
 					</div>
 					{COLUMNS.map(([title, links]) => (
 						<div key={title}>
-							<h3 className="text-[14px] font-medium">{title}</h3>
+							<h2 className="text-[14px] font-medium">{title}</h2>
 							<ul className="mt-4 space-y-2.5">
 								{links.map(([label, href]) => (
 									<li key={label}>

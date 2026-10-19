@@ -34,6 +34,8 @@ The key is stored encrypted and used only to read the cost report.
 
 Workspaces are how Anthropic groups usage, so they're how OpenProfit maps it. Give each product its own workspace and its own API key, then assign the workspace to the product on the connection's page. Unassigned workspaces stay under Unassigned.
 
+[AI token cost per user](/blog/ai-token-cost-per-user) shows how to work out what each of your users costs in Claude tokens before you set a price.
+
 ## Common questions
 
 **I use Claude through AWS Bedrock or Google Vertex.** Those charges appear on your AWS or Google Cloud bill, not in Anthropic's cost report. Add them as a flat monthly cost until a connector for those clouds exists.

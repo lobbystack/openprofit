@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ContentPage } from "#/components/content-page";
-import { seo } from "#/lib/app";
+import { breadcrumbs, jsonLd, seo } from "#/lib/app";
 import { getContentPage } from "#/server/content.functions";
 
 export const Route = createFileRoute("/compare/$slug")({
@@ -9,11 +9,21 @@ export const Route = createFileRoute("/compare/$slug")({
 	// No loader data on a 404.
 	head: ({ loaderData: p }) =>
 		p
-			? seo({
-					title: `${p.title} · OpenProfit`,
-					description: p.description,
-					path: `/compare/${p.slug}`,
-				})
+			? {
+					...seo({
+						title: `${p.title} · OpenProfit`,
+						description: p.description,
+						path: `/compare/${p.slug}`,
+					}),
+					scripts: [
+						jsonLd(
+							breadcrumbs([
+								["OpenProfit", "/"],
+								[p.title, `/compare/${p.slug}`],
+							]),
+						),
+					],
+				}
 			: {},
 	component: () => <ContentPage html={Route.useLoaderData().html} />,
 });

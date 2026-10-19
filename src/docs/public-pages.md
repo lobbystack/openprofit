@@ -56,3 +56,5 @@ The badge refreshes within five minutes of a sync. Links shared on social sites 
 - Its first revenue is at least 30 days old
 
 Each tab lists only the products whose mode shows that number, so a Growth and margin page appears on the margin and growth tabs. Rankings count only costs read from provider APIs. Self-reported costs show on the product’s page but not on the leaderboard. Products on self-hosted instances don’t appear.
+
+For an example, see [OpenProfit's own page](https://openprofit.dev/p/lobbystack/openprofit). [An open-source TrustMRR alternative](/blog/trustmrr-alternative) compares OpenProfit's verified profit with TrustMRR's verified revenue.

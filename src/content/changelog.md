@@ -1,6 +1,6 @@
 ---
 title: Changelog
-description: What's new in OpenProfit. Every release, newest first.
+description: Every OpenProfit release, newest first, from Books and the tax report to flat costs, alert emails and chart fixes.
 ---
 
 # Changelog

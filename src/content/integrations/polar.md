@@ -33,3 +33,5 @@ A token with only `organizations:read` and `metrics:read` still syncs Polar's da
 ## Revenue per product
 
 Polar revenue goes to the product you pick on the connection's page. One Polar organization per product keeps the split exact.
+
+[Polar vs Stripe](/blog/stripe-polar-paddle-lemon-squeezy-fees) compares Polar's fee, tax handling and payout terms with Stripe, Paddle and Lemon Squeezy.

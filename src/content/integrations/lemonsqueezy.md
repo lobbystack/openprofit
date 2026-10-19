@@ -41,3 +41,5 @@ A test mode key reads your test mode data instead.
 ## Revenue per product
 
 Each Lemon Squeezy product appears on the connection's page. Assign it to a product and its revenue follows, past sales included. Revenue that isn't tied to a Lemon Squeezy product gets its own row on the same page.
+
+[Lemon Squeezy vs Stripe](/blog/stripe-polar-paddle-lemon-squeezy-fees) compares Lemon Squeezy's fee, tax handling and payout terms with Stripe, Polar and Paddle.

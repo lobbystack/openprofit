@@ -65,6 +65,24 @@ export function seo({
 	};
 }
 
+// A JSON-LD script for a route's head `scripts`.
+export const jsonLd = (data: object) => ({
+	type: "application/ld+json",
+	children: JSON.stringify({ "@context": "https://schema.org", ...data }),
+});
+
+// Breadcrumb trail shown in search results:
+// https://developers.google.com/search/docs/appearance/structured-data/breadcrumb
+export const breadcrumbs = (trail: [name: string, path: string][]) => ({
+	"@type": "BreadcrumbList",
+	itemListElement: trail.map(([name, path], i) => ({
+		"@type": "ListItem",
+		position: i + 1,
+		name,
+		item: `${SITE_URL}${path}`,
+	})),
+});
+
 export const NOINDEX = { meta: [{ name: "robots", content: "noindex" }] };
 
 // Where to go after signing in (`?redirect=`): a path on this site, never

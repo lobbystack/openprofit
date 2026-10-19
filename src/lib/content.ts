@@ -57,6 +57,18 @@ export function parse(slug: string, raw: string): Page {
 	};
 }
 
+// Question and answer pairs from a "## Common questions" section, written as
+// "**Question?** Answer" paragraphs, for FAQPage structured data. Markdown
+// links and emphasis become plain text.
+export function faqOf(body: string) {
+	const section =
+		body.split(/^## Common questions$/m)[1]?.split(/^## /m)[0] ?? "";
+	return [...section.matchAll(/^\*\*(.+?\?)\*\* (.+)$/gm)].map(([, q, a]) => ({
+		q,
+		a: a.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/[*`]/g, ""),
+	}));
+}
+
 const load = (files: Record<string, string>) =>
 	Object.entries(files).map(([path, raw]) =>
 		parse(path.split("/").pop()?.replace(/\.md$/, "") ?? path, raw),

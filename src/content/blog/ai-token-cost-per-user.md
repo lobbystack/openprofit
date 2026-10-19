@@ -22,7 +22,7 @@ Cost per user per month = calls per month × cost of one call
 
 Prices are per million tokens, so divide by 1,000,000. If you use prompt caching, add a line for cached input, which the provider bills at a lower rate when you resend the same prompt prefix.
 
-## Token prices in October 2026
+## Claude and OpenAI API pricing in October 2026
 
 Standard prices per million tokens, from the [Claude pricing page](https://claude.com/pricing) and the [OpenAI pricing page](https://developers.openai.com/api/docs/pricing) on October 19, 2026:
 

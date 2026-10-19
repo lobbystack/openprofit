@@ -12,7 +12,7 @@ const BODY = [
 	"",
 	`> ${SITE_DESCRIPTION}`,
 	"",
-	"OpenProfit is open source under the MIT license and runs as one Docker image. Request any page below with `Accept: text/markdown` to get it as markdown.",
+	`OpenProfit is open source under the MIT license and runs as one Docker image. Request any page below with \`Accept: text/markdown\` to get it as markdown, or read them all at ${SITE_URL}/llms-full.txt.`,
 	"",
 	"## Product",
 	"",

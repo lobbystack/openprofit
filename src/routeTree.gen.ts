@@ -16,6 +16,7 @@ import { Route as CliRouteImport } from './routes/cli'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as LlmsFullDottxtRouteImport } from './routes/llms-full[.]txt'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -103,6 +104,11 @@ const DemoRoute = DemoRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsFullDottxtRoute = LlmsFullDottxtRouteImport.update({
+  id: '/llms-full.txt',
+  path: '/llms-full.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -381,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/cookies': typeof CookiesRoute
   '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
+  '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -440,6 +447,7 @@ export interface FileRoutesByTo {
   '/changelog': typeof ChangelogRoute
   '/cli': typeof CliRoute
   '/cookies': typeof CookiesRoute
+  '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -503,6 +511,7 @@ export interface FileRoutesById {
   '/cookies': typeof CookiesRoute
   '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
+  '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -567,6 +576,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/demo'
     | '/docs'
+    | '/llms-full.txt'
     | '/llms.txt'
     | '/login'
     | '/mcp'
@@ -626,6 +636,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/cli'
     | '/cookies'
+    | '/llms-full.txt'
     | '/llms.txt'
     | '/login'
     | '/mcp'
@@ -688,6 +699,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/demo'
     | '/docs'
+    | '/llms-full.txt'
     | '/llms.txt'
     | '/login'
     | '/mcp'
@@ -751,6 +763,7 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   DemoRoute: typeof DemoRouteWithChildren
   DocsRoute: typeof DocsRouteWithChildren
+  LlmsFullDottxtRoute: typeof LlmsFullDottxtRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
@@ -838,6 +851,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms-full.txt': {
+      id: '/llms-full.txt'
+      path: '/llms-full.txt'
+      fullPath: '/llms-full.txt'
+      preLoaderRoute: typeof LlmsFullDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -1290,6 +1310,7 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   DemoRoute: DemoRouteWithChildren,
   DocsRoute: DocsRouteWithChildren,
+  LlmsFullDottxtRoute: LlmsFullDottxtRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,

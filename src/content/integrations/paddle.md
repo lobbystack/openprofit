@@ -33,3 +33,5 @@ A sandbox key (`pdl_sdbx_…`) reads your sandbox account instead.
 ## Revenue per product
 
 Paddle revenue goes to the product you pick on the connection's page. If you run one Paddle account per product, connect each one and point it at its product.
+
+[Paddle vs Stripe](/blog/stripe-polar-paddle-lemon-squeezy-fees) compares Paddle's fee, tax handling and payout terms with Stripe, Polar and Lemon Squeezy.
