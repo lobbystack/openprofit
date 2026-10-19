@@ -27,7 +27,7 @@ const serverCard = (base: string) => ({
 		"Revenue, costs and profit per product, pulled from Stripe, OpenAI and other provider APIs.",
 	websiteUrl: base,
 	repository: {
-		url: "https://github.com/lobbystack/openprofit",
+		url: "https://github.com/morencyr/openprofit",
 		source: "github",
 	},
 	icons: [{ src: `${base}/favicon.svg`, mimeType: "image/svg+xml" }],

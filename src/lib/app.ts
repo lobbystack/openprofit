@@ -1,7 +1,7 @@
 export const APP_NAME = "OpenProfit";
 export const APP_TAGLINE = "Finance for developers";
 export const APP_DOMAIN = "openprofit.dev";
-export const GITHUB_URL = "https://github.com/lobbystack/openprofit";
+export const GITHUB_URL = "https://github.com/morencyr/openprofit";
 export const SITE_URL = "https://openprofit.dev";
 export const SITE_DESCRIPTION =
 	"Open-source dashboard that puts your Stripe or Paddle revenue next to your OpenAI, Vercel and other bills, and shows profit per product.";

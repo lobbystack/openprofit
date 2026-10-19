@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-OpenProfit: open-source finance dashboard for developers. Pulls revenue (Stripe, Polar) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway) from provider APIs, assigns them to products, shows profit per product. One TanStack Start app serves the landing page, docs, marketing content and the dashboard. Hosted at openprofit.dev (Railway), self-hostable as one Docker image. Repo: github.com/lobbystack/openprofit. Operator: Lobbystack Inc.
+OpenProfit: open-source finance dashboard for developers. Pulls revenue (Stripe, Polar) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway) from provider APIs, assigns them to products, shows profit per product. One TanStack Start app serves the landing page, docs, marketing content and the dashboard. Hosted at openprofit.dev (Railway), self-hostable as one Docker image. Repo: github.com/morencyr/openprofit. Operator: Lobbystack Inc.
 
 ## Commands
 
@@ -92,4 +92,4 @@ Before editing files for a substantial task:
 
 ## Deploy
 
-Push to `main` runs CI (`.github/workflows/check.yml`) and publishes `ghcr.io/lobbystack/openprofit:latest`. Railway's `web` service (project `openprofit`, plus a Postgres service) deploys from the repo's `main` branch with Wait for CI on: each push waits for the GitHub checks, then deploys, and a failed check blocks it. Don't deploy production with `railway up`; it uploads the local working tree, uncommitted changes included. Railway's edge caches `.xml` responses, so give those an explicit `Cache-Control`.
+Push to `main` runs CI (`.github/workflows/check.yml`) and publishes `ghcr.io/morencyr/openprofit:latest`. Railway's `web` service (project `openprofit`, plus a Postgres service) deploys from the repo's `main` branch with Wait for CI on: each push waits for the GitHub checks, then deploys, and a failed check blocks it. Don't deploy production with `railway up`; it uploads the local working tree, uncommitted changes included. Railway's edge caches `.xml` responses, so give those an explicit `Cache-Control`.

@@ -3,7 +3,7 @@
 OpenProfit is the open-source finance dashboard for developers. It brings your revenue and every bill you pay into one place, so you know what each product earns after costs.
 
 - Website: https://openprofit.dev
-- Source: https://github.com/lobbystack/openprofit (MIT license)
+- Source: https://github.com/morencyr/openprofit (MIT license)
 - Docs: https://openprofit.dev/docs/self-host
 
 ## What it does
