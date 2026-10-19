@@ -18,9 +18,10 @@ import {
 	NativeSelectOption,
 } from "#/components/ui/native-select";
 import { identify } from "#/lib/analytics";
-import { isLocalPath, NOINDEX } from "#/lib/app";
+import { HEARD_FROM, HEARD_FROM_LABELS, isLocalPath, NOINDEX } from "#/lib/app";
 import { localDay } from "#/lib/books-settings";
 import { CURRENCIES } from "#/lib/format";
+import { getAnalyticsConfig } from "#/server/analytics.functions";
 import { getSession } from "#/server/auth.functions";
 import { createWorkspaceFn } from "#/server/onboarding.functions";
 
@@ -34,15 +35,19 @@ export const Route = createFileRoute("/onboarding")({
 		redirect: z.string().refine(isLocalPath).optional().catch(undefined),
 	}),
 	loader: async () => {
-		const user = await getSession();
+		const [user, analytics] = await Promise.all([
+			getSession(),
+			getAnalyticsConfig(),
+		]);
 		if (!user) throw redirect({ to: "/login" });
-		return user;
+		// The answer only goes to PostHog, so self-hosts without it don't ask.
+		return { user, askHeardFrom: analytics.key !== null };
 	},
 	component: Onboarding,
 });
 
 function Onboarding() {
-	const user = Route.useLoaderData();
+	const { user, askHeardFrom } = Route.useLoaderData();
 	useEffect(() => identify(user.id, user.analytics), [user]);
 	const back = Route.useSearch().redirect;
 	const navigate = useNavigate();
@@ -50,6 +55,9 @@ function Onboarding() {
 	const [name, setName] = useState("");
 	const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>("USD");
 	const [incorporated, setIncorporated] = useState(false);
+	const [heardFrom, setHeardFrom] = useState<(typeof HEARD_FROM)[number] | "">(
+		"",
+	);
 	const [busy, setBusy] = useState(false);
 
 	async function submit(e: React.FormEvent) {
@@ -62,6 +70,7 @@ function Onboarding() {
 				currency,
 				timezone,
 				incorporatedOn: incorporated ? localDay() : null,
+				heardFrom: heardFrom || undefined,
 			},
 		});
 		if (back) navigate({ href: back });
@@ -120,6 +129,29 @@ function Onboarding() {
 							change it in Books.
 						</FieldDescription>
 					</Field>
+					{askHeardFrom && (
+						<Field>
+							<FieldLabel htmlFor="ws-heard-from">
+								Where did you hear about OpenProfit?
+							</FieldLabel>
+							<NativeSelect
+								id="ws-heard-from"
+								value={heardFrom}
+								onChange={(e) =>
+									setHeardFrom(e.target.value as (typeof HEARD_FROM)[number])
+								}
+							>
+								<NativeSelectOption value="">
+									Choose one (optional)
+								</NativeSelectOption>
+								{HEARD_FROM.map((k) => (
+									<NativeSelectOption key={k} value={k}>
+										{HEARD_FROM_LABELS[k]}
+									</NativeSelectOption>
+								))}
+							</NativeSelect>
+						</Field>
+					)}
 					<Button
 						type="submit"
 						size="default"
