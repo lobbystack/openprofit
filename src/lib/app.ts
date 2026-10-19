@@ -6,6 +6,29 @@ export const SITE_URL = "https://openprofit.dev";
 export const SITE_DESCRIPTION =
 	"Open-source app that puts your revenue next to your OpenAI, Vercel and other bills, shows profit per app, and gives you the numbers for your tax return.";
 
+// Answers to onboarding's "Where did you hear about OpenProfit?", sent with
+// workspace_created so signups can be counted per channel.
+export const HEARD_FROM = [
+	"reddit",
+	"x",
+	"google",
+	"ai",
+	"hacker_news",
+	"github",
+	"friend",
+	"other",
+] as const;
+export const HEARD_FROM_LABELS: Record<(typeof HEARD_FROM)[number], string> = {
+	reddit: "Reddit",
+	x: "X",
+	google: "Google search",
+	ai: "ChatGPT, Claude or another AI",
+	hacker_news: "Hacker News",
+	github: "GitHub",
+	friend: "A friend or colleague",
+	other: "Other",
+};
+
 // Title, description, canonical and social tags for a public page. `image`
 // replaces the root's 1200x630 social image.
 export function seo({
