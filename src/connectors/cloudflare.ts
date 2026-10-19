@@ -40,6 +40,18 @@ type Usage = {
 	ZoneId?: string;
 	ZoneName?: string;
 };
+type Info = { subscriptions?: { billing_cycle_anchor_timestamp: string }[] };
+
+// The latest day on or before `date` (YYYY-MM-DD) that falls on the anchor's
+// day of the month. 62 days back always reaches any day, the 31st included.
+function anchorOnOrBefore(date: string, anchor: string) {
+	const dom = new Date(anchor).getUTCDate();
+	let t = Date.parse(`${date}T00:00:00Z`);
+	for (let i = 0; i < 62 && new Date(t).getUTCDate() !== dom; i++)
+		t -= 86_400_000;
+	return new Date(t).toISOString().slice(0, 10);
+}
+
 type Invoice = {
 	id: string;
 	amount: number;
@@ -79,13 +91,30 @@ export const cloudflare = register({
 		const id = await accountId(c);
 		const out: CostLine[] = [];
 		try {
+			// The range must include a subscription's billing cycle anchor day,
+			// or the API returns no usage, so it starts at the last anchor day
+			// on or before `from`; lines before `from` are dropped.
+			// https://developers.cloudflare.com/api/resources/billing/subresources/usage/methods/get_account_usage_v1/
+			const info = await getJson<Envelope<Info>>(
+				`${BASE}/accounts/${id}/billable-usage/info`,
+				{ headers: headers(c) },
+			);
+			let from = range.from;
+			for (const s of info.result?.subscriptions ?? []) {
+				const day = anchorOnOrBefore(
+					range.from,
+					s.billing_cycle_anchor_timestamp,
+				);
+				if (day < from) from = day;
+			}
 			const u = await getJson<Envelope<Usage[]>>(
-				`${BASE}/accounts/${id}/billable-usage?from=${range.from}&to=${range.to}`,
+				`${BASE}/accounts/${id}/billable-usage?from=${from}&to=${range.to}`,
 				{ headers: headers(c) },
 			);
 			for (const r of u.result ?? []) {
 				if (!r.BilledCost) continue;
 				const date = r.ChargePeriodStart.slice(0, 10);
+				if (date < range.from) continue;
 				out.push({
 					externalId: `usage:${date}:${r.ServiceName}:${r.ChargeDescription ?? ""}:${r.ZoneId ?? ""}`,
 					date,
