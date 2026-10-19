@@ -49,7 +49,7 @@ You choose how much a page shows. **Full** shows revenue, costs, profit and each
 |---|---|---|
 | Revenue | Verified, from 11 payment providers and app stores | Verified, from Stripe, Polar, Paddle, Lemon Squeezy and RevenueCat |
 | Costs | Not tracked, apart from optional Meta Ads spend | Verified, from 14 provider billing APIs |
-| Profit | A margin the seller types in, labelled unverified | Revenue minus verified costs, per product |
+| Profit | A margin the seller types in, labeled unverified | Revenue minus verified costs, per product |
 | Public numbers | Startup page and revenue badge | Product page in three modes, and a badge |
 | Leaderboard | Revenue and MRR, more than 10,000 startups | Profit, revenue, margin and growth; one product so far |
 | Selling a startup | Marketplace: listings from $29, 3% closing fee | Not offered |
