@@ -61,7 +61,7 @@ OpenProfit uses these keys the same way as the others and only reads with them. 
 
 OpenProfit is open source under the MIT license, and the hosted version runs the same code. Self-host it and your keys stay on your server: one Docker container with Postgres inside, encrypting with a key you generate. The [self-host guide](/docs/self-host) walks through it.
 
-You can read every line that touches a key. Encryption is in [`src/lib/crypto.ts`](https://github.com/lobbystack/openprofit/blob/main/src/lib/crypto.ts), and each provider call is in [`src/connectors/`](https://github.com/lobbystack/openprofit/tree/main/src/connectors).
+You can read every line that touches a key. Encryption is in [`src/lib/crypto.ts`](https://github.com/morencyr/openprofit/blob/main/src/lib/crypto.ts), and each provider call is in [`src/connectors/`](https://github.com/morencyr/openprofit/tree/main/src/connectors).
 
 A self-hosted copy sends us nothing unless you switch on its daily usage ping, which carries a version number and counts, never keys or amounts.
 

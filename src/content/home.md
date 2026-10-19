@@ -3,7 +3,7 @@
 OpenProfit is open-source finance for developers. Connect Stripe, OpenAI, Vercel and every other bill. See what each of your apps earns after costs, and get the numbers for your tax return.
 
 - Website: https://openprofit.dev
-- Source: https://github.com/lobbystack/openprofit (MIT license)
+- Source: https://github.com/morencyr/openprofit (MIT license)
 - Docs: https://openprofit.dev/docs/self-host
 
 ## What it does

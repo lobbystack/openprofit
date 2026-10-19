@@ -36,7 +36,7 @@ const LD = {
 			name: "Lobbystack Inc.",
 			url: SITE_URL,
 			logo: `${SITE_URL}/apple-touch-icon.png`,
-			sameAs: ["https://github.com/lobbystack/openprofit"],
+			sameAs: ["https://github.com/morencyr/openprofit"],
 		},
 	],
 };

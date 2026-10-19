@@ -1,6 +1,6 @@
 # Contributing to OpenProfit
 
-Issues and pull requests are welcome. Connectors are the most useful contribution. Most of this guide covers how to build one: the files to touch, the data to return, and how to test against a real account. To ask for a connector without building it, [open a connector request](https://github.com/lobbystack/openprofit/issues/new?template=connector.yml).
+Issues and pull requests are welcome. Connectors are the most useful contribution. Most of this guide covers how to build one: the files to touch, the data to return, and how to test against a real account. To ask for a connector without building it, [open a connector request](https://github.com/morencyr/openprofit/issues/new?template=connector.yml).
 
 ## Set up a development environment
 

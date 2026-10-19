@@ -5,7 +5,7 @@ description: What's new in OpenProfit. Every release, newest first.
 
 # Changelog
 
-Every release, newest first. The full history is in the [commit log on GitHub](https://github.com/lobbystack/openprofit/commits/main).
+Every release, newest first. The full history is in the [commit log on GitHub](https://github.com/morencyr/openprofit/commits/main).
 
 ## October 8, 2026
 

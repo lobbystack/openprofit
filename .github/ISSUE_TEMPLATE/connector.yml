@@ -4,7 +4,7 @@ title: "Connector: "
 body:
   - type: markdown
     attributes:
-      value: A connector needs an API that returns billing or usage data with a key. Links to the provider's own docs help most. To build it yourself, see [CONTRIBUTING.md](https://github.com/lobbystack/openprofit/blob/main/CONTRIBUTING.md#build-a-connector).
+      value: A connector needs an API that returns billing or usage data with a key. Links to the provider's own docs help most. To build it yourself, see [CONTRIBUTING.md](https://github.com/morencyr/openprofit/blob/main/CONTRIBUTING.md#build-a-connector).
   - type: input
     id: provider
     attributes:
