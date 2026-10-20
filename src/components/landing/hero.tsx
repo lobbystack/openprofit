@@ -37,9 +37,9 @@ export function Hero() {
 						className="rise prose-landing mt-5 max-w-[640px]"
 						style={{ "--rise-delay": "120ms" } as React.CSSProperties}
 					>
-						OpenProfit is the open-source finance dashboard for developers. It
-						brings your revenue and every bill you pay into one place, so you
-						know what each product earns after costs.
+						Connect Stripe, OpenAI, Vercel and every other bill. See what each
+						of your apps earns after costs, and get the numbers for your tax
+						return.
 					</p>
 					<div
 						className="rise mt-8 flex gap-3"

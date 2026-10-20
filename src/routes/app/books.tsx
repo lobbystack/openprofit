@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "#/components/app/shell";
 import { BooksExport } from "#/components/books/export";
 import { BooksSettings } from "#/components/books/settings";
@@ -36,12 +36,16 @@ export const Route = createFileRoute("/app/books")({
 
 function Books() {
 	const { settings, report, exportOptions } = Route.useLoaderData();
+	const navigate = useNavigate({ from: Route.fullPath });
 	return (
 		<>
 			<PageHeader title="Books" />
 			<div className="mt-4 grid gap-4">
 				<BooksExport options={exportOptions} />
-				<TaxReport report={report} />
+				<TaxReport
+					report={report}
+					onYear={(year) => navigate({ search: (s) => ({ ...s, year }) })}
+				/>
 				<BooksSettings settings={settings} />
 			</div>
 		</>

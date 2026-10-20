@@ -9,7 +9,8 @@ const LINKS = [
 	["Product", "/#product"],
 	["Integrations", "/integrations"],
 	["Pricing", "/#pricing"],
-	["Docs", "/docs"],
+	["Docs", "/docs/connectors"],
+	["Blog", "/blog"],
 ];
 
 // Fixed, 56px, white, links 14px, Sign in bordered + Start free black, both 32px.

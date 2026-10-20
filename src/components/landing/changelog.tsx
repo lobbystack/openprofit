@@ -2,14 +2,14 @@ import { Container, Href, Section, SectionHeader } from "./primitives";
 
 const ENTRIES = [
 	{
-		date: "Oct 6, 2026",
-		title: "Revenue leaves out sales tax and VAT",
-		text: "Stripe, Paddle, Lemon Squeezy and RevenueCat store tax apart from revenue, so profit stops counting money you pass on.",
+		date: "Oct 8, 2026",
+		title: "Your tax numbers and books",
+		text: "See the year on the lines of your tax return, and export any month to QuickBooks or Xero.",
 	},
 	{
-		date: "Oct 6, 2026",
-		title: "Flat costs and alert emails",
-		text: "Add bills without an API on the Costs page. Every member gets one email when an alert opens.",
+		date: "Oct 8, 2026",
+		title: "One-time costs",
+		text: "Add a laptop or another single purchase. The tax report depreciates equipment for you.",
 	},
 ];
 

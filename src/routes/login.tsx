@@ -29,7 +29,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function Login() {
-	const { social, mailer } = Route.useLoaderData();
+	const { social, mailer, cloud } = Route.useLoaderData();
 	const back = Route.useSearch().redirect;
 	const next = back ?? "/app";
 	// A new account creates its workspace first, then continues to `back`.
@@ -92,7 +92,7 @@ function Login() {
 												})
 											}
 										>
-											{p === "github" && (
+											{p === "github" ? (
 												<svg
 													viewBox="0 0 24 24"
 													width="14"
@@ -103,6 +103,14 @@ function Login() {
 												>
 													<path d={siGithub.path} />
 												</svg>
+											) : (
+												<img
+													src="/logos/google.svg"
+													alt=""
+													width="14"
+													height="14"
+													className="size-3.5 shrink-0"
+												/>
 											)}
 											{p === "github"
 												? "Continue with GitHub"
@@ -136,6 +144,19 @@ function Login() {
 							{state === "error" && (
 								<p className="text-[12px] text-negative">
 									Could not send the link. Try again.
+								</p>
+							)}
+							{cloud && (
+								<p className="text-center text-[12px] text-text-2">
+									By continuing, you agree to the{" "}
+									<Link to="/terms" className="underline hover:text-ink">
+										Terms
+									</Link>{" "}
+									and{" "}
+									<Link to="/privacy" className="underline hover:text-ink">
+										Privacy Policy
+									</Link>
+									.
 								</p>
 							)}
 						</FieldGroup>

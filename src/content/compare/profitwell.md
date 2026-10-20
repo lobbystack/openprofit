@@ -1,9 +1,11 @@
 ---
 title: OpenProfit vs ProfitWell Metrics
-description: ProfitWell Metrics tracks subscription revenue for free. OpenProfit adds your costs, from AI providers to hosting, and shows profit per product. Here's how they differ.
+description: ProfitWell Metrics tracks subscription revenue for free. OpenProfit adds your costs, from AI providers to hosting, and shows profit per product.
 ---
 
 # OpenProfit vs ProfitWell Metrics
+
+Updated October 6, 2026.
 
 ProfitWell Metrics, now part of Paddle, is free subscription revenue reporting: MRR, churn, upgrades, lifetime value. OpenProfit answers a different question. It puts your revenue next to every bill you pay and shows what each product keeps.
 

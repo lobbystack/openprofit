@@ -35,3 +35,5 @@ Credits, discounts and domains aren't in the usage data, so the total can still 
 ## Costs per product
 
 Each Railway project appears on the connection's page. Assign it to a product and its usage follows, past months included.
+
+Railway can take your workloads offline at a hard usage limit. [Spend limits vs budget alerts](/blog/spend-limits-budget-alerts) covers what to set it to.

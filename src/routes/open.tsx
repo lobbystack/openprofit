@@ -175,6 +175,14 @@ function Open() {
 					>
 						Publish yours
 					</Link>
+					, or see{" "}
+					<Link
+						to="/blog/$slug"
+						params={{ slug: "trustmrr-alternative" }}
+						className="text-ink underline"
+					>
+						how this compares with TrustMRR
+					</Link>
 					.
 				</p>
 			</main>

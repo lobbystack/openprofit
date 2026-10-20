@@ -1,6 +1,6 @@
 ---
 title: Benchmarks
-description: Monthly revenue, gross margin and cost shares of the products on OpenProfit, grouped by monthly recurring revenue (MRR). The numbers come from Stripe, OpenAI and the other providers' APIs.
+description: Monthly revenue, gross margin and cost shares of the products on OpenProfit, grouped by MRR, from Stripe, OpenAI and other provider APIs.
 ---
 
 ## Download

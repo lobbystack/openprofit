@@ -1,5 +1,6 @@
 import {
 	Bell,
+	BookOpen,
 	Cable,
 	ChevronsUpDown,
 	LayoutGrid,
@@ -17,6 +18,7 @@ const NAV = [
 	["Products", Package, false],
 	["Connections", Cable, false],
 	["Costs", Receipt, false],
+	["Books", BookOpen, false],
 	["Alerts", Bell, false],
 	["Settings", Settings, false],
 ] as const;

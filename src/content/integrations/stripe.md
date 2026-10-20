@@ -16,7 +16,7 @@ Stripe's dashboard leads with gross volume. What reaches your bank is less: Stri
 - **Invoices and Checkout Sessions:** the sales tax or VAT on each payment, from the invoice or Checkout Session it paid. Payment Links count, because they run on Checkout. OpenProfit takes that tax out of the payment and shows it as **Tax collected** on the overview. A refund takes back the same share of tax. A payment with neither, such as a PaymentIntent your code creates, carries no tax figure, so its tax stays in revenue.
 - **Subscriptions:** active subscriptions give your MRR and subscription count. Yearly and weekly prices are converted to a monthly figure. Metered prices are left out of MRR because their amount isn't known until the period ends.
 
-Amounts in other currencies convert to your base currency at the European Central Bank rate for the day of the transaction.
+Amounts in other currencies convert to your base currency at the European Central Bank rate for the day of the transaction. A workspace in Canadian dollars uses the Bank of Canada's rate instead.
 
 ## Connect it
 
@@ -29,3 +29,5 @@ A restricted key can't move money or change your account.
 ## Revenue per product
 
 Stripe revenue goes to the product you pick on the connection's page. If you run one Stripe account per product, connect each and point it at its product.
+
+A Stripe payout arrives net of fees and refunds. [Stripe to QuickBooks or Xero](/blog/stripe-quickbooks-xero) covers the entries your books need, and [Stripe vs Polar vs Paddle vs Lemon Squeezy](/blog/stripe-polar-paddle-lemon-squeezy-fees) compares what you keep from each sale.

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq, ne } from "drizzle-orm";
 import { SITE_URL } from "#/lib/app";
-import { COMPARISONS, INTEGRATIONS } from "#/lib/content";
+import { COMPARISONS, INTEGRATIONS, POSTS } from "#/lib/content";
 import { DOCS } from "#/lib/docs";
 
 const STATIC = [
@@ -10,12 +10,21 @@ const STATIC = [
 	...INTEGRATIONS.map((p) => `/integrations/${p.slug}`),
 	...COMPARISONS.map((p) => `/compare/${p.slug}`),
 	...DOCS.map((d) => `/docs/${d.slug}`),
+	"/blog",
+	...POSTS.map((p) => `/blog/${p.slug}`),
 	"/changelog",
 	"/privacy",
 	"/terms",
 	"/cookies",
 	"/security",
 ];
+
+// Only pages with a real date get <lastmod>: the posts, and the blog index
+// at its newest post.
+const LASTMOD = new Map([
+	["/blog", POSTS[0]?.meta.date],
+	...POSTS.map((p) => [`/blog/${p.slug}`, p.meta.date] as const),
+]);
 
 export const Route = createFileRoute("/sitemap.xml")({
 	server: {
@@ -42,7 +51,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 					...pub.map((r) => `/p/${r.ws}/${r.p}`),
 				];
 				return new Response(
-					`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${SITE_URL}${p}</loc></url>`).join("\n")}\n</urlset>\n`,
+					`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${SITE_URL}${p}</loc>${LASTMOD.get(p) ? `<lastmod>${LASTMOD.get(p)}</lastmod>` : ""}</url>`).join("\n")}\n</urlset>\n`,
 					{
 						headers: {
 							"Content-Type": "application/xml; charset=utf-8",

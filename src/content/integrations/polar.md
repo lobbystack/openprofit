@@ -20,7 +20,7 @@ OpenProfit reads three things from your Polar organization:
 
 The tax shows as **Tax collected** on the overview, kept apart from revenue. Polar files it, so you don't owe it.
 
-Orders stay in the currency the customer paid in and convert to your base currency at the European Central Bank rate for that day. The first sync goes back two years, or one year on the hosted Free plan. Polar retries a failed renewal for up to 21 days, so each sync rereads 21 days of orders.
+Orders stay in the currency the customer paid in and convert to your base currency at the European Central Bank rate for that day. A workspace in Canadian dollars uses the Bank of Canada's rate instead. The first sync goes back two years, or one year on the hosted Free plan. Polar retries a failed renewal for up to 21 days, so each sync rereads 21 days of orders.
 
 ## Connect it
 
@@ -33,3 +33,5 @@ A token with only `organizations:read` and `metrics:read` still syncs Polar's da
 ## Revenue per product
 
 Polar revenue goes to the product you pick on the connection's page. One Polar organization per product keeps the split exact.
+
+[Polar vs Stripe](/blog/stripe-polar-paddle-lemon-squeezy-fees) compares Polar's fee, tax handling and payout terms with Stripe, Paddle and Lemon Squeezy.

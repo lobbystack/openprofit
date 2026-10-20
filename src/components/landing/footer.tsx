@@ -8,15 +8,17 @@ const COLUMNS: [string, [string, string][]][] = [
 		[
 			["Integrations", "/integrations"],
 			["Public pages", "/docs/public-pages"],
-			["Open profit", "/open"],
+			["Profit database", "/open"],
+			["Benchmarks", "/data"],
 			["Pricing", "/#pricing"],
 			["Changelog", "/changelog"],
+			["Blog", "/blog"],
 		],
 	],
 	[
 		"Developers",
 		[
-			["Docs", "/docs"],
+			["Docs", "/docs/connectors"],
 			["Self-host", "/docs/self-host"],
 			["GitHub", GITHUB_URL],
 		],
@@ -49,12 +51,12 @@ export function Footer() {
 					<div>
 						<Logo />
 						<p className="mt-3 max-w-[240px] text-[13px] text-text-2">
-							Revenue, costs and profit for every product you run.
+							Revenue, costs and profit for every app you run.
 						</p>
 					</div>
 					{COLUMNS.map(([title, links]) => (
 						<div key={title}>
-							<h3 className="text-[14px] font-medium">{title}</h3>
+							<h2 className="text-[14px] font-medium">{title}</h2>
 							<ul className="mt-4 space-y-2.5">
 								{links.map(([label, href]) => (
 									<li key={label}>

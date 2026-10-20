@@ -3,7 +3,7 @@ title: Track Firecrawl costs per API key
 name: Firecrawl
 kind: cost
 summary: Plan fee and extra credits per billing period, split by API key.
-description: See what each Firecrawl API key costs per billing period, estimated from credit usage and Firecrawl's published prices, next to the revenue of the product it serves.
+description: What each Firecrawl API key costs per billing period, estimated from credit usage and Firecrawl's prices, next to the revenue of the product it serves.
 ---
 
 # Track Firecrawl costs per API key

@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Card, CardHeader, CardTitle } from "#/components/ui/card";
@@ -30,9 +29,14 @@ const day = (d: string, year = true) =>
 	});
 
 // The yearly tax report (docs/BOOKS.md): the year's numbers on the lines of
-// the form the workspace files.
-export function TaxReport({ report }: { report: Report }) {
-	const navigate = useNavigate({ from: "/app/books" });
+// the form the workspace files. The page owns the year in its URL.
+export function TaxReport({
+	report,
+	onYear,
+}: {
+	report: Report;
+	onYear: (year: number) => void;
+}) {
 	const fmt = (cents: number) =>
 		money(cents / 100, { cents: true, currency: report.currency });
 	const split = report.parts.length > 1;
@@ -45,11 +49,7 @@ export function TaxReport({ report }: { report: Report }) {
 					aria-label="Year"
 					className="num w-auto"
 					value={report.year}
-					onChange={(e) =>
-						navigate({
-							search: (s) => ({ ...s, year: Number(e.target.value) }),
-						})
-					}
+					onChange={(e) => onYear(Number(e.target.value))}
 				>
 					{report.years.map((y) => (
 						<NativeSelectOption key={y} value={y}>

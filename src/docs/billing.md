@@ -18,7 +18,7 @@ Every plan includes every connector and unlimited products. Plans differ in how 
 | Indie | $19 per month | Up to $25,000 MRR | Every hour | 24 months |
 | Pro | $49 per month | Over $25,000 MRR | Every 15 minutes | 24 months |
 
-Prices are in US dollars, billed monthly. The weekly email, alerts and public pages are on every plan, including Free. Indie and Pro can also send [alerts by SMS](/docs/alerts#text-alerts-by-sms), up to 30 texts a month.
+Prices are in US dollars, billed monthly. The weekly email, alerts, public pages and [Books](/docs/books) are on every plan, including Free. Indie and Pro can also send [alerts by SMS](/docs/alerts#text-alerts-by-sms), up to 30 texts a month.
 
 ## How revenue is measured
 

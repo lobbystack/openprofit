@@ -3,7 +3,7 @@ title: Track MongoDB Atlas costs per project
 name: MongoDB Atlas
 kind: cost
 summary: Daily invoice line items per project and SKU, including the current month.
-description: See what each MongoDB Atlas project costs per day, from your Atlas invoices, next to the revenue of the product it serves. Connect with a billing-only service account.
+description: What each MongoDB Atlas project costs per day, from your Atlas invoices, next to the revenue of its product. Connect with a billing-only service account.
 ---
 
 # Track MongoDB Atlas costs per project

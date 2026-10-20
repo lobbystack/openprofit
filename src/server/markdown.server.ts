@@ -1,5 +1,11 @@
 import home from "#/content/home.md?raw";
-import { CHANGELOG, COMPARISONS, DATA, INTEGRATIONS } from "#/lib/content";
+import {
+	CHANGELOG,
+	COMPARISONS,
+	DATA,
+	INTEGRATIONS,
+	POSTS,
+} from "#/lib/content";
 import { DOCS } from "#/lib/docs";
 import { LEGAL_MD } from "#/lib/legal";
 
@@ -14,6 +20,15 @@ const integrationsIndex = [
 	),
 ].join("\n");
 
+const blogIndex = [
+	"# Blog",
+	"",
+	...POSTS.map(
+		(p) =>
+			`- [${p.title}](https://openprofit.dev/blog/${p.slug}) (${p.meta.date}): ${p.description}`,
+	),
+].join("\n");
+
 // Markdown version of a public page, or null when the page has none.
 // Pages with live data (/open, /p/...) need the database, which this file
 // can't import, so their routes answer `Accept: text/markdown` themselves.
@@ -22,6 +37,7 @@ export function markdownFor(path: string): string | null {
 	if (p === "/") return home;
 	if (p === "/integrations") return integrationsIndex;
 	if (p === "/changelog") return CHANGELOG.body;
+	if (p === "/blog") return blogIndex;
 	if (p === "/privacy") return LEGAL_MD.privacy;
 	if (p === "/terms") return LEGAL_MD.terms;
 	if (p === "/cookies") return LEGAL_MD.cookies;
@@ -40,6 +56,8 @@ export function markdownFor(path: string): string | null {
 				? INTEGRATIONS
 				: section === "compare"
 					? COMPARISONS
-					: null;
+					: section === "blog"
+						? POSTS
+						: null;
 	return list?.find((x) => x.slug === slug)?.body ?? null;
 }

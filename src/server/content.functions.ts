@@ -1,7 +1,13 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { CHANGELOG, COMPARISONS, INTEGRATIONS } from "#/lib/content";
+import {
+	CHANGELOG,
+	COMPARISONS,
+	faqOf,
+	INTEGRATIONS,
+	POSTS,
+} from "#/lib/content";
 import { DOCS } from "#/lib/docs";
 import { LEGAL } from "#/lib/legal";
 
@@ -32,8 +38,25 @@ export const getContentPage = createServerFn({ method: "GET" })
 					: COMPARISONS;
 		const p = list.find((x) => x.slug === data.slug);
 		if (!p) throw notFound();
-		return page(p);
+		return { ...page(p), faq: faqOf(p.body) };
 	});
+
+export const getPost = createServerFn({ method: "GET" })
+	.validator(z.string())
+	.handler(({ data }) => {
+		const p = POSTS.find((x) => x.slug === data);
+		if (!p) throw notFound();
+		return { ...page(p), date: p.meta.date, author: p.meta.author };
+	});
+
+export const getPosts = createServerFn({ method: "GET" }).handler(() =>
+	POSTS.map((p) => ({
+		slug: p.slug,
+		title: p.title,
+		description: p.description,
+		date: p.meta.date,
+	})),
+);
 
 export const getChangelog = createServerFn({ method: "GET" }).handler(() =>
 	page(CHANGELOG),

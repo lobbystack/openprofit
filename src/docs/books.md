@@ -28,6 +28,8 @@ Costs without an API go on the **Costs** page. Choose **One time** for a single 
 4. Leave **Product** on **All** for your books. A journal for one product leaves out shared costs, so import it only if that product is its own company.
 5. Click **Download**.
 
+The QuickBooks and Xero files leave out what the bank feed already records. [Stripe to QuickBooks or Xero](/blog/stripe-quickbooks-xero) explains the entries behind a Stripe payout and how the Stripe Connector by QuickBooks compares.
+
 Exporting a whole month closes it. The same month always exports the same file, and if a provider changes its numbers later, your next export adds an adjustment for the difference.
 
 ### Import into QuickBooks Online
@@ -66,7 +68,7 @@ Pick the year at the top of **Tax report**. The report lists each line of your f
 | United States, no company or a single-member LLC | Schedule C |
 | United States, company | Form 1120, with the 1120-S and 1065 equivalents |
 
-A line marked **Our choice** has no official home for that cost, such as AI usage or payment fees, and the note says why OpenProfit picked it. If you incorporated during the year, the report splits at that date.
+A line marked **Our choice** has no official home for that cost, such as AI usage or payment fees, and the note says why OpenProfit picked it. [T2125 and Schedule C lines for OpenAI, Vercel and Stripe fees](/blog/tax-lines-for-software-costs) explains each choice with its CRA, Revenu Québec or IRS source. If you incorporated during the year, the report splits at that date.
 
 Equipment follows your country's rules. In Canada, a computer is class 50. In the United States, an item up to $2,500 is deducted in full under the de minimis safe harbor, and the report writes the election statement you attach to your return.
 

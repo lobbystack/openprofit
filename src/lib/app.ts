@@ -4,7 +4,7 @@ export const APP_DOMAIN = "openprofit.dev";
 export const GITHUB_URL = "https://github.com/morencyr/openprofit";
 export const SITE_URL = "https://openprofit.dev";
 export const SITE_DESCRIPTION =
-	"Open-source dashboard that puts your Stripe or Paddle revenue next to your OpenAI, Vercel and other bills, and shows profit per product.";
+	"Open-source app that puts your revenue next to your OpenAI, Vercel and other bills, shows profit per app, and gives you the numbers for your tax return.";
 
 // Answers to onboarding's "Where did you hear about OpenProfit?", sent with
 // workspace_created so signups can be counted per channel.
@@ -64,6 +64,24 @@ export function seo({
 		links: [{ rel: "canonical", href: url }],
 	};
 }
+
+// A JSON-LD script for a route's head `scripts`.
+export const jsonLd = (data: object) => ({
+	type: "application/ld+json",
+	children: JSON.stringify({ "@context": "https://schema.org", ...data }),
+});
+
+// Breadcrumb trail shown in search results:
+// https://developers.google.com/search/docs/appearance/structured-data/breadcrumb
+export const breadcrumbs = (trail: [name: string, path: string][]) => ({
+	"@type": "BreadcrumbList",
+	itemListElement: trail.map(([name, path], i) => ({
+		"@type": "ListItem",
+		position: i + 1,
+		name,
+		item: `${SITE_URL}${path}`,
+	})),
+});
 
 export const NOINDEX = { meta: [{ name: "robots", content: "noindex" }] };
 

@@ -81,8 +81,18 @@ Each grouping is assigned to one product or left unassigned. Lines that belong t
 
 ## Add costs that have no API
 
-Services like Supabase or a domain registrar don’t expose billing data, and neither do Resend’s marketing plans and add-ons. Add them on the **Costs** page with **Add flat cost**: a name, an amount per month or per year, a start date, an optional end date and the product the cost belongs to. OpenProfit counts the cost in every month from the start date to the end date and spreads a yearly amount evenly over 12 months. To stop counting a cost from a given month, set an end date; removing it takes it out of past months too.
+Services like Supabase or a domain registrar don’t expose billing data, and neither do Resend’s marketing plans and add-ons. Add them on the **Costs** page with **Add flat cost**, which asks for:
+
+- **Name**, **Product**, **Amount** and **Currency**: what the cost is, the product it belongs to, and its price
+- **Billed**: **Monthly**, **Yearly, spread over 12 months**, or **One time** for a single purchase such as a laptop
+- **Category**: the expense account the cost goes to in [Books](/docs/books), such as **Hosting** or **Software**. The tax report depreciates **Equipment** instead of deducting it at once
+- **Starts** and **Ends (optional)**, or **Date** for a one-time cost
+- **Paid with**: for an incorporated company, your personal card or a company account, with an optional **Since** date when you switch
+
+OpenProfit counts a monthly or yearly cost in every month from its start date to its end date, and a one-time cost in full in its month. To stop counting a cost from a given month, set an end date; removing it takes it out of past months too.
 
 ## Currency conversion
 
-Each workspace has one base currency, set during onboarding and editable in **Settings**. OpenProfit converts every line in another currency at the European Central Bank (ECB) rate for that line’s date. Flat costs have no date of their own, so they convert at the rate of the day you save them. When you change the base currency, every stored line converts again at its own date’s rate, and flat costs at that day’s rate.
+Each workspace has one base currency, set during onboarding and editable in **Settings**. OpenProfit converts every line in another currency at the European Central Bank (ECB) rate for that line’s date. A workspace in Canadian dollars uses the Bank of Canada’s daily rate instead, as the Canada Revenue Agency (CRA) asks. Currencies the Bank doesn’t publish still use the ECB rate.
+
+Flat costs have no date of their own, so they convert at the rate of the day you save them. When you change the base currency, every stored line converts again at its own date’s rate, and flat costs at that day’s rate.

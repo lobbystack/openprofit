@@ -12,8 +12,8 @@ Your agent can read your numbers and change your workspace through the Model Con
 
 Every agent request carries an API token tied to one workspace. Create one in **Settings**, under **API tokens**:
 
-- **Read**: the agent sees numbers, products, connections and alerts, and can’t change anything
-- **Read and write**: the agent can also add and remove products, connections, mappings and flat costs, and turn public pages on or off
+- **Read**: the agent sees numbers, products, connections, alerts and [Books](/docs/books) settings, and can export a month’s journal. That export is the one change it can make: exporting the whole workspace closes the month, as it does in the app
+- **Read and write**: the agent can also add and remove products, connections, mappings and flat costs, change Books settings, and turn public pages on or off
 
 OpenProfit shows the token once and stores only its hash. Click **Revoke** next to a token to cut off every agent that uses it. `npx openprofit login` creates a read and write token for you after you approve it in the browser.
 

@@ -100,7 +100,8 @@ export async function seedWorkspace(
 
 	const [ws] = await tx
 		.insert(schema.workspaces)
-		.values({ ...values, baseCurrency: "USD", plan: "indie" })
+		// A US business without a company, so the tax report shows Schedule C.
+		.values({ ...values, baseCurrency: "USD", plan: "indie", country: "US" })
 		.returning();
 
 	const products = await tx

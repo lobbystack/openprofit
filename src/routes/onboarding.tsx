@@ -5,12 +5,7 @@ import { z } from "zod";
 import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
-import {
-	Field,
-	FieldDescription,
-	FieldGroup,
-	FieldLabel,
-} from "#/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import {
@@ -112,10 +107,6 @@ function Onboarding() {
 								</NativeSelectOption>
 							))}
 						</NativeSelect>
-						<FieldDescription>
-							Every amount converts to this currency at the European Central
-							Bank rate for its day. You can change it in Settings.
-						</FieldDescription>
 					</Field>
 					<Field>
 						<Label>
@@ -125,10 +116,6 @@ function Onboarding() {
 							/>
 							This is an incorporated company
 						</Label>
-						<FieldDescription className="pl-6">
-							Check this if your company files its own tax return. You can
-							change it in Books.
-						</FieldDescription>
 					</Field>
 					{incorporated && (
 						<Field>
@@ -142,9 +129,6 @@ function Onboarding() {
 								onChange={(e) => setIncorporatedOn(e.target.value)}
 								className="num"
 							/>
-							<FieldDescription>
-								Sales and costs before this date count as your own.
-							</FieldDescription>
 						</Field>
 					)}
 					{askHeardFrom && (

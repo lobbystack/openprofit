@@ -16,6 +16,8 @@ import { Route as CliRouteImport } from './routes/cli'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as LlmsFullDottxtRouteImport } from './routes/llms-full[.]txt'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -37,11 +39,14 @@ import { Route as AppBooksRouteImport } from './routes/app/books'
 import { Route as AppCostsRouteImport } from './routes/app/costs'
 import { Route as AppProductsRouteImport } from './routes/app/products'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as CompareSlugRouteImport } from './routes/compare.$slug'
 import { Route as ConnectTokenRouteImport } from './routes/connect.$token'
 import { Route as DataIndexRouteImport } from './routes/data.index'
 import { Route as DataFileRouteImport } from './routes/data.$file'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
+import { Route as DemoBooksRouteImport } from './routes/demo/books'
 import { Route as DemoConnectionsRouteImport } from './routes/demo/connections'
 import { Route as DemoCostsRouteImport } from './routes/demo/costs'
 import { Route as DemoProductsRouteImport } from './routes/demo/products'
@@ -99,6 +104,16 @@ const DemoRoute = DemoRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsFullDottxtRoute = LlmsFullDottxtRouteImport.update({
+  id: '/llms-full.txt',
+  path: '/llms-full.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -206,6 +221,16 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompareSlugRoute = CompareSlugRouteImport.update({
   id: '/compare/$slug',
   path: '/compare/$slug',
@@ -229,6 +254,11 @@ const DataFileRoute = DataFileRouteImport.update({
 const DemoIndexRoute = DemoIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => DemoRoute,
+} as any)
+const DemoBooksRoute = DemoBooksRouteImport.update({
+  id: '/books',
+  path: '/books',
   getParentRoute: () => DemoRoute,
 } as any)
 const DemoConnectionsRoute = DemoConnectionsRouteImport.update({
@@ -357,6 +387,8 @@ export interface FileRoutesByFullPath {
   '/cookies': typeof CookiesRoute
   '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
+  '/llms-full.txt': typeof LlmsFullDottxtRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
@@ -377,9 +409,11 @@ export interface FileRoutesByFullPath {
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/compare/$slug': typeof CompareSlugRoute
   '/connect/$token': typeof ConnectTokenRoute
   '/data/$file': typeof DataFileRoute
+  '/demo/books': typeof DemoBooksRoute
   '/demo/connections': typeof DemoConnectionsRoute
   '/demo/costs': typeof DemoCostsRoute
   '/demo/products': typeof DemoProductsRoute
@@ -392,6 +426,7 @@ export interface FileRoutesByFullPath {
   '/oauth/revoke': typeof OauthRevokeRoute
   '/oauth/token': typeof OauthTokenRoute
   '/app/': typeof AppIndexRoute
+  '/blog/': typeof BlogIndexRoute
   '/data/': typeof DataIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/docs/': typeof DocsIndexRoute
@@ -412,6 +447,8 @@ export interface FileRoutesByTo {
   '/changelog': typeof ChangelogRoute
   '/cli': typeof CliRoute
   '/cookies': typeof CookiesRoute
+  '/llms-full.txt': typeof LlmsFullDottxtRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
@@ -432,9 +469,11 @@ export interface FileRoutesByTo {
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/compare/$slug': typeof CompareSlugRoute
   '/connect/$token': typeof ConnectTokenRoute
   '/data/$file': typeof DataFileRoute
+  '/demo/books': typeof DemoBooksRoute
   '/demo/connections': typeof DemoConnectionsRoute
   '/demo/costs': typeof DemoCostsRoute
   '/demo/products': typeof DemoProductsRoute
@@ -447,6 +486,7 @@ export interface FileRoutesByTo {
   '/oauth/revoke': typeof OauthRevokeRoute
   '/oauth/token': typeof OauthTokenRoute
   '/app': typeof AppIndexRoute
+  '/blog': typeof BlogIndexRoute
   '/data': typeof DataIndexRoute
   '/demo': typeof DemoIndexRoute
   '/docs': typeof DocsIndexRoute
@@ -471,6 +511,8 @@ export interface FileRoutesById {
   '/cookies': typeof CookiesRoute
   '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
+  '/llms-full.txt': typeof LlmsFullDottxtRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/onboarding': typeof OnboardingRoute
@@ -491,9 +533,11 @@ export interface FileRoutesById {
   '/app/costs': typeof AppCostsRoute
   '/app/products': typeof AppProductsRoute
   '/app/settings': typeof AppSettingsRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/compare/$slug': typeof CompareSlugRoute
   '/connect/$token': typeof ConnectTokenRoute
   '/data/$file': typeof DataFileRoute
+  '/demo/books': typeof DemoBooksRoute
   '/demo/connections': typeof DemoConnectionsRoute
   '/demo/costs': typeof DemoCostsRoute
   '/demo/products': typeof DemoProductsRoute
@@ -506,6 +550,7 @@ export interface FileRoutesById {
   '/oauth/revoke': typeof OauthRevokeRoute
   '/oauth/token': typeof OauthTokenRoute
   '/app/': typeof AppIndexRoute
+  '/blog/': typeof BlogIndexRoute
   '/data/': typeof DataIndexRoute
   '/demo/': typeof DemoIndexRoute
   '/docs/': typeof DocsIndexRoute
@@ -531,6 +576,8 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/demo'
     | '/docs'
+    | '/llms-full.txt'
+    | '/llms.txt'
     | '/login'
     | '/mcp'
     | '/onboarding'
@@ -551,9 +598,11 @@ export interface FileRouteTypes {
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
+    | '/blog/$slug'
     | '/compare/$slug'
     | '/connect/$token'
     | '/data/$file'
+    | '/demo/books'
     | '/demo/connections'
     | '/demo/costs'
     | '/demo/products'
@@ -566,6 +615,7 @@ export interface FileRouteTypes {
     | '/oauth/revoke'
     | '/oauth/token'
     | '/app/'
+    | '/blog/'
     | '/data/'
     | '/demo/'
     | '/docs/'
@@ -586,6 +636,8 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/cli'
     | '/cookies'
+    | '/llms-full.txt'
+    | '/llms.txt'
     | '/login'
     | '/mcp'
     | '/onboarding'
@@ -606,9 +658,11 @@ export interface FileRouteTypes {
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
+    | '/blog/$slug'
     | '/compare/$slug'
     | '/connect/$token'
     | '/data/$file'
+    | '/demo/books'
     | '/demo/connections'
     | '/demo/costs'
     | '/demo/products'
@@ -621,6 +675,7 @@ export interface FileRouteTypes {
     | '/oauth/revoke'
     | '/oauth/token'
     | '/app'
+    | '/blog'
     | '/data'
     | '/demo'
     | '/docs'
@@ -644,6 +699,8 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/demo'
     | '/docs'
+    | '/llms-full.txt'
+    | '/llms.txt'
     | '/login'
     | '/mcp'
     | '/onboarding'
@@ -664,9 +721,11 @@ export interface FileRouteTypes {
     | '/app/costs'
     | '/app/products'
     | '/app/settings'
+    | '/blog/$slug'
     | '/compare/$slug'
     | '/connect/$token'
     | '/data/$file'
+    | '/demo/books'
     | '/demo/connections'
     | '/demo/costs'
     | '/demo/products'
@@ -679,6 +738,7 @@ export interface FileRouteTypes {
     | '/oauth/revoke'
     | '/oauth/token'
     | '/app/'
+    | '/blog/'
     | '/data/'
     | '/demo/'
     | '/docs/'
@@ -703,6 +763,8 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   DemoRoute: typeof DemoRouteWithChildren
   DocsRoute: typeof DocsRouteWithChildren
+  LlmsFullDottxtRoute: typeof LlmsFullDottxtRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -718,6 +780,7 @@ export interface RootRouteChildren {
   ApiJournalDotcsvRoute: typeof ApiJournalDotcsvRoute
   ApiProvidersRoute: typeof ApiProvidersRoute
   ApiTelemetryRoute: typeof ApiTelemetryRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   CompareSlugRoute: typeof CompareSlugRoute
   ConnectTokenRoute: typeof ConnectTokenRoute
   DataFileRoute: typeof DataFileRoute
@@ -728,6 +791,7 @@ export interface RootRouteChildren {
   OauthRegisterRoute: typeof OauthRegisterRoute
   OauthRevokeRoute: typeof OauthRevokeRoute
   OauthTokenRoute: typeof OauthTokenRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   DataIndexRoute: typeof DataIndexRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -787,6 +851,20 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms-full.txt': {
+      id: '/llms-full.txt'
+      path: '/llms-full.txt'
+      fullPath: '/llms-full.txt'
+      preLoaderRoute: typeof LlmsFullDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -936,6 +1014,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/compare/$slug': {
       id: '/compare/$slug'
       path: '/compare/$slug'
@@ -969,6 +1061,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/demo/'
       preLoaderRoute: typeof DemoIndexRouteImport
+      parentRoute: typeof DemoRoute
+    }
+    '/demo/books': {
+      id: '/demo/books'
+      path: '/books'
+      fullPath: '/demo/books'
+      preLoaderRoute: typeof DemoBooksRouteImport
       parentRoute: typeof DemoRoute
     }
     '/demo/connections': {
@@ -1162,6 +1261,7 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface DemoRouteChildren {
+  DemoBooksRoute: typeof DemoBooksRoute
   DemoConnectionsRoute: typeof DemoConnectionsRoute
   DemoCostsRoute: typeof DemoCostsRoute
   DemoProductsRoute: typeof DemoProductsRoute
@@ -1169,6 +1269,7 @@ interface DemoRouteChildren {
 }
 
 const DemoRouteChildren: DemoRouteChildren = {
+  DemoBooksRoute: DemoBooksRoute,
   DemoConnectionsRoute: DemoConnectionsRoute,
   DemoCostsRoute: DemoCostsRoute,
   DemoProductsRoute: DemoProductsRoute,
@@ -1209,6 +1310,8 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   DemoRoute: DemoRouteWithChildren,
   DocsRoute: DocsRouteWithChildren,
+  LlmsFullDottxtRoute: LlmsFullDottxtRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   OnboardingRoute: OnboardingRoute,
@@ -1224,6 +1327,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiJournalDotcsvRoute: ApiJournalDotcsvRoute,
   ApiProvidersRoute: ApiProvidersRoute,
   ApiTelemetryRoute: ApiTelemetryRoute,
+  BlogSlugRoute: BlogSlugRoute,
   CompareSlugRoute: CompareSlugRoute,
   ConnectTokenRoute: ConnectTokenRoute,
   DataFileRoute: DataFileRoute,
@@ -1234,6 +1338,7 @@ const rootRouteChildren: RootRouteChildren = {
   OauthRegisterRoute: OauthRegisterRoute,
   OauthRevokeRoute: OauthRevokeRoute,
   OauthTokenRoute: OauthTokenRoute,
+  BlogIndexRoute: BlogIndexRoute,
   DataIndexRoute: DataIndexRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

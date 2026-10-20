@@ -1,0 +1,56 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { ContentPage } from "#/components/content-page";
+import { breadcrumbs, jsonLd, SITE_URL, seo } from "#/lib/app";
+import { dayLabel } from "#/lib/format";
+import { getPost } from "#/server/content.functions";
+
+export const Route = createFileRoute("/blog/$slug")({
+	loader: ({ params }) => getPost({ data: params.slug }),
+	// No loader data on a 404.
+	head: ({ loaderData: p }) =>
+		p
+			? {
+					...seo({
+						// Post titles run near Google's 60-character cutoff, so no suffix.
+						title: p.title,
+						description: p.description,
+						path: `/blog/${p.slug}`,
+					}),
+					// schema.org BlogPosting: https://schema.org/BlogPosting
+					scripts: [
+						jsonLd({
+							"@graph": [
+								breadcrumbs([
+									["Blog", "/blog"],
+									[p.title, `/blog/${p.slug}`],
+								]),
+								{
+									"@type": "BlogPosting",
+									headline: p.title,
+									description: p.description,
+									datePublished: p.date,
+									url: `${SITE_URL}/blog/${p.slug}`,
+									author: { "@type": "Person", name: p.author },
+									publisher: {
+										"@type": "Organization",
+										name: "Lobbystack Inc.",
+									},
+								},
+							],
+						}),
+					],
+				}
+			: {},
+	component: Post,
+});
+
+function Post() {
+	const p = Route.useLoaderData();
+	return (
+		<ContentPage html={p.html}>
+			<p className="mb-4 text-[13px] text-text-2">
+				<time dateTime={p.date}>{dayLabel(p.date)}</time> · {p.author}
+			</p>
+		</ContentPage>
+	);
+}
