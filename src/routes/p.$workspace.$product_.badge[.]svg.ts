@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// Embeddable badge for a public product page. Under `pnpm dev`, Nitro treats
+// Embeddable badge for a public product page. Under `bun run dev`, Nitro treats
 // image requests for .svg and .png paths as static files and answers 404
 // (nitro/dist/_build/vite.dev.mjs); production serves them. To test in dev:
 // curl -H "Sec-Fetch-Dest: document" <url>.

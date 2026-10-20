@@ -1,21 +1,21 @@
 # Single-container self-host. PGlite data lives on the /app/data volume.
-FROM node:22-alpine AS build
+FROM oven/bun:1.3-alpine AS build
 WORKDIR /app
-RUN corepack enable
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json bun.lock ./
+COPY packages/cli/package.json packages/cli/
+RUN bun install --frozen-lockfile
 COPY . .
-RUN pnpm build
+RUN bun run build
 
-FROM node:22-alpine
+FROM oven/bun:1.3-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 ENV DATABASE_URL=/app/data/openprofit
 ENV PORT=3000
-RUN corepack enable
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile --prod
+COPY package.json bun.lock ./
+COPY packages/cli/package.json packages/cli/
+RUN bun install --frozen-lockfile --production --ignore-scripts
 COPY drizzle ./drizzle
 COPY --from=build /app/.output ./.output
 EXPOSE 3000
-CMD ["node", ".output/server/index.mjs"]
+CMD ["bun", ".output/server/index.mjs"]

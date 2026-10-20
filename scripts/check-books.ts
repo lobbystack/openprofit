@@ -1,5 +1,5 @@
 // Checks the journal rules in src/lib/books.ts (docs/BOOKS.md).
-// Run: npx tsx scripts/check-books.ts
+// Run: bun scripts/check-books.ts
 import assert from "node:assert/strict";
 import {
 	adjustments,

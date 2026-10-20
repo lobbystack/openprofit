@@ -37,7 +37,7 @@ export function startScheduler() {
 			);
 	});
 	// Hosted, the 3rd of each month: last month's benchmarks, once its last
-	// days have synced. `pnpm benchmarks` runs it by hand.
+	// days have synced. `bun run benchmarks` runs it by hand.
 	const benchmarks = new Cron(
 		"0 5 3 * *",
 		{

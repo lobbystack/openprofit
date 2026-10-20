@@ -1,5 +1,5 @@
 // Checks the tax report (src/server/tax.server.ts, src/lib/tax.ts) on a scratch
-// database. Run: DATABASE_URL=/tmp/books-tax-check SYNC_SCHEDULER=off npx tsx scripts/check-books-tax.ts
+// database. Run: DATABASE_URL=/tmp/books-tax-check SYNC_SCHEDULER=off bun scripts/check-books-tax.ts
 import assert from "node:assert/strict";
 
 const { db, schema } = await import("../src/db/index.ts");

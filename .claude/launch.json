@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "dev",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "dev"],
       "port": 3000
     }
   ]

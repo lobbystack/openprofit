@@ -1,4 +1,4 @@
-// Run with `pnpm build && pnpm test` in packages/cli.
+// Run with `bun run build && bun run test` in packages/cli.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parseEnv } from "../dist/lib.js";

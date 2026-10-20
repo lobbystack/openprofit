@@ -1,5 +1,5 @@
 // Checks month closing and adjustments in src/server/books.server.ts on a
-// scratch database. Run: DATABASE_URL=/tmp/books-check SYNC_SCHEDULER=off npx tsx scripts/check-books-close.ts
+// scratch database. Run: DATABASE_URL=/tmp/books-check SYNC_SCHEDULER=off bun scripts/check-books-close.ts
 import assert from "node:assert/strict";
 const { db, schema } = await import("../src/db/index.ts");
 const { exportJournal } = await import("../src/server/books.server.ts");

@@ -136,22 +136,22 @@ Postgres everywhere: PGlite embedded for self-host and local development, a Post
 
 ## Development
 
-Node 22 and pnpm.
+[Bun](https://bun.com) 1.3 or later.
 
 ```bash
-pnpm install
+bun install
 cp .env.example .env    # set SECRET_KEY
-pnpm db:seed            # a demo workspace with a year of numbers
-pnpm dev
+bun run db:seed         # a demo workspace with a year of numbers
+bun run dev
 ```
 
 Sign in once at http://localhost:3000/login, then attach the demo workspace to your user:
 
 ```bash
-pnpm db:seed --owner=you@example.com
+bun run db:seed --owner=you@example.com
 ```
 
-Checks: `pnpm check` (Biome), `npx tsc --noEmit`, `pnpm build`. After a schema change, `pnpm db:generate` writes a migration; migrations run when the server starts.
+Checks: `bun run check` (Biome), `bunx --bun tsc --noEmit`, `bun run build`. After a schema change, `bun run db:generate` writes a migration; migrations run when the server starts.
 
 ## Contributing
 

@@ -40,7 +40,7 @@ export const db: NodePgDatabase<typeof schema> =
 	pgDb ?? (pgliteDb as unknown as NodePgDatabase<typeof schema>);
 export type Db = typeof db;
 
-// Migrations in ./drizzle run once at start. `pnpm db:generate` writes a
+// Migrations in ./drizzle run once at start. `bun run db:generate` writes a
 // new one after a schema change.
 if (process.env.SKIP_MIGRATIONS !== "1") {
 	const opts = { migrationsFolder: "drizzle" };

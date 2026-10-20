@@ -4,7 +4,7 @@ import { splitCents } from "#/connectors/types";
 import { type db, schema } from "#/db";
 import { encrypt } from "#/lib/crypto";
 
-// Sample numbers for `pnpm db:seed` and the public demo: two years ending
+// Sample numbers for `bun run db:seed` and the public demo: two years ending
 // this month, so charts have a year-earlier line, three products, Stripe for
 // revenue, seven cost providers and a few flat costs.
 
