@@ -96,3 +96,5 @@ OpenProfit counts a monthly or yearly cost in every month from its start date to
 Each workspace has one base currency, set during onboarding and editable in **Settings**. OpenProfit converts every line in another currency at the European Central Bank (ECB) rate for that line’s date. A workspace in Canadian dollars uses the Bank of Canada’s daily rate instead, as the Canada Revenue Agency (CRA) asks. Currencies the Bank doesn’t publish still use the ECB rate.
 
 Flat costs have no date of their own, so they convert at the rate of the day you save them. When you change the base currency, every stored line converts again at its own date’s rate, and flat costs at that day’s rate.
+
+Changing the base currency also reopens every month you exported from [Books](/docs/books). The next export of a reopened month includes all its entries again, in the new currency. Delete the earlier import from your accounting software first, or it counts that month twice.

@@ -7,6 +7,10 @@ description: Every OpenProfit release, newest first, from Books and the tax repo
 
 Every release, newest first. The full history is in the [commit log on GitHub](https://github.com/morencyr/openprofit/commits/main).
 
+## October 19, 2026
+
+- **Docker image on Bun.** The image runs on Bun instead of Node.js. If your setup overrides the container command or runs `node` inside the container, switch to `bun`.
+
 ## October 8, 2026
 
 - **Books.** A new **Books** page exports a month of revenue and costs as a journal for QuickBooks, Xero or any accounting software, and lists the year's numbers on the lines of your tax form: T2125 and TP-80, the T2's GIFI schedules, Schedule C or Form 1120. Tell OpenProfit whether you have a company and who pays each provider, and it records costs on your personal card as money the business owes you. Exporting a month closes it; later changes come as an adjustment in the next export. See [Books](/docs/books).
