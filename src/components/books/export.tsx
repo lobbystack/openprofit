@@ -124,7 +124,7 @@ export function BooksExport({ options }: { options: Options }) {
 				await save({ data: names });
 				setDirty(false);
 			}
-			const res = await fetch(url);
+			const res = await fetch(url, { method: journal ? "POST" : "GET" });
 			if (!res.ok) return setError(await res.text());
 			const a = document.createElement("a");
 			a.href = URL.createObjectURL(await res.blob());

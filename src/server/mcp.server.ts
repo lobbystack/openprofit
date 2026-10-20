@@ -966,6 +966,7 @@ function build({ authInfo, requestInfo }: McpRequestContext) {
 				starts_on: f.startsOn,
 				ends_on: f.endsOn,
 				product_id: f.productId,
+				category: f.category,
 				...Object.fromEntries(
 					Object.entries(patch).filter(([, v]) => v !== undefined),
 				),

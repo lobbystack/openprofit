@@ -64,9 +64,7 @@ export const getFlatCosts = createServerFn({ method: "GET" })
 				interval: f.interval,
 				startsOn: f.startsOn,
 				endsOn: f.endsOn,
-				category:
-					f.category ??
-					(f.provider === "manual" ? "other" : expenseAccount(f.provider)),
+				category: f.category ?? expenseAccount(f.provider),
 				paidWith: f.paidWith,
 				paidWithSince: f.paidWithSince,
 			})),

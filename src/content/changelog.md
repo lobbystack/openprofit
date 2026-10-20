@@ -11,8 +11,8 @@ Every release, newest first. The full history is in the [commit log on GitHub](h
 
 - **Books.** A new **Books** page exports a month of revenue and costs as a journal for QuickBooks, Xero or any accounting software, and lists the year's numbers on the lines of your tax form: T2125 and TP-80, the T2's GIFI schedules, Schedule C or Form 1120. Tell OpenProfit whether you have a company and who pays each provider, and it records costs on your personal card as money the business owes you. Exporting a month closes it; later changes come as an adjustment in the next export. See [Books](/docs/books).
 - **One-time costs and equipment.** A flat cost can be **One time**, with a category. Equipment is depreciated on the tax report instead of deducted at once.
-- **Payouts and service periods.** Stripe payouts and the period each Stripe and Paddle payment covers now sync, so the books spread a yearly plan over its months. Polar revenue comes from orders, with refunds on the day they happen; reconnect Polar with the **Orders** and **Refunds** read scopes to get them.
-- **Bank of Canada rates.** Workspaces in Canadian dollars convert at the Bank of Canada's daily rate, as the CRA asks, from each connection's next full sync.
+- **Payouts and service periods.** Stripe payouts and the period each Stripe and Paddle payment covers now sync, so the books spread a yearly plan over its months. OpenProfit rereads the whole history of your Stripe and Paddle connections to fill them in. Polar revenue comes from orders, with refunds on the day they happen; reconnect Polar with the **Orders** and **Refunds** read scopes to get them.
+- **Bank of Canada rates.** Workspaces in Canadian dollars convert at the Bank of Canada's daily rate, as the CRA asks. OpenProfit rereads each connection's history to convert past lines at that rate.
 
 ## October 7, 2026
 

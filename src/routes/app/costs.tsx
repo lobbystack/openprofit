@@ -194,6 +194,10 @@ function FlatCostForm({
 			setError("The end date is before the start date.");
 			return;
 		}
+		if (!once && v.category === "equipment") {
+			setError("Equipment is a one-time cost.");
+			return;
+		}
 		const data = {
 			name: v.name.trim(),
 			amountCents,

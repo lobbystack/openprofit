@@ -55,6 +55,7 @@ function Onboarding() {
 	const [name, setName] = useState("");
 	const [currency, setCurrency] = useState<(typeof CURRENCIES)[number]>("USD");
 	const [incorporated, setIncorporated] = useState(false);
+	const [incorporatedOn, setIncorporatedOn] = useState("");
 	const [heardFrom, setHeardFrom] = useState<(typeof HEARD_FROM)[number] | "">(
 		"",
 	);
@@ -69,7 +70,7 @@ function Onboarding() {
 				name,
 				currency,
 				timezone,
-				incorporatedOn: incorporated ? localDay() : null,
+				incorporatedOn: incorporated ? incorporatedOn : null,
 				heardFrom: heardFrom || undefined,
 			},
 		});
@@ -129,6 +130,23 @@ function Onboarding() {
 							change it in Books.
 						</FieldDescription>
 					</Field>
+					{incorporated && (
+						<Field>
+							<FieldLabel htmlFor="ws-incorporated">Incorporated on</FieldLabel>
+							<Input
+								id="ws-incorporated"
+								type="date"
+								required
+								max={localDay()}
+								value={incorporatedOn}
+								onChange={(e) => setIncorporatedOn(e.target.value)}
+								className="num"
+							/>
+							<FieldDescription>
+								Sales and costs before this date count as your own.
+							</FieldDescription>
+						</Field>
+					)}
 					{askHeardFrom && (
 						<Field>
 							<FieldLabel htmlFor="ws-heard-from">

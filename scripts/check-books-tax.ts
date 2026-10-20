@@ -154,9 +154,10 @@ const fr = await check("FR", { country: "FR" });
 assert.deepEqual(fr.rep.parts[0].forms.map((f) => f.name), ["Profit and loss"]);
 assert.equal(fr.rep.parts[0].depreciation.length, 0);
 
-// No country: nothing to map.
+// No country: the same plain profit and loss.
 const none = await seed({ country: "" as string });
-assert.equal((await taxReport({ ...none, country: null }, 2025)).parts.length, 0);
+const noneRep = await taxReport({ ...none, country: null }, 2025);
+assert.deepEqual(noneRep.parts[0].forms.map((f) => f.name), ["Profit and loss"]);
 
 // The rules on their own: declining balance and the dates around them.
 const one = (country: string, date: string, cost: number, y: number, inc: string | null = null) =>

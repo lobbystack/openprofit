@@ -69,12 +69,6 @@ const PROVIDER_ACCOUNT: Record<string, ExpenseCategory> = {
 export const expenseAccount = (provider: string): ExpenseCategory =>
 	PROVIDER_ACCOUNT[provider] ?? "other";
 
-export function accountType(account: Account): AccountType {
-	return account.startsWith("balance:")
-		? "asset"
-		: ACCOUNTS[account as FixedAccount].type;
-}
-
 // Default name, or the user's rename for their accounting software.
 export function accountName(
 	account: Account,
@@ -182,7 +176,7 @@ export type BooksIn = {
 const DAY = 86_400_000;
 const days = (a: string, b: string) =>
 	Math.round((Date.parse(b) - Date.parse(a)) / DAY);
-const nextMonth = (m: string) => {
+export const nextMonth = (m: string) => {
 	const [y, mo] = m.split("-").map(Number);
 	return new Date(Date.UTC(y, mo, 1)).toISOString().slice(0, 7);
 };
@@ -390,7 +384,16 @@ export function journal(input: BooksIn): Entry[] {
 				m.startsOn.slice(0, 7) <= month &&
 				(!m.endsOn || m.endsOn.slice(0, 7) >= month);
 			if (!active) continue;
-			amount = m.interval === "year" ? Math.round(m.amount / 12) : m.amount;
+			// A yearly cost's k-th month of its year books the rounded share up
+			// to k minus the share before it, so its 12 months add up exactly.
+			const [y0, m0] = m.startsOn.split("-").map(Number);
+			const [y, mo] = month.split("-").map(Number);
+			const k = (((y - y0) * 12 + mo - m0) % 12) + 1;
+			amount =
+				m.interval === "year"
+					? Math.round((m.amount * k) / 12) -
+						Math.round((m.amount * (k - 1)) / 12)
+					: m.amount;
 		}
 		if (!amount) continue;
 		const paidBy = payer(date, incorporatedOn, m.method, m.since);
@@ -435,11 +438,13 @@ export function journal(input: BooksIn): Entry[] {
 }
 
 // One entry per group, dated the end of the month: what the journal formats
-// export (one line per account and product).
+// export (one line per account and product). Bank and other entries of a
+// group stay apart, so the formats can still drop the bank ones.
 export function summarize(entries: Entry[], month: string): Entry[] {
 	const groups = new Map<string, Entry>();
 	for (const e of entries) {
-		const g = groups.get(e.group) ?? {
+		const key = `${e.group}|${e.bank}`;
+		const g = groups.get(key) ?? {
 			date: monthEnd(month),
 			memo: e.memo,
 			group: e.group,
@@ -455,7 +460,7 @@ export function summarize(entries: Entry[], month: string): Entry[] {
 				same.credit += l.credit;
 			} else g.lines.push({ ...l });
 		}
-		groups.set(e.group, g);
+		groups.set(key, g);
 	}
 	// A line's debit and credit net to one side.
 	return [...groups.values()].map((g) => ({

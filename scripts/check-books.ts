@@ -95,6 +95,22 @@ assert(allBalanced(manual));
 // The summary keeps every entry balanced.
 assert(summarize([...dec, ...company], "2025-12").every(balanced));
 
+// A yearly cost's 12 months add up to it, rounding included.
+let yearly = 0;
+for (let m = 3; m <= 14; m++) {
+	const month = `${2026 + Math.floor((m - 1) / 12)}-${String(((m - 1) % 12) + 1).padStart(2, "0")}`;
+	const es = journal({ ...base, month, manual: [{ name: "Tool", productId: null, amount: 1000, interval: "year", startsOn: "2026-03-15", endsOn: null, category: "software", method: "personal", since: null }] });
+	yearly += sum(es, "software");
+}
+assert.equal(yearly, 1000);
+
+// A group's bank and other entries stay apart in the summary: two costs
+// with one name, one on the card and one from the company account.
+const twin = (method: "personal" | "company") => ({ name: "Domain", productId: null, amount: 1500, interval: "once" as const, startsOn: "2026-03-05", endsOn: null, category: "software" as const, method, since: null });
+const twins = summarize(journal({ ...base, month: "2026-03", incorporatedOn: "2026-02-01", manual: [twin("personal"), twin("company")] }), "2026-03");
+assert.equal(twins.length, 2);
+assert(twins.filter((e) => !e.bank).every((e) => !e.lines.some((l) => l.account === "company_bank")));
+
 // A closed month that changed later goes out as one balanced adjustment,
 // without the bank side for formats that leave it to the bank feed.
 const before = totals(company);
