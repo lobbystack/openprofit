@@ -6,7 +6,11 @@ on:
     tags: ["v*"]
 
 jobs:
+  check:
+    uses: ./.github/workflows/check.yml
+
   build:
+    needs: check
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,3 +39,15 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # openprofit.dev runs this image on Dokploy. Its deploy webhook pulls :latest.
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          DOKPLOY_DEPLOY_WEBHOOK: ${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}
+        run: |
+          if [ -z "$DOKPLOY_DEPLOY_WEBHOOK" ]; then echo "DOKPLOY_DEPLOY_WEBHOOK is not set; skipping"; exit 0; fi
+          curl -fsS -X POST "$DOKPLOY_DEPLOY_WEBHOOK"

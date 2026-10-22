@@ -1,9 +1,9 @@
 name: Check
 
+# Pushes to main run this through docker.yml, which deploys only when it passes.
 on:
-  push:
-    branches: [main]
   pull_request:
+  workflow_call:
 
 jobs:
   check:

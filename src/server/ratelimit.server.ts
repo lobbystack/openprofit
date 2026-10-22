@@ -4,6 +4,9 @@ import { getRequestIP } from "@tanstack/react-start/server";
 // - Railway's edge sets X-Real-IP to the client's address, overwriting what
 //   the client sent, and services behind it can't be reached directly:
 //   https://docs.railway.com/networking/public-networking/specs-and-limits
+// - CLIENT_IP_HEADER=name: a CDN in front sets this header to the client's
+//   address (Cloudflare's CF-Connecting-IP). Only safe when the server
+//   accepts traffic from that CDN alone, since anyone else could send it.
 // - TRUST_PROXY=N: the instance sits behind N reverse proxies (nginx, Caddy,
 //   Traefik, a load balancer), each appending the address it saw to
 //   X-Forwarded-For. The Nth entry from the end is the client; entries
@@ -11,8 +14,13 @@ import { getRequestIP } from "@tanstack/react-start/server";
 // - Otherwise the client could send either header, so the socket counts.
 const raw = process.env.TRUST_PROXY;
 const hops = raw === "true" ? 1 : Math.max(0, Math.floor(Number(raw)) || 0);
+const ipHeader = process.env.CLIENT_IP_HEADER?.trim().toLowerCase();
 
 export function clientIp(request: Request) {
+	if (ipHeader) {
+		const ip = request.headers.get(ipHeader)?.trim();
+		if (ip) return ip;
+	}
 	if (process.env.RAILWAY_ENVIRONMENT_ID) {
 		const real = request.headers.get("x-real-ip");
 		if (real) return real;

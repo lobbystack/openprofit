@@ -120,7 +120,7 @@ docker run -d \
 
 Open http://localhost:3000/login and enter your email. Without an email provider the sign-in link prints in `docker logs openprofit`. Set `RESEND_API_KEY` and `EMAIL_FROM` to send it by mail. Point `DATABASE_URL` at a `postgres://` server to use your own database.
 
-The [self-host guide](https://openprofit.dev/docs/self-host) covers updates and Railway. The [environment reference](https://openprofit.dev/docs/environment) lists every variable.
+The [self-host guide](https://openprofit.dev/docs/self-host) covers updates, Dokploy and Railway. The [environment reference](https://openprofit.dev/docs/environment) lists every variable.
 
 ## How it works
 

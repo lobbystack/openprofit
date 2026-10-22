@@ -69,7 +69,7 @@ A self-hosted copy sends us nothing unless you switch on its daily usage ping, w
 
 - You sign in with an email link, GitHub or Google. OpenProfit stores no passwords.
 - Product analytics record what you do in the app, never amounts, keys or data from your providers. Switch them off in **Settings**.
-- The hosted version runs on Railway in the United States. The [Privacy Policy](/privacy) lists every company that handles your data, and the [Cookie Policy](/cookies) lists each cookie.
+- The hosted version runs on OVH servers in the United States, behind Cloudflare. The [Privacy Policy](/privacy) lists every company that handles your data, and the [Cookie Policy](/cookies) lists each cookie.
 - To delete a workspace or your account, email hello@openprofit.dev.
 
 ## Report a vulnerability

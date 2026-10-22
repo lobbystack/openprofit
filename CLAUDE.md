@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-OpenProfit: open-source finance for developers. Pulls revenue (Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway and more) from provider APIs, assigns them to products, shows profit per product, and turns the same lines into books and tax-form numbers. One TanStack Start app serves the landing page, docs, blog, marketing content and the app. Hosted at openprofit.dev (Railway), self-hostable as one Docker image. Repo: github.com/morencyr/openprofit. Operator: Lobbystack Inc.
+OpenProfit: open-source finance for developers. Pulls revenue (Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway and more) from provider APIs, assigns them to products, shows profit per product, and turns the same lines into books and tax-form numbers. One TanStack Start app serves the landing page, docs, blog, marketing content and the app. Hosted at openprofit.dev (Dokploy on an OVH server, behind Cloudflare), self-hostable as one Docker image. Repo: github.com/morencyr/openprofit. Operator: Lobbystack Inc.
 
 ## Commands
 
@@ -34,7 +34,7 @@ Production-build smoke test with a throwaway embedded DB:
 PORT=3200 SYNC_SCHEDULER=off DATABASE_URL=/tmp/op-test bun .output/server/index.mjs
 ```
 
-Local sign-in without email: request a link on /login (or POST /api/auth/sign-in/magic-link) and read the URL from the dev server log. Same on Railway via `railway logs | grep magic-link`.
+Local sign-in without email: request a link on /login (or POST /api/auth/sign-in/magic-link) and read the URL from the dev server log. In production, search the Dokploy app's logs for `magic-link`.
 
 ## Library docs before code
 
@@ -58,7 +58,7 @@ Before editing files for a substantial task:
 
 ## Database
 
-- Postgres everywhere through Drizzle (`src/db/schema.ts`, `src/db/auth-schema.ts`). `DATABASE_URL` starting with `postgres://` uses `pg`; anything else is a directory for **PGlite** (embedded Postgres, default `./data/openprofit`). Hosted uses Railway Postgres.
+- Postgres everywhere through Drizzle (`src/db/schema.ts`, `src/db/auth-schema.ts`). `DATABASE_URL` starting with `postgres://` uses `pg`; anything else is a directory for **PGlite** (embedded Postgres, default `./data/openprofit`). Hosted uses a Postgres 18 service on Dokploy.
 - Migrations in `./drizzle` run at import time of `src/db/index.ts` (skip with `SKIP_MIGRATIONS=1`). Don't use `drizzle-kit push`; PGlite rejects its multi-statement queries.
 - **PGlite allows one process per data directory.** Running a script (`db:seed`, a one-off script) while `bun run dev` is up hangs or fails. Killing a process mid-write (`kill -9`) can corrupt the directory. Stop dev cleanly first. One-off scripts must end with `process.exit(0)` or PGlite keeps them alive. SIGTERM and SIGINT close the database and exit (`src/db/index.ts`); without that, PGlite's timer keeps the process alive until Docker kills it.
 - PGlite is excluded from Vite `optimizeDeps` and externalized from the Nitro server bundle in `vite.config.ts`; bundling it drops its wasm/data files and the server crashes on start. Keep both. `@resvg/resvg-wasm` (social images, `src/server/images.server.ts`) is externalized for the same reason.
@@ -103,4 +103,6 @@ Before editing files for a substantial task:
 
 ## Deploy
 
-Push to `main` runs CI (`.github/workflows/check.yml`) and publishes `ghcr.io/morencyr/openprofit:latest`. Railway's `web` service (project `openprofit`, plus a Postgres service) deploys from the repo's `main` branch with Wait for CI on: each push waits for the GitHub checks, then deploys, and a failed check blocks it. Don't deploy production with `railway up`; it uploads the local working tree, uncommitted changes included. Railway's edge caches `.xml` responses, so give those an explicit `Cache-Control`.
+Pull requests run `.github/workflows/check.yml`. A push to `main` runs `.github/workflows/docker.yml`: the same checks, then it publishes `ghcr.io/morencyr/openprofit:latest`, then calls the Dokploy deploy webhook (secret `DOKPLOY_DEPLOY_WEBHOOK`). A failed check stops the image and the deploy.
+
+Production runs on Dokploy at deploy.lobbystack.com: project `OpenProfit`, application `web` (Docker source, that image, port 3000) and a `postgres` service (Postgres 18, reached over `dokploy-network`). Env vars live on the Dokploy application. The server's firewall admits ports 80 and 443 from Cloudflare only, so openprofit.dev's DNS is on Cloudflare (proxied, SSL mode Full) and the app reads the client's address from `CLIENT_IP_HEADER=cf-connecting-ip`. Records for mail (iCloud), Resend (`send`) and the PostHog proxy (`e`) stay DNS-only. Cloudflare may cache `.xml` responses, so give those an explicit `Cache-Control`.
