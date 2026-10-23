@@ -1,29 +1,29 @@
 # Contributing to OpenProfit
 
-Issues and pull requests are welcome. Connectors are the most useful contribution. Most of this guide covers how to build one: the files to touch, the data to return, and how to test against a real account. To ask for a connector without building it, [open a connector request](https://github.com/lobbystack/openprofit/issues/new?template=connector.yml).
+Issues and pull requests are welcome. Connectors are the most useful contribution. Most of this guide covers how to build one: the files to touch, the data to return, and how to test against a real account. To ask for a connector without building it, [open a connector request](https://github.com/morencyr/openprofit/issues/new?template=connector.yml).
 
 ## Set up a development environment
 
-You need Node 22 and pnpm. Install the dependencies, copy `.env.example`, and generate a key with the `node` line:
+You need [Bun](https://bun.com) 1.3 or later. Install the dependencies, copy `.env.example`, and generate a key with the `bun -e` line:
 
 ```bash
-pnpm install
+bun install
 cp .env.example .env
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-pnpm dev
+bun -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+bun run dev
 ```
 
 Paste the key into `SECRET_KEY` in `.env` before you start the server. It encrypts provider credentials, and saving a connection fails without it. The app runs at http://localhost:3000.
 
-To sign in without an email provider, enter any address on `/login`. With `RESEND_API_KEY` unset, the server prints the sign-in link to the `pnpm dev` output. Open it, then create a workspace on the onboarding page.
+To sign in without an email provider, enter any address on `/login`. With `RESEND_API_KEY` unset, the server prints the sign-in link to the `bun run dev` output. Open it, then create a workspace on the onboarding page.
 
-For a workspace with a year of demo numbers, stop `pnpm dev` and run `pnpm db:seed`. After you sign in once, `pnpm db:seed --owner=you@example.com` adds your user to it.
+For a workspace with a year of demo numbers, stop `bun run dev` and run `bun run db:seed`. After you sign in once, `bun run db:seed --owner=you@example.com` adds your user to it.
 
 ### The local database
 
 Local development uses PGlite, an embedded Postgres stored in `./data/openprofit`. Only one process can open that directory at a time:
 
-- Stop `pnpm dev` before you run `pnpm db:seed` or any script that imports `src/db`, or the script hangs
+- Stop `bun run dev` before you run `bun run db:seed` or any script that imports `src/db`, or the script hangs
 - Stop processes with Ctrl+C. A `kill -9` during a write can corrupt the directory
 - End one-off scripts with `process.exit(0)`, or PGlite keeps them running
 - Delete `./data/openprofit` to start over
@@ -33,12 +33,12 @@ Local development uses PGlite, an embedded Postgres stored in `./data/openprofit
 CI runs three commands on every pull request. Run them before you push:
 
 ```bash
-pnpm check        # Biome lint and format
-npx tsc --noEmit  # typecheck
-pnpm build        # production build
+bun run check            # Biome lint and format
+bunx --bun tsc --noEmit  # typecheck
+bun run build            # production build
 ```
 
-`npx biome check --write src` fixes formatting. Biome uses tabs and double quotes. The repository has no test suite, so check your change in the browser as well.
+`bunx biome check --write src` fixes formatting. Biome uses tabs and double quotes. The repository has no test suite, so check your change in the browser as well.
 
 ## Build a connector
 
@@ -246,7 +246,7 @@ Never log credentials, put them in a URL, or include them in an error message. S
 
 ### Test against a real account
 
-Call the connector from a one-off script before you try the UI. Importing `#/connectors` doesn't open the database, so the script runs alongside `pnpm dev`. Save it as `check.ts` at the repository root and keep it out of your commit:
+Call the connector from a one-off script before you try the UI. Importing `#/connectors` doesn't open the database, so the script runs alongside `bun run dev`. Save it as `check.ts` at the repository root and keep it out of your commit:
 
 ```ts
 import { connector } from "#/connectors";
@@ -265,12 +265,12 @@ console.log(lines?.length, "lines");
 Run it with `EXAMPLE_TOKEN` in `.env`:
 
 ```bash
-npx tsx --env-file=.env check.ts
+bun check.ts
 ```
 
 Compare the totals with the provider's billing page for the same month. Run it twice and check that both runs return the same `externalId` values.
 
-Then test the full flow in `pnpm dev`:
+Then test the full flow in `bun run dev`:
 
 1. Open **Connections**, pick your provider, paste the key and click **Test**. Check the label.
 2. Click **Connect**. The first sync runs before the page returns. If it fails, the dev server log shows `[sync] first sync example:` with the error.

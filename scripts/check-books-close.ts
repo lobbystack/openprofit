@@ -1,5 +1,5 @@
 // Checks month closing and adjustments in src/server/books.server.ts on a
-// scratch database. Run: DATABASE_URL=/tmp/books-check SYNC_SCHEDULER=off npx tsx scripts/check-books-close.ts
+// scratch database. Run: DATABASE_URL=/tmp/books-check SYNC_SCHEDULER=off bun scripts/check-books-close.ts
 import assert from "node:assert/strict";
 const { db, schema } = await import("../src/db/index.ts");
 const { exportJournal } = await import("../src/server/books.server.ts");
@@ -28,5 +28,15 @@ assert(oct.some((e) => e.group === "earn:stripe"));
 // Exporting November doesn't repeat the September adjustment.
 const nov = await exportJournal(ws, "2026-11", { withBank: true });
 assert(!nov.some((e) => e.group === "adjust:2026-09"));
+// A lost dispute (gross 0, net -6500 with a 1500 fee) leaves the Stripe
+// balance by its net, the part past the fee as a payment fee.
+await db.insert(schema.revenueLines).values({ workspaceId: ws.id, connectionId: stripe.id, date: "2026-06-10", currency: "USD", grossCents: 0, feesCents: 1500, netCents: -6500, netBaseCents: -6500, grossBaseCents: 0, feesBaseCents: 1500, refundsBaseCents: 0, externalId: "du_1" });
+const { booksInputs } = await import("../src/server/books.server.ts");
+const { journal } = await import("../src/lib/books.ts");
+const [june] = await booksInputs(ws, ["2026-06"]);
+const lines = journal(june).flatMap((e) => e.lines);
+const net = (a: string) => lines.filter((l) => l.account === a).reduce((x, l) => x + l.debit - l.credit, 0);
+assert.equal(net("balance:stripe"), -6500);
+assert.equal(net("payment_fees"), 6500);
 console.log("close: ok");
 process.exit(0);

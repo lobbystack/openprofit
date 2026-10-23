@@ -7,7 +7,7 @@ import { markdownFor } from "./markdown.server";
 
 // The build prerenders every page that has a markdown version. Nitro lists
 // its static files before those pages are written, so they are served from
-// here, read and compressed once per process. `node .output/server/index.mjs`
+// here, read and compressed once per process. `bun .output/server/index.mjs`
 // puts them in .output/public; anywhere else (dev, the prerender itself) the
 // read fails and the page renders on the server.
 const PUBLIC = join(dirname(process.argv[1] ?? ""), "../public");

@@ -1,13 +1,12 @@
 import { eq, min } from "drizzle-orm";
 import { db, schema } from "#/db";
-import { type Entry, journal } from "#/lib/books";
+import { type Entry, journal, nextMonth } from "#/lib/books";
 import { providerName } from "#/lib/providers";
 import {
 	amounts,
 	balances,
 	deMinimisElection,
 	depreciation,
-	type Equipment,
 	equipmentOf,
 	type Form,
 	form1120,
@@ -21,7 +20,7 @@ import {
 	total,
 	tp80,
 } from "#/lib/tax";
-import { booksInput, yearDepreciation } from "./books.server";
+import { booksInputs, yearDepreciation } from "./books.server";
 import type { Workspace } from "./workspace.server";
 
 // The yearly tax report (docs/BOOKS.md "Tax report"): the journal's totals
@@ -63,10 +62,6 @@ const INVOICES: Record<string, string> = {
 	supabase: "https://supabase.com/dashboard/org/_/billing#invoices",
 };
 
-const nextMonth = (m: string) => {
-	const [y, mo] = m.split("-").map(Number);
-	return new Date(Date.UTC(y, mo, 1)).toISOString().slice(0, 7);
-};
 const dayBefore = (d: string) =>
 	new Date(Date.parse(d) - 86_400_000).toISOString().slice(0, 10);
 
@@ -132,28 +127,29 @@ export async function taxReport(ws: Workspace, year: number) {
 		currency: ws.baseCurrency,
 		invoices,
 	};
-	if (!ws.country) return { ...base, parts: [] };
-
 	const start = `${year}-01-01`;
 	const end = `${year}-12-31`;
 	const inc =
 		ws.incorporatedOn && ws.incorporatedOn <= end ? ws.incorporatedOn : null;
 
 	// A company's balance sheet adds up everything since the first month.
-	const entries: Entry[] = [];
-	let equipment: Equipment[] = [];
+	const months: string[] = [];
 	for (
 		let m = inc && first && first < `${year}-01` ? first : `${year}-01`;
 		m <= `${year}-12`;
 		m = nextMonth(m)
-	) {
-		const input = await booksInput(ws, m);
-		if (m === `${year}-12`) equipment = equipmentOf(input.manual);
-		entries.push(
-			...journal({ ...input, depreciation: yearDepreciation(ws, input) }),
-		);
-	}
-	const rows = depreciation(ws.country, ws.incorporatedOn, equipment, year);
+	)
+		months.push(m);
+	const inputs = await booksInputs(ws, months);
+	const entries: Entry[] = inputs.flatMap((input) =>
+		journal({ ...input, depreciation: yearDepreciation(ws, input) }),
+	);
+	const rows = depreciation(
+		ws.country,
+		ws.incorporatedOn,
+		equipmentOf(inputs[inputs.length - 1].manual),
+		year,
+	);
 	const between = (a: string, b: string) =>
 		entries.filter((e) => e.date >= a && e.date <= b);
 

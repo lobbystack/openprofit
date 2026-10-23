@@ -1,5 +1,5 @@
 // Checks the journal files in src/server/books-export.server.ts on a scratch
-// database. Run: DATABASE_URL=/tmp/books-export-check SYNC_SCHEDULER=off npx tsx scripts/check-books-export.ts
+// database. Run: DATABASE_URL=/tmp/books-export-check SYNC_SCHEDULER=off bun scripts/check-books-export.ts
 import assert from "node:assert/strict";
 const { db, schema } = await import("../src/db/index.ts");
 const { journalCsv } = await import("../src/server/books-export.server.ts");

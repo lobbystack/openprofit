@@ -1,22 +1,20 @@
 name: Check
 
+# Pushes to main run this through docker.yml, which deploys only when it passes.
 on:
-  push:
-    branches: [main]
   pull_request:
+  workflow_call:
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm check
-      - run: npx tsc --noEmit
-      - run: pnpm build
-      - run: pnpm --dir packages/cli build && pnpm --dir packages/cli test
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bunx --bun tsc --noEmit
+      - run: bun run build
+      - run: cd packages/cli && bun run build && bun run test

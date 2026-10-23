@@ -155,12 +155,16 @@ export async function journalCsv(
 		month,
 		renames: ws.bookAccounts ?? {},
 		product: (id) => (id && names.get(id)) || null,
-		dayFirst: Boolean(ws.country && ws.country !== "US"),
+		// With no country set, a USD workspace counts as being in the US.
+		dayFirst: ws.country ? ws.country !== "US" : ws.baseCurrency !== "USD",
 	});
 	return { csv: csvFile(rows) };
 }
 
-// GET /api/journal.csv?month=YYYY-MM&format=quickbooks|xero|plain&product=id
+// POST /api/journal.csv?month=YYYY-MM&format=quickbooks|xero|plain&product=id
+// POST, because a whole-workspace export closes the month: the session
+// cookie (SameSite=Lax) doesn't go out on another site's POST, and link
+// prefetchers only GET.
 export async function journalDownload(request: Request) {
 	const ws = await exportWorkspace(request);
 	if (!ws) return new Response("Sign in to export.", { status: 401 });

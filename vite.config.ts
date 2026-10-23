@@ -29,6 +29,8 @@ const config = defineConfig({
 			},
 		}),
 		nitro({
+			// TanStack Start hosting guide: the Bun preset serves with Bun.serve.
+			preset: "bun",
 			// PGlite and resvg (social images) ship wasm next to their JS;
 			// bundling drops it.
 			rollupConfig: {

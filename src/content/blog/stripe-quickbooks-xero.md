@@ -1,13 +1,13 @@
 ---
-title: How to get Stripe into QuickBooks or Xero
-description: A Stripe payout is net of fees and refunds, so the deposit isn't your revenue. The entries your books need, and four ways to get Stripe into QuickBooks or Xero.
+title: Stripe QuickBooks and Xero integration: four ways compared
+description: A Stripe payout is net of fees and refunds. The entries your books need, and four ways in, from the Stripe Connector by QuickBooks to Xero's Stripe feed.
 date: 2026-10-08
 author: Raphael Morency
 ---
 
-# How to get Stripe into QuickBooks or Xero
+# Stripe QuickBooks and Xero integration: four ways compared
 
-Stripe pays you a payout net of its fees, refunds and disputes, so the deposit in your bank isn't your revenue. QuickBooks or Xero needs your gross sales, fees and refunds on separate lines, and the payout recorded as a transfer to your bank. This guide shows the entries, then compares four ways to make them: QuickBooks' own Stripe integration, Xero's Stripe feed, a sync app, and a monthly journal file from OpenProfit.
+Stripe pays you a payout net of its fees, refunds and disputes, so the deposit in your bank isn't your revenue. QuickBooks or Xero needs your gross sales, fees and refunds on separate lines, and the payout recorded as a transfer to your bank. This guide shows the entries, then compares four ways to make them: the Stripe Connector by QuickBooks, Xero's Stripe feed, a sync app, and a monthly journal file from OpenProfit.
 
 ## Why the deposit isn't your revenue
 
@@ -46,9 +46,9 @@ Three more things change the entries:
 
 Each option below records the same entries. They differ in detail, price and which costs they cover.
 
-### QuickBooks' own Stripe integration
+### Stripe Connector by QuickBooks
 
-Intuit's [Stripe connection for QuickBooks Online](https://quickbooks.intuit.com/learn-support/en-us/help-article/manage-integrations/connect-manage-stripe-transactions-quickbooks/L10TzOVcN_US_en_US) imports sales, refunds, payouts and adjustments. Each sale shows its gross amount, fee and net, with the fee posted to a "Stripe Fees" expense account. Each payout becomes a deposit linked to the sales and fees inside it.
+Intuit's [Stripe Connector by QuickBooks](https://quickbooks.intuit.com/learn-support/en-us/help-article/manage-integrations/connect-manage-stripe-transactions-quickbooks/L10TzOVcN_US_en_US) imports sales, refunds, payouts and adjustments. Each sale shows its gross amount, fee and net, with the fee posted to a "Stripe Fees" expense account. Each payout becomes a deposit linked to the sales and fees inside it.
 
 Its help article, updated September 21, 2026, lists these limits:
 

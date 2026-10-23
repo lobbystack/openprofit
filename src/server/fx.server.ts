@@ -20,7 +20,7 @@ export async function convert(
 	return Math.round(cents * rate);
 }
 
-async function rateFor(
+export async function rateFor(
 	date: string,
 	from: string,
 	to: string,
@@ -61,8 +61,13 @@ async function rateFor(
 // requests. Today and later are cached only once quoted: the Bank publishes
 // each afternoon, and the sync rereads the last days. Null when the Bank
 // doesn't publish the currency (DKK, CZK...) or has no rate on or before the
-// date; Frankfurter covers those.
+// date; Frankfurter covers those. A day not yet quoted is held in memory for
+// an hour at the preceding rate, so a sync doesn't ask again for each line.
+const unquoted = new Map<string, { rate?: number; until: number }>();
 async function bankOfCanada(date: string, from: string) {
+	const key = `${from}:${date}`;
+	const held = unquoted.get(key);
+	if (held && held.until > Date.now()) return held.rate ?? null;
 	const series = `FX${from}CAD`;
 	const today = iso(Date.now());
 	const at = Date.parse(date);
@@ -94,5 +99,7 @@ async function bankOfCanada(date: string, from: string) {
 	}
 	if (rows.length)
 		await db.insert(schema.fxRates).values(rows).onConflictDoNothing();
+	if (!rows.some((r) => r.date === date))
+		unquoted.set(key, { rate, until: Date.now() + 3_600_000 });
 	return rate ?? null;
 }

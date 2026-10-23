@@ -9,7 +9,7 @@ const LINKS = [
 	["Product", "/#product"],
 	["Integrations", "/integrations"],
 	["Pricing", "/#pricing"],
-	["Docs", "/docs"],
+	["Docs", "/docs/connectors"],
 	["Blog", "/blog"],
 ];
 

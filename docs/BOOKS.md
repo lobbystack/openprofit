@@ -23,7 +23,7 @@ A setting with a start date supports one change. Two changes in a year would nee
 
 ## Data the connectors add
 
-- `revenue_lines.gross_base_cents`, `fees_base_cents`, `refunds_base_cents`: written by the sync at the line's rate, like `net_base_cents`. Older rows are null until the next full sync; readers derive them from the net rate when net is not zero.
+- `revenue_lines.gross_base_cents`, `fees_base_cents`, `refunds_base_cents`: written by the sync at the line's rate, like `net_base_cents`. Older rows are null until the next full sync; readers derive them from the net rate when net is not zero. The books don't read `fees_base_cents`: fees are gross − refunds − net.
 - `revenue_lines.service_start`, `service_end`: the period a payment covers, `[start, end)`. Null means the payment is earned on its date.
 - `payouts`: money a payment provider sent to a bank account. Stripe only: Polar's API doesn't share payouts.
 - Polar revenue from orders and refunds. A token without `orders:read` and `refunds:read` (Polar answers 403) keeps syncing Polar's daily totals from its metrics.
@@ -63,7 +63,7 @@ All amounts are in the workspace currency. Every entry balances. "Payer" is `owe
 
 | Event | Debit | Credit |
 |---|---|---|
-| Payment received (on its date) | `balance:<provider>` gross − refunds − fees + tax; `payment_fees` fees; `refunds` refunds | `deferred_revenue` gross; `sales_tax_owed` tax (only when the provider does not remit tax) |
+| Payment received (on its date) | `balance:<provider>` net + tax; `payment_fees` gross − refunds − net (the provider's fees, its other charges and lost disputes); `refunds` refunds | `deferred_revenue` gross; `sales_tax_owed` tax (only when the provider does not remit tax) |
 | Revenue earned (each month of the service period, by days) | `deferred_revenue` | `sales` |
 | Payout to a bank account | `company_bank` (incorporated) or `owner_draws` | `balance:<provider>` |
 | Usage cost (on its date) | expense account | `balance:<provider>` |

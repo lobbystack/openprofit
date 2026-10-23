@@ -1,4 +1,4 @@
-// Seeds one workspace with twelve months of numbers. Run with `pnpm db:seed`.
+// Seeds one workspace with twelve months of numbers. Run with `bun run db:seed`.
 import { eq } from "drizzle-orm";
 import { authSchema, db, schema } from "#/db";
 import { seedWorkspace } from "#/server/seed.server";

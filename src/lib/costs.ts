@@ -30,6 +30,9 @@ export const FlatCostInput = z
 		paidWith: z.enum(["personal", "company"]).optional(),
 		paidWithSince: Day.nullable().optional(),
 	})
+	.refine((f) => f.category !== "equipment" || f.interval === "once", {
+		message: "Equipment is a one-time cost.",
+	})
 	.refine((f) => !f.endsOn || f.endsOn >= f.startsOn, {
 		message: "The end date is before the start date.",
 	});

@@ -1,6 +1,0 @@
-packages:
-  - packages/*
-allowBuilds:
-  core-js: false
-  esbuild: true
-  lightningcss: true

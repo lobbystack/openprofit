@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ContentPage } from "#/components/content-page";
-import { SITE_URL, seo } from "#/lib/app";
+import { breadcrumbs, jsonLd, SITE_URL, seo } from "#/lib/app";
 import { dayLabel } from "#/lib/format";
 import { getPost } from "#/server/content.functions";
 
@@ -11,25 +11,33 @@ export const Route = createFileRoute("/blog/$slug")({
 		p
 			? {
 					...seo({
-						title: `${p.title} · OpenProfit`,
+						// Post titles run near Google's 60-character cutoff, so no suffix.
+						title: p.title,
 						description: p.description,
 						path: `/blog/${p.slug}`,
 					}),
 					// schema.org BlogPosting: https://schema.org/BlogPosting
 					scripts: [
-						{
-							type: "application/ld+json",
-							children: JSON.stringify({
-								"@context": "https://schema.org",
-								"@type": "BlogPosting",
-								headline: p.title,
-								description: p.description,
-								datePublished: p.date,
-								url: `${SITE_URL}/blog/${p.slug}`,
-								author: { "@type": "Person", name: p.author },
-								publisher: { "@type": "Organization", name: "Lobbystack Inc." },
-							}),
-						},
+						jsonLd({
+							"@graph": [
+								breadcrumbs([
+									["Blog", "/blog"],
+									[p.title, `/blog/${p.slug}`],
+								]),
+								{
+									"@type": "BlogPosting",
+									headline: p.title,
+									description: p.description,
+									datePublished: p.date,
+									url: `${SITE_URL}/blog/${p.slug}`,
+									author: { "@type": "Person", name: p.author },
+									publisher: {
+										"@type": "Organization",
+										name: "Lobbystack Inc.",
+									},
+								},
+							],
+						}),
 					],
 				}
 			: {},

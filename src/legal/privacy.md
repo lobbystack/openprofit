@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Last updated: October 9, 2026. Added the Bank of Canada to section 3.
+Last updated: October 22, 2026. Moved hosting from Railway to OVH and added Cloudflare to section 3.
 
 This policy explains what personal information OpenProfit collects, why, and what you can do about it. OpenProfit is operated by Lobbystack Inc., Montreal, Quebec, Canada ("we", "us"). It covers the hosted service at openprofit.dev. If you run the open-source software on your own server, we receive nothing from it unless you switch on the usage ping described in section 5.
 
@@ -45,7 +45,8 @@ We do not sell personal information and we do not share it with advertisers. We 
 
 | Service | Purpose | Location |
 | --- | --- | --- |
-| Railway | Hosting and database | United States |
+| OVH US LLC | Hosting and database | United States |
+| Cloudflare, Inc. | Network in front of the Service; it sees each request, including your IP address | United States, served from its global network |
 | Polar Software Inc. | Payments, invoices, tax, as merchant of record | United States and EU |
 | Resend | Sending sign-in links, alerts and the weekly email | United States |
 | PostHog Inc. | Product analytics, web analytics without cookies, and session replay while Analytics is on; server logs and error reports | United States |
@@ -53,7 +54,7 @@ We do not sell personal information and we do not share it with advertisers. We 
 | Frankfurter (European Central Bank data) | Exchange rates; receives no personal data | EU |
 | Bank of Canada | Exchange rates into Canadian dollars; receives no personal data | Canada |
 
-When we send browser analytics through PostHog's managed reverse proxy, the requests pass through Cloudflare, Inc., which PostHog lists as its subprocessor for that service.
+Browser analytics we send through PostHog's managed reverse proxy also pass through Cloudflare, Inc., which PostHog lists as its subprocessor for that service.
 
 Each provider you connect receives API calls from us using your credential. Those calls contain nothing about you beyond the credential itself.
 

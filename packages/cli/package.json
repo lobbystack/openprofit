@@ -6,7 +6,7 @@
 	"homepage": "https://openprofit.dev",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/lobbystack/openprofit.git",
+		"url": "git+https://github.com/morencyr/openprofit.git",
 		"directory": "packages/cli"
 	},
 	"type": "module",
@@ -19,7 +19,7 @@
 	},
 	"scripts": {
 		"build": "tsc -p .",
-		"test": "node --test",
+		"test": "bun test",
 		"prepack": "tsc -p ."
 	},
 	"dependencies": {

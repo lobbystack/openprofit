@@ -7,7 +7,7 @@ import { PLANS } from "#/lib/plans";
 import { requireUser } from "./auth.server";
 import { isCloud } from "./billing.server";
 import { convert } from "./fx.server";
-import { syncConnection } from "./sync.server";
+import { revenueBase, syncConnection } from "./sync.server";
 import { currentWorkspace } from "./workspace.server";
 
 export type Settings = {
@@ -117,20 +117,7 @@ export const updateSettings = createServerFn({ method: "POST" })
 			for (const l of rev) {
 				await db
 					.update(schema.revenueLines)
-					.set({
-						netBaseCents: await convert(
-							l.netCents,
-							l.currency,
-							data.currency,
-							l.date,
-						),
-						taxBaseCents: await convert(
-							l.taxCents,
-							l.currency,
-							data.currency,
-							l.date,
-						),
-					})
+					.set(await revenueBase(l, data.currency))
 					.where(eq(schema.revenueLines.id, l.id));
 			}
 			for (const l of cost) {
@@ -148,6 +135,28 @@ export const updateSettings = createServerFn({ method: "POST" })
 			}
 			// Flat costs have no date of their own; they convert at today's rate.
 			const today = new Date().toISOString().slice(0, 10);
+			// A payout still on its way converts at today's rate, as in the sync.
+			const payouts = await db.query.payouts.findMany({
+				where: eq(schema.payouts.workspaceId, ws.id),
+			});
+			for (const p of payouts) {
+				await db
+					.update(schema.payouts)
+					.set({
+						amountBaseCents: await convert(
+							p.amountCents,
+							p.currency,
+							data.currency,
+							p.date < today ? p.date : today,
+						),
+					})
+					.where(eq(schema.payouts.id, p.id));
+			}
+			// Exported months hold entries in the old currency, so they reopen:
+			// adjustments against them would mix the two.
+			await db
+				.delete(schema.journalExports)
+				.where(eq(schema.journalExports.workspaceId, ws.id));
 			const flats = await db.query.flatCosts.findMany({
 				where: eq(schema.flatCosts.workspaceId, ws.id),
 			});

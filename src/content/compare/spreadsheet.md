@@ -5,6 +5,8 @@ description: What a profit spreadsheet costs you each month, what OpenProfit doe
 
 # OpenProfit vs a spreadsheet
 
+Updated October 9, 2026.
+
 Most people who run a few software products track profit the same way: a spreadsheet with a row per month, revenue copied from Stripe, costs copied from each billing page. It works the first month. By the third, it's out of date.
 
 ## What the spreadsheet costs you

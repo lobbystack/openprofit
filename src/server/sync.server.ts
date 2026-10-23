@@ -6,6 +6,7 @@ import {
 	inArray,
 	isNotNull,
 	like,
+	lt,
 	lte,
 	ne,
 	or,
@@ -15,6 +16,7 @@ import { connector, connectors } from "#/connectors";
 import {
 	ConnectorError,
 	type Credentials,
+	type RevenueLine,
 	type Snapshot,
 	type SyncRange,
 } from "#/connectors/types";
@@ -23,7 +25,7 @@ import { decrypt } from "#/lib/crypto";
 import { evaluateAlerts } from "./alerts.server";
 import { captureForWorkspace } from "./analytics.server";
 import { isCloud } from "./billing.server";
-import { convert } from "./fx.server";
+import { convert, rateFor } from "./fx.server";
 import { traced } from "./observability.server";
 
 type Connection = typeof schema.connections.$inferSelect;
@@ -51,6 +53,32 @@ export function syncRange(
 			? oldest
 			: Math.max(Math.min(now, lastSyncedAt) - 3 * DAY, oldest);
 	return { from: isoDay(from), to: isoDay(now) };
+}
+
+// A revenue line's base-cents columns, at one rate for its day. The sync
+// and a base currency change both write them through here.
+export async function revenueBase(
+	l: Pick<
+		RevenueLine,
+		| "currency"
+		| "date"
+		| "grossCents"
+		| "feesCents"
+		| "refundsCents"
+		| "netCents"
+		| "taxCents"
+	>,
+	to: string,
+) {
+	const rate = l.currency === to ? 1 : await rateFor(l.date, l.currency, to);
+	const base = (cents = 0) => Math.round(cents * rate);
+	return {
+		netBaseCents: base(l.netCents),
+		grossBaseCents: base(l.grossCents),
+		feesBaseCents: base(l.feesCents),
+		refundsBaseCents: base(l.refundsCents),
+		taxBaseCents: base(l.taxCents),
+	};
 }
 
 // Pull one connection. Lines are upserted by external id, so re-running a
@@ -115,8 +143,6 @@ export async function syncConnection(
 		if (c.fetchRevenue) {
 			const lines = await c.fetchRevenue(creds, range);
 			for (const l of lines) {
-				const base = (cents: number) =>
-					convert(cents, l.currency, ws.baseCurrency, l.date);
 				const line = {
 					productId: productFor(l.subUnitId, l.subUnitLabel),
 					date: l.date,
@@ -125,12 +151,8 @@ export async function syncConnection(
 					feesCents: l.feesCents,
 					refundsCents: l.refundsCents,
 					netCents: l.netCents,
-					netBaseCents: await base(l.netCents),
-					grossBaseCents: await base(l.grossCents),
-					feesBaseCents: await base(l.feesCents),
-					refundsBaseCents: await base(l.refundsCents),
+					...(await revenueBase(l, ws.baseCurrency)),
 					taxCents: l.taxCents ?? 0,
-					taxBaseCents: await base(l.taxCents ?? 0),
 					serviceStart: l.serviceStart ?? null,
 					serviceEnd: l.serviceEnd ?? null,
 					kind: l.kind,
@@ -160,6 +182,30 @@ export async function syncConnection(
 				window,
 				new Set(lines.map((l) => l.externalId)),
 			);
+			// Lines under the current ids replace legacy ones as far back as the
+			// fetch read, which can start before the range (Polar rereads 21
+			// days of orders).
+			const prefix = c.legacyIds;
+			const oldest = lines.reduce(
+				(a, l) => (l.date < a ? l.date : a),
+				range.from,
+			);
+			if (
+				legacy &&
+				prefix !== undefined &&
+				oldest < range.from &&
+				!lines.some((l) => l.externalId.startsWith(prefix))
+			)
+				await db
+					.delete(schema.revenueLines)
+					.where(
+						and(
+							eq(schema.revenueLines.connectionId, conn.id),
+							like(schema.revenueLines.externalId, `${prefix}%`),
+							gte(schema.revenueLines.date, oldest),
+							lt(schema.revenueLines.date, range.from),
+						),
+					);
 		}
 
 		if (c.fetchPayouts) {

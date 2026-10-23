@@ -1,5 +1,5 @@
 // Computes the benchmark percentiles for one month, by default the last
-// complete one: `pnpm benchmarks` or `pnpm benchmarks --month=2026-09`.
+// complete one: `bun run benchmarks` or `bun run benchmarks --month=2026-09`.
 // With PGlite, stop the dev server first.
 import assert from "node:assert/strict";
 import { bandFor, percentile } from "#/lib/benchmarks";

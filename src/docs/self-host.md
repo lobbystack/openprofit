@@ -25,7 +25,7 @@ docker run -d \
   -v openprofit_data:/app/data \
   -e SECRET_KEY=your_secret_here \
   -e APP_URL=http://localhost:3000 \
-  ghcr.io/lobbystack/openprofit:latest
+  ghcr.io/morencyr/openprofit:latest
 ```
 
 The `-v` flag keeps your data in the `openprofit_data` volume when the container is replaced. Set `APP_URL` to the address people use to reach the instance, because sign-in links point there.
@@ -59,16 +59,27 @@ OpenProfit creates and updates its tables on start, so the database only needs t
 Updating replaces the container and keeps the volume, so your data stays. Pull the new image and remove the old container:
 
 ```bash
-docker pull ghcr.io/lobbystack/openprofit:latest
+docker pull ghcr.io/morencyr/openprofit:latest
 docker rm -f openprofit
 ```
 
 Then run the `docker run` command from [Start the container](#start-the-container) again. Schema changes apply when the new container starts.
 
+## Deploy on Dokploy
+
+The hosted version at openprofit.dev runs this same image on Dokploy. To do the same:
+
+1. In a project, add a Postgres database and deploy it.
+2. Add an application with the Docker provider and the image `ghcr.io/morencyr/openprofit:latest`.
+3. Set `DATABASE_URL` to the database's internal connection string, and set `SECRET_KEY` and `APP_URL` as described above. Traefik sits in front, so set `TRUST_PROXY=1`.
+4. Add your domain with port `3000` and HTTPS, then deploy.
+
+To redeploy when a new image comes out, call the deploy webhook from the application's **Deployments** tab after each push.
+
 ## Deploy on Railway
 
-The hosted version at openprofit.dev runs this same image on Railway. To do the same:
+To run the image on Railway:
 
-1. Create a service from the image `ghcr.io/lobbystack/openprofit:latest`.
+1. Create a service from the image `ghcr.io/morencyr/openprofit:latest`.
 2. Add a Postgres database to the project.
 3. Set `DATABASE_URL` to the database’s connection string, and set `SECRET_KEY` and `APP_URL` as described above.

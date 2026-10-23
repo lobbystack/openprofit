@@ -2,38 +2,46 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-OpenProfit: open-source finance for developers. Pulls revenue (Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway and more) from provider APIs, assigns them to products, shows profit per product, and turns the same lines into books and tax-form numbers. One TanStack Start app serves the landing page, docs, blog, marketing content and the app. Hosted at openprofit.dev (Railway), self-hostable as one Docker image. Repo: github.com/lobbystack/openprofit. Operator: Lobbystack Inc.
+OpenProfit: open-source finance for developers. Pulls revenue (Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway and more) from provider APIs, assigns them to products, shows profit per product, and turns the same lines into books and tax-form numbers. One TanStack Start app serves the landing page, docs, blog, marketing content and the app. Hosted at openprofit.dev (Dokploy on an OVH server, behind Cloudflare), self-hostable as one Docker image. Repo: github.com/morencyr/openprofit. Operator: Lobbystack Inc.
 
 ## Commands
 
 ```bash
-pnpm dev                 # http://localhost:3000
-pnpm check               # Biome lint + format check (CI runs this)
-npx biome check --write src   # apply formatting; Biome rewrites files to tabs/double quotes
-npx tsc --noEmit         # typecheck (CI runs this)
-pnpm build               # production build into .output (CI runs this)
-pnpm db:generate         # write a migration after editing src/db/schema.ts
-pnpm db:seed             # demo workspace; `pnpm db:seed --owner=you@example.com` attaches it to a user
+bun run dev                    # http://localhost:3000
+bun run check                  # Biome lint + format check (CI runs this)
+bunx biome check --write src   # apply formatting; Biome rewrites files to tabs/double quotes
+bunx --bun tsc --noEmit        # typecheck (CI runs this)
+bun run build                  # production build into .output (CI runs this)
+bun run db:generate            # write a migration after editing src/db/schema.ts
+bun run db:seed                # demo workspace; `bun run db:seed --owner=you@example.com` attaches it to a user
 ```
 
-There is no test suite. Verify changes in the browser and with a production build when touching bundling, the database or `src/start.ts`. Books has assert scripts: `DATABASE_URL=/tmp/op-check SYNC_SCHEDULER=off npx tsx scripts/check-books-tax.ts` (also `check-books`, `check-books-close`, `check-books-export`).
+Bun is the package manager and the runtime everywhere:
 
-`biome.json` excludes every path under `.claude`, so `pnpm check` inside a worktree in `.claude/worktrees/` checks nothing. Run Biome on each changed file through stdin there: `npx biome check --write --stdin-file-path=<file> < <file>`.
+- Vite runs under `bun --bun`, so dev and the prerender run in Bun.
+- Scripts run as TypeScript with `bun scripts/seed.ts`. Bun loads `.env` itself.
+- Nitro builds with its `bun` preset. Production runs `bun .output/server/index.mjs`.
+- `bun run build` runs the app build. `bun build` is Bun's own bundler.
+- `postinstall` points `node_modules/.bin/intent` at `@tanstack/intent`. `@tanstack/devtools-vite` ships a broken `intent` bin, and Bun links that one otherwise.
+
+There is no test suite. Verify changes in the browser and with a production build when touching bundling, the database or `src/start.ts`. Books has assert scripts: `DATABASE_URL=/tmp/op-check SYNC_SCHEDULER=off bun scripts/check-books-tax.ts` (also `check-books`, `check-books-close`, `check-books-export`).
+
+`biome.json` excludes every path under `.claude`, so `bun run check` inside a worktree in `.claude/worktrees/` checks nothing. Run Biome on each changed file through stdin there: `bunx biome check --write --stdin-file-path=<file> < <file>`.
 
 Production-build smoke test with a throwaway embedded DB:
 
 ```bash
-PORT=3200 SYNC_SCHEDULER=off DATABASE_URL=/tmp/op-test node .output/server/index.mjs
+PORT=3200 SYNC_SCHEDULER=off DATABASE_URL=/tmp/op-test bun .output/server/index.mjs
 ```
 
-Local sign-in without email: request a link on /login (or POST /api/auth/sign-in/magic-link) and read the URL from the dev server log. Same on Railway via `railway logs | grep magic-link`.
+Local sign-in without email: request a link on /login (or POST /api/auth/sign-in/magic-link) and read the URL from the dev server log. In production, search the Dokploy app's logs for `magic-link`.
 
 ## Library docs before code
 
 Don't write framework code from memory. TanStack ships versioned agent skills inside its packages, and a project hook (`.claude/settings.json`, `.intent/hooks/`) lists them at session start and blocks edits until the guidance is checked.
 
-- TanStack Start and Router: load the matching skill first (`pnpm exec intent list`, then `pnpm exec intent load <package>#<skill>`). `package.json#intent.skills` lists the allowed skill sources; add a TanStack package there when the app starts using it.
-- Anything the skills don't cover: read the docs for the installed version, e.g. `pnpm dlx @tanstack/cli search-docs "<query>" --library start --framework react` and `pnpm dlx @tanstack/cli doc <library> <path>`. When docs and the installed source disagree, the source in `node_modules` wins.
+- TanStack Start and Router: load the matching skill first (`bunx @tanstack/intent list`, then `bunx @tanstack/intent load <package>#<skill>`). `package.json#intent.skills` lists the allowed skill sources; add a TanStack package there when the app starts using it.
+- Anything the skills don't cover: read the docs for the installed version, e.g. `bunx @tanstack/cli search-docs "<query>" --library start --framework react` and `bunx @tanstack/cli doc <library> <path>`. When docs and the installed source disagree, the source in `node_modules` wins.
 - Other libraries (Better Auth, Drizzle, PostHog, provider APIs): read their current docs before using an API, and cite the page in a short comment where the behaviour isn't obvious.
 
 <!-- intent-skills:start -->
@@ -41,8 +49,8 @@ Don't write framework code from memory. TanStack ships versioned agent skills in
 
 Use the repository’s installed Intent. If it is unavailable, report the missing dependency instead of downloading a replacement.
 Before editing files for a substantial task:
-- Run `pnpm exec intent list` from the workspace root to see available local skills.
-- If a listed skill matches the task, run `pnpm exec intent load <package>#<skill>` before changing files.
+- Run `bunx @tanstack/intent list` from the workspace root to see available local skills.
+- If a listed skill matches the task, run `bunx @tanstack/intent load <package>#<skill>` before changing files.
 - Use the loaded `SKILL.md` guidance while making the change.
 - Monorepos: when working across packages, run the skill check from the workspace root and prefer the local skill for the package being changed.
 - Multiple matches: prefer the most specific local skill for the package or concern you are changing; load additional skills only when the task spans multiple packages or concerns.
@@ -50,9 +58,9 @@ Before editing files for a substantial task:
 
 ## Database
 
-- Postgres everywhere through Drizzle (`src/db/schema.ts`, `src/db/auth-schema.ts`). `DATABASE_URL` starting with `postgres://` uses `pg`; anything else is a directory for **PGlite** (embedded Postgres, default `./data/openprofit`). Hosted uses Railway Postgres.
+- Postgres everywhere through Drizzle (`src/db/schema.ts`, `src/db/auth-schema.ts`). `DATABASE_URL` starting with `postgres://` uses `pg`; anything else is a directory for **PGlite** (embedded Postgres, default `./data/openprofit`). Hosted uses a Postgres 18 service on Dokploy.
 - Migrations in `./drizzle` run at import time of `src/db/index.ts` (skip with `SKIP_MIGRATIONS=1`). Don't use `drizzle-kit push`; PGlite rejects its multi-statement queries.
-- **PGlite allows one process per data directory.** Running a script (`db:seed`, a tsx one-off) while `pnpm dev` is up hangs or fails. Killing a process mid-write (`kill -9`) can corrupt the directory. Stop dev cleanly first. One-off scripts must end with `process.exit(0)` or PGlite keeps them alive. SIGTERM and SIGINT close the database and exit (`src/db/index.ts`); without that, PGlite's timer keeps the process alive until Docker kills it.
+- **PGlite allows one process per data directory.** Running a script (`db:seed`, a one-off script) while `bun run dev` is up hangs or fails. Killing a process mid-write (`kill -9`) can corrupt the directory. Stop dev cleanly first. One-off scripts must end with `process.exit(0)` or PGlite keeps them alive. SIGTERM and SIGINT close the database and exit (`src/db/index.ts`); without that, PGlite's timer keeps the process alive until Docker kills it.
 - PGlite is excluded from Vite `optimizeDeps` and externalized from the Nitro server bundle in `vite.config.ts`; bundling it drops its wasm/data files and the server crashes on start. Keep both. `@resvg/resvg-wasm` (social images, `src/server/images.server.ts`) is externalized for the same reason.
 - Money is integer cents. Each line stores the source amount and a `*_base_cents` amount in the workspace's base currency (Frankfurter/ECB daily rates, cached in `fx_rates`; conversions into CAD use the Bank of Canada's rates, as the CRA asks, in `src/server/fx.server.ts`). Changing the base currency reconverts every line (`settings.functions.ts`).
 - Every table carries `workspace_id`.
@@ -67,10 +75,10 @@ Before editing files for a substantial task:
 - **Overview** (`src/server/overview.server.ts`): grouped monthly sums over 24 months; tiles compare the selected period with the equal period before, the chart's dotted line is the same months a year earlier. Period comes from the `?period=` search param.
 - **Books** (spec: `docs/BOOKS.md`; user docs: `src/docs/books.md`). `src/lib/books.ts` is the pure journal engine: accounts, who paid (personal card or company, before or after `incorporated_on`), yearly plans spread over their service period, and adjustments for closed months. `src/server/books.server.ts` loads a month's lines; a whole-workspace export stores it in `journal_exports` and closes the month, and later changes go out as adjustments in the next export. `src/lib/tax.ts` maps the year's totals to T2125, TP-80, GIFI, Schedule C and Form 1120 lines; every mapping cites its official source in a comment, and a line no source names is a judgment call marked `ours`. Changing a tax line means re-reading the source and updating `docs/BOOKS.md`, `src/docs/books.md` and `src/content/blog/tax-lines-for-software-costs.md`. QuickBooks, Xero and plain writers are in `books-export.server.ts`, downloaded from `/api/journal.csv`.
 - **Cloud mode** (`APP_MODE=cloud`): plans and limits in `src/lib/plans.ts`, Polar checkout/portal and webhook in `src/server/billing.server.ts` and `src/routes/api/polar/webhook.ts` (Standard Webhooks signature, `whsec_` secrets are base64). Inert in self-host.
-- **Public demo** (`/demo`, `src/server/demo.server.ts`): the app's pages over one `demo = true` workspace with no members, rebuilt hourly by the seed generator (`src/server/seed.server.ts`, also behind `pnpm db:seed`). Read server functions take `{ demo: true }`; `currentWorkspace()` never returns the demo, so mutations can't reach it. On with `APP_MODE=cloud` or `DEMO=on`.
+- **Public demo** (`/demo`, `src/server/demo.server.ts`): the app's pages over one `demo = true` workspace with no members, rebuilt hourly by the seed generator (`src/server/seed.server.ts`, also behind `bun run db:seed`). Read server functions take `{ demo: true }`; `currentWorkspace()` never returns the demo, so mutations can't reach it. On with `APP_MODE=cloud` or `DEMO=on`.
 - **Edge middleware** in `src/server/edge.server.ts` (a Nitro plugin that puts itself ahead of Nitro's static files): www to apex redirect, markdown responses for `Accept: text/markdown` (sources mapped in `src/server/markdown.server.ts`; add new public pages there), RFC 8288 `Link` headers, and serving the prerendered pages. It must stay free of database imports, so pages with live data (`/open`, `/p/...`) answer markdown from their own route `GET` handler and call `next()` for HTML.
-- **Request middleware** in `src/start.ts` (`createMiddleware({ type: "request" })`): tracing, gzip of server-rendered HTML/XML/JSON, and `Cache-Control: no-store` on /app, /onboarding and server function responses. Redirect responses must pass through unchanged: Start serializes server function redirects after the middleware. Start's CSRF check for server functions is added there explicitly, because a custom `createStart` drops the default. Request middleware runs under `pnpm dev` too.
-- **Prerendering.** `pnpm build` prerenders the pages that have markdown (landing, docs, integrations, comparisons, changelog, legal) with TanStack Start's `prerender` option; the `PRERENDER` pattern in `vite.config.ts` must match `markdownFor`. Nitro builds its static file list before those files exist, so the edge middleware serves them (brotli or gzip, compressed once per process). Prerendered HTML can't hold per-request data: the root route has no loader, and analytics settings are fetched after hydration. Server routes import the database inside their handlers so the prerender never opens it.
+- **Request middleware** in `src/start.ts` (`createMiddleware({ type: "request" })`): tracing, gzip of server-rendered HTML/XML/JSON, and `Cache-Control: no-store` on /app, /onboarding and server function responses. Redirect responses must pass through unchanged: Start serializes server function redirects after the middleware. Start's CSRF check for server functions is added there explicitly, because a custom `createStart` drops the default. Request middleware runs under `bun run dev` too.
+- **Prerendering.** `bun run build` prerenders the pages that have markdown (landing, docs, integrations, comparisons, changelog, legal) with TanStack Start's `prerender` option; the `PRERENDER` pattern in `vite.config.ts` must match `markdownFor`. Nitro builds its static file list before those files exist, so the edge middleware serves them (brotli or gzip, compressed once per process). Prerendered HTML can't hold per-request data: the root route has no loader, and analytics settings are fetched after hydration. Server routes import the database inside their handlers so the prerender never opens it.
 - **Auth:** Better Auth with magic link plus GitHub/Google when their env vars are set (`src/lib/auth.ts`). Emails go through Resend when `RESEND_API_KEY` is set, otherwise they print to the server log.
 
 ## Content and SEO
@@ -84,7 +92,7 @@ Before editing files for a substantial task:
 - Tokens in `src/styles.css`: paper/ink with neutrals mixed from them, light and dark (`.dark` class, toggled in `src/lib/theme.ts`). Change the system tokens, not individual components.
 - One typeface: Geist. `--font-mono` points at Geist; numbers use the `num` utility (tabular figures). No serif or monospaced faces.
 - Interaction rules live in `src/styles.css`, not components: press feedback on every button, visible keyboard focus, `display` utility for type 36px and up (tighter tracking), `chrome` for translucent sticky bars, `pressable` for links styled as buttons, `rise` for the one-time landing entrance, and `--ease-out` / `--ease-in-out` curves (UI motion stays under 300 ms; frequent actions like switching metric tiles don't animate beyond the chart), and reduced-motion, reduced-transparency and high-contrast overrides.
-- UI components are shadcn on Base UI (`components.json`: style `base-nova`), with their source in `src/components/ui/`. Each file is tuned to the tokens (no shadows, the app's heights and type sizes), so pages use variants such as `<Button variant="outline" size="sm">` and never restyle a component at the call site; change the variant in the component file instead. Add components with `pnpm dlx shadcn@latest add <name>` and answer no when it offers to overwrite an existing file. Base UI specifics: buttons default to `type="button"`, so a submit button needs `type="submit"`; a link that looks like a button is the router `Link` (or the landing `Href`) with `className={buttonVariants(...)}`, not `Button` with `render`, which would give it `role="button"`. `biome.json` relaxes a few lint rules for `src/components/ui` only.
+- UI components are shadcn on Base UI (`components.json`: style `base-nova`), with their source in `src/components/ui/`. Each file is tuned to the tokens (no shadows, the app's heights and type sizes), so pages use variants such as `<Button variant="outline" size="sm">` and never restyle a component at the call site; change the variant in the component file instead. Add components with `bunx shadcn@latest add <name>` and answer no when it offers to overwrite an existing file. Base UI specifics: buttons default to `type="button"`, so a submit button needs `type="submit"`; a link that looks like a button is the router `Link` (or the landing `Href`) with `className={buttonVariants(...)}`, not `Button` with `render`, which would give it `role="button"`. `biome.json` relaxes a few lint rules for `src/components/ui` only.
 - Charts are shadcn `Chart` (Recharts) in `src/components/dashboard/area-chart-recharts.tsx`, loaded lazily through `area-chart.tsx` so pages don't wait for Recharts.
 - Destructive actions (removing a connection, product or flat cost) confirm first in an `AlertDialog` (`useConfirm` in `src/components/app/confirm.tsx`) and say what happens to the data.
 - No all-caps text anywhere. Headings weight 400. No shadows or gradients on the marketing pages, no emoji.
@@ -95,4 +103,6 @@ Before editing files for a substantial task:
 
 ## Deploy
 
-Push to `main` runs CI (`.github/workflows/check.yml`) and publishes `ghcr.io/lobbystack/openprofit:latest`. Railway's `web` service (project `openprofit`, plus a Postgres service) deploys from the repo's `main` branch with Wait for CI on: each push waits for the GitHub checks, then deploys, and a failed check blocks it. Don't deploy production with `railway up`; it uploads the local working tree, uncommitted changes included. Railway's edge caches `.xml` responses, so give those an explicit `Cache-Control`.
+Pull requests run `.github/workflows/check.yml`. A push to `main` runs `.github/workflows/docker.yml`: the same checks, then it publishes `ghcr.io/morencyr/openprofit:latest`, then calls the Dokploy deploy webhook (secret `DOKPLOY_DEPLOY_WEBHOOK`). A failed check stops the image and the deploy.
+
+Production runs on Dokploy at deploy.lobbystack.com: project `OpenProfit`, application `web` (Docker source, that image, port 3000) and a `postgres` service (Postgres 18, reached over `dokploy-network`). Env vars live on the Dokploy application. The server's firewall admits ports 80 and 443 from Cloudflare only, so openprofit.dev's DNS is on Cloudflare (proxied, SSL mode Full). The domain is registered through Railway Domains (workspace level, not tied to a project), with its nameservers delegated to Cloudflare and the app reads the client's address from `CLIENT_IP_HEADER=cf-connecting-ip`. Records for mail (iCloud), Resend (`send`) and the PostHog proxy (`e`) stay DNS-only. Cloudflare may cache `.xml` responses, so give those an explicit `Cache-Control`.

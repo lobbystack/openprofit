@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { seo } from "#/lib/app";
+import { breadcrumbs, jsonLd, SITE_URL, seo } from "#/lib/app";
 import { getContentPage } from "#/server/content.functions";
 
 export const Route = createFileRoute("/docs/$slug")({
@@ -8,11 +8,29 @@ export const Route = createFileRoute("/docs/$slug")({
 	// No loader data on a 404.
 	head: ({ loaderData: p }) =>
 		p
-			? seo({
-					title: `${p.title} · OpenProfit docs`,
-					description: p.description,
-					path: `/docs/${p.slug}`,
-				})
+			? {
+					...seo({
+						title: `${p.title} · OpenProfit docs`,
+						description: p.description,
+						path: `/docs/${p.slug}`,
+					}),
+					scripts: [
+						jsonLd({
+							"@graph": [
+								breadcrumbs([
+									["Docs", "/docs/connectors"],
+									[p.title, `/docs/${p.slug}`],
+								]),
+								{
+									"@type": "TechArticle",
+									headline: p.title,
+									description: p.description,
+									url: `${SITE_URL}/docs/${p.slug}`,
+								},
+							],
+						}),
+					],
+				}
 			: {},
 	component: Page,
 });

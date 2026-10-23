@@ -14,7 +14,7 @@ An instance doesn’t start correctly without these two:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `SECRET_KEY` | None | 32 random bytes encoded as base64. Encrypts provider keys and signs sessions. Changing it makes stored provider keys unreadable |
+| `SECRET_KEY` | None | 32 random bytes encoded as base64. Encrypts provider keys and signs sessions. To change it, stop the app and run `OLD_SECRET_KEY=<old> SECRET_KEY=<new> bun scripts/rotate-secret-key.ts` against the database, or the app can't read the stored provider keys. Everyone signs in again |
 | `APP_URL` | `http://localhost:3000` | Public address of the instance. Sign-in links point here |
 
 ## Database
@@ -32,6 +32,7 @@ Sign-in from the CLI and agent sign-up are rate-limited per IP address. Behind a
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `TRUST_PROXY` | None | The number of proxies in front of the instance, usually `1`. OpenProfit then reads the client's address from `X-Forwarded-For`. Leave it unset when nothing sits in front, or clients can fake their address. Not needed on Railway |
+| `CLIENT_IP_HEADER` | None | A header your CDN sets to the client's address, such as `cf-connecting-ip` for Cloudflare. It takes precedence over `TRUST_PROXY`. Set it only when your firewall admits the CDN's addresses alone, or clients can fake their address |
 
 ## Email and sign-in
 

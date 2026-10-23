@@ -1,11 +1,11 @@
 ---
-title: Which tax line do OpenAI, Vercel and Stripe fees go on?
+title: T2125 and Schedule C lines for OpenAI, Vercel and Stripe fees
 description: The T2125, TP-80, GIFI, Schedule C and Form 1120 lines for AI APIs, hosting, payment fees, refunds, contractors and a laptop, checked against the 2025 forms.
 date: 2026-10-08
 author: Raphael Morency
 ---
 
-# Which tax line do OpenAI, Vercel and Stripe fees go on?
+# T2125 and Schedule C lines for OpenAI, Vercel and Stripe fees
 
 No tax form has a line for AI APIs, hosting or email. In Canada they go under other expenses (T2125 line 9270, TP-80 line 246), or computer-related expenses (GIFI code 9150) for a corporation. In the US they go in Part V of Schedule C, or on line 26 of Form 1120. Payment fees, refunds, contractors and a laptop each have a better line, listed below.
 

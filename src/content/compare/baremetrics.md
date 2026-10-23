@@ -1,9 +1,11 @@
 ---
 title: OpenProfit vs Baremetrics
-description: Baremetrics is hosted subscription analytics priced by your ARR. OpenProfit reads your AI and hosting bills, shows profit per product, and gives you the numbers for your tax return.
+description: Baremetrics is subscription analytics priced by your ARR. OpenProfit adds your AI and hosting bills, profit per product, and your tax return numbers.
 ---
 
 # OpenProfit vs Baremetrics
+
+Updated October 9, 2026.
 
 Baremetrics is hosted subscription analytics with add-ons for failed-payment recovery, cancellation insights and forecasting. OpenProfit is an open-source app that pulls your revenue and your costs from the services you use, shows profit for every product you run, and gives you the numbers for your tax return.
 

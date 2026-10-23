@@ -15,6 +15,13 @@ const marked = new Marked({
 			return `<h${depth} id="${id}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
 		},
 	},
+	// Wide tables scroll inside their own box on a phone instead of widening the page.
+	hooks: {
+		postprocess: (html) =>
+			html
+				.replaceAll("<table>", '<div class="table-scroll"><table>')
+				.replaceAll("</table>", "</table></div>"),
+	},
 });
 
 export function toHtml(md: string) {
@@ -48,6 +55,18 @@ export function parse(slug: string, raw: string): Page {
 		body: (m?.[2] ?? raw).trim(),
 		meta,
 	};
+}
+
+// Question and answer pairs from a "## Common questions" section, written as
+// "**Question?** Answer" paragraphs, for FAQPage structured data. Markdown
+// links and emphasis become plain text.
+export function faqOf(body: string) {
+	const section =
+		body.split(/^## Common questions$/m)[1]?.split(/^## /m)[0] ?? "";
+	return [...section.matchAll(/^\*\*(.+?\?)\*\* (.+)$/gm)].map(([, q, a]) => ({
+		q,
+		a: a.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/[*`]/g, ""),
+	}));
 }
 
 const load = (files: Record<string, string>) =>

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { HEARD_FROM } from "#/lib/app";
 import { Day } from "#/lib/costs";
 import { CURRENCIES, TimeZone } from "#/lib/format";
 import { capture, identifyWorkspaces } from "./analytics.server";
@@ -15,6 +16,8 @@ const Input = z.object({
 	// The browser's today when "incorporated company" is checked; the Books
 	// page changes it.
 	incorporatedOn: Day.nullable().optional(),
+	// Only sent to analytics, not stored.
+	heardFrom: z.enum(HEARD_FROM).optional(),
 });
 
 export const createWorkspaceFn = createServerFn({ method: "POST" })
@@ -26,6 +29,7 @@ export const createWorkspaceFn = createServerFn({ method: "POST" })
 		await capture(user.id, ws.id, "workspace_created", {
 			currency: data.currency,
 			plan: ws.plan,
+			heard_from: data.heardFrom,
 		});
 		if (isCloud) await identifyWorkspaces(ws.id);
 		return { id: ws.id };

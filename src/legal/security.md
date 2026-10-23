@@ -61,7 +61,7 @@ OpenProfit uses these keys the same way as the others and only reads with them. 
 
 OpenProfit is open source under the MIT license, and the hosted version runs the same code. Self-host it and your keys stay on your server: one Docker container with Postgres inside, encrypting with a key you generate. The [self-host guide](/docs/self-host) walks through it.
 
-You can read every line that touches a key. Encryption is in [`src/lib/crypto.ts`](https://github.com/lobbystack/openprofit/blob/main/src/lib/crypto.ts), and each provider call is in [`src/connectors/`](https://github.com/lobbystack/openprofit/tree/main/src/connectors).
+You can read every line that touches a key. Encryption is in [`src/lib/crypto.ts`](https://github.com/morencyr/openprofit/blob/main/src/lib/crypto.ts), and each provider call is in [`src/connectors/`](https://github.com/morencyr/openprofit/tree/main/src/connectors).
 
 A self-hosted copy sends us nothing unless you switch on its daily usage ping, which carries a version number and counts, never keys or amounts.
 
@@ -69,7 +69,7 @@ A self-hosted copy sends us nothing unless you switch on its daily usage ping, w
 
 - You sign in with an email link, GitHub or Google. OpenProfit stores no passwords.
 - Product analytics record what you do in the app, never amounts, keys or data from your providers. Switch them off in **Settings**.
-- The hosted version runs on Railway in the United States. The [Privacy Policy](/privacy) lists every company that handles your data, and the [Cookie Policy](/cookies) lists each cookie.
+- The hosted version runs on OVH servers in the United States, behind Cloudflare. The [Privacy Policy](/privacy) lists every company that handles your data, and the [Cookie Policy](/cookies) lists each cookie.
 - To delete a workspace or your account, email hello@openprofit.dev.
 
 ## Report a vulnerability

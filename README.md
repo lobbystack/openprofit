@@ -4,12 +4,12 @@
 
 ### Finance for developers
 
-[Website](https://openprofit.dev) · [Docs](https://openprofit.dev/docs) · [Self-host](https://openprofit.dev/docs/self-host) · [Connectors](https://openprofit.dev/docs/connectors) · [Security](https://openprofit.dev/security) · [Issues](https://github.com/lobbystack/openprofit/issues)
+[Website](https://openprofit.dev) · [Docs](https://openprofit.dev/docs) · [Self-host](https://openprofit.dev/docs/self-host) · [Connectors](https://openprofit.dev/docs/connectors) · [Security](https://openprofit.dev/security) · [Issues](https://github.com/morencyr/openprofit/issues)
 
-[![Check](https://github.com/lobbystack/openprofit/actions/workflows/check.yml/badge.svg)](https://github.com/lobbystack/openprofit/actions/workflows/check.yml)
+[![Check](https://github.com/morencyr/openprofit/actions/workflows/check.yml/badge.svg)](https://github.com/morencyr/openprofit/actions/workflows/check.yml)
 [![License](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
-[![Container](https://img.shields.io/badge/ghcr.io-lobbystack%2Fopenprofit-black)](https://github.com/lobbystack/openprofit/pkgs/container/openprofit)
-[![GitHub stars](https://img.shields.io/github/stars/lobbystack/openprofit?style=social)](https://github.com/lobbystack/openprofit)
+[![Container](https://img.shields.io/badge/ghcr.io-morencyr%2Fopenprofit-black)](https://github.com/morencyr/openprofit/pkgs/container/openprofit)
+[![GitHub stars](https://img.shields.io/github/stars/morencyr/openprofit?style=social)](https://github.com/morencyr/openprofit)
 
 </div>
 
@@ -96,7 +96,7 @@ MIT licensed. One Docker image with Postgres inside, or point it at your own. Yo
 | MongoDB Atlas | Cost | Daily invoice line items per project |
 | Flat costs | Cost | Any monthly, yearly or one-time amount, typed in |
 
-App Store, Google Play and Supabase are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/lobbystack/openprofit/issues) with a link to the provider's billing API, or send a pull request.
+App Store, Google Play and Supabase are next. A connector is one file in [`src/connectors`](src/connectors) that implements `verify` and `fetchRevenue` or `fetchCosts`. If you want one that is not here, [open an issue](https://github.com/morencyr/openprofit/issues) with a link to the provider's billing API, or send a pull request.
 
 ## Getting started
 
@@ -115,12 +115,12 @@ docker run -d \
   -v openprofit_data:/app/data \
   -e SECRET_KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64'))") \
   -e APP_URL=http://localhost:3000 \
-  ghcr.io/lobbystack/openprofit:latest
+  ghcr.io/morencyr/openprofit:latest
 ```
 
 Open http://localhost:3000/login and enter your email. Without an email provider the sign-in link prints in `docker logs openprofit`. Set `RESEND_API_KEY` and `EMAIL_FROM` to send it by mail. Point `DATABASE_URL` at a `postgres://` server to use your own database.
 
-The [self-host guide](https://openprofit.dev/docs/self-host) covers updates and Railway. The [environment reference](https://openprofit.dev/docs/environment) lists every variable.
+The [self-host guide](https://openprofit.dev/docs/self-host) covers updates, Dokploy and Railway. The [environment reference](https://openprofit.dev/docs/environment) lists every variable.
 
 ## How it works
 
@@ -137,22 +137,22 @@ Postgres everywhere: PGlite embedded for self-host and local development, a Post
 
 ## Development
 
-Node 22 and pnpm.
+[Bun](https://bun.com) 1.3 or later.
 
 ```bash
-pnpm install
+bun install
 cp .env.example .env    # set SECRET_KEY
-pnpm db:seed            # a demo workspace with a year of numbers
-pnpm dev
+bun run db:seed         # a demo workspace with a year of numbers
+bun run dev
 ```
 
 Sign in once at http://localhost:3000/login, then attach the demo workspace to your user:
 
 ```bash
-pnpm db:seed --owner=you@example.com
+bun run db:seed --owner=you@example.com
 ```
 
-Checks: `pnpm check` (Biome), `npx tsc --noEmit`, `pnpm build`. After a schema change, `pnpm db:generate` writes a migration; migrations run when the server starts.
+Checks: `bun run check` (Biome), `bunx --bun tsc --noEmit`, `bun run build`. After a schema change, `bun run db:generate` writes a migration; migrations run when the server starts.
 
 ## Contributing
 
