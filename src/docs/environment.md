@@ -14,7 +14,7 @@ An instance doesn’t start correctly without these two:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `SECRET_KEY` | None | 32 random bytes encoded as base64. Encrypts provider keys and signs sessions. Changing it makes stored provider keys unreadable |
+| `SECRET_KEY` | None | 32 random bytes encoded as base64. Encrypts provider keys and signs sessions. To change it, stop the app and run `OLD_SECRET_KEY=<old> SECRET_KEY=<new> bun scripts/rotate-secret-key.ts` against the database, or the app can't read the stored provider keys. Everyone signs in again |
 | `APP_URL` | `http://localhost:3000` | Public address of the instance. Sign-in links point here |
 
 ## Database
