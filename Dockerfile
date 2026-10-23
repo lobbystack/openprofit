@@ -1,5 +1,5 @@
 # Single-container self-host. PGlite data lives on the /app/data volume.
-FROM oven/bun:1.3-alpine AS build
+FROM oven/bun:1.4.4-alpine AS build
 WORKDIR /app
 COPY package.json bun.lock ./
 COPY packages/cli/package.json packages/cli/
@@ -7,7 +7,7 @@ RUN bun install --frozen-lockfile
 COPY . .
 RUN bun run build
 
-FROM oven/bun:1.3-alpine
+FROM oven/bun:1.4.4-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 ENV DATABASE_URL=/app/data/openprofit
