@@ -42,8 +42,9 @@ const COLUMNS: [string, [string, string][]][] = [
 	],
 ];
 
-// Directory badges. Twelve Tools keeps its dofollow link only while its badge
-// is on the site. Each badge has a light and a dark image for the two themes.
+// Directory badges. Twelve Tools and Launch Streak keep their dofollow links
+// only while their badges are on the site. Each badge has a light and a dark
+// image for the two themes.
 const BADGES: { name: string; href: string; light: string; dark: string }[] = [
 	{
 		name: "Featured on DevHunt",
@@ -56,6 +57,12 @@ const BADGES: { name: string; href: string; light: string; dark: string }[] = [
 		href: "https://twelve.tools",
 		light: "https://twelve.tools/badge0-light.svg",
 		dark: "https://twelve.tools/badge0-dark.svg",
+	},
+	{
+		name: "Launched on Launch Streak",
+		href: "https://launchstreak.dev/finance/openprofit",
+		light: "https://launchstreak.dev/badge/launch-streak-badge-light.svg",
+		dark: "https://launchstreak.dev/badge/launch-streak-badge-dark.svg",
 	},
 ];
 
