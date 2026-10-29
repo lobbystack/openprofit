@@ -42,6 +42,23 @@ const COLUMNS: [string, [string, string][]][] = [
 	],
 ];
 
+// Directory badges. Twelve Tools keeps its dofollow link only while its badge
+// is on the site. Each badge has a light and a dark image for the two themes.
+const BADGES: { name: string; href: string; light: string; dark: string }[] = [
+	{
+		name: "Featured on DevHunt",
+		href: "https://devhunt.org/tool/openprofit",
+		light: "https://devhunt.org/badge/openprofit.svg?theme=light",
+		dark: "https://devhunt.org/badge/openprofit.svg",
+	},
+	{
+		name: "Featured on Twelve Tools",
+		href: "https://twelve.tools",
+		light: "https://twelve.tools/badge0-light.svg",
+		dark: "https://twelve.tools/badge0-dark.svg",
+	},
+];
+
 // 1024px wide, brand column plus link columns with 14px titles.
 export function Footer() {
 	return (
@@ -72,7 +89,29 @@ export function Footer() {
 						</div>
 					))}
 				</div>
-				<div className="mt-16 flex items-center justify-between border-t border-line pt-6 text-[13px] text-text-2">
+				<div className="mt-12 flex flex-wrap items-center gap-3">
+					{BADGES.map((b) => (
+						<a key={b.name} href={b.href} target="_blank" rel="noopener">
+							<img
+								src={b.light}
+								alt={b.name}
+								width={148}
+								height={40}
+								loading="lazy"
+								className="h-10 w-auto dark:hidden"
+							/>
+							<img
+								src={b.dark}
+								alt={b.name}
+								width={148}
+								height={40}
+								loading="lazy"
+								className="hidden h-10 w-auto dark:block"
+							/>
+						</a>
+					))}
+				</div>
+				<div className="mt-12 flex items-center justify-between border-t border-line pt-6 text-[13px] text-text-2">
 					<span>MIT licensed</span>
 					<span>© 2026 Lobbystack Inc.</span>
 				</div>
