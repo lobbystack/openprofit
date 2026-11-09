@@ -4,6 +4,7 @@ import { type CostLine, type Credentials, getJson, toCents } from "./types";
 const BASE = "https://openrouter.ai/api/v1";
 const headers = (c: Credentials) => ({ Authorization: `Bearer ${c.key}` });
 
+// `date` comes as "2026-11-08 00:00:00"; a line keeps the day alone.
 type Row = { date: string; model: string; usage: number };
 type Key = {
 	hash: string;
@@ -44,7 +45,7 @@ export function activityLines(
 			if (!cents) continue;
 			out.push({
 				externalId: `${k}:${key.hash}`,
-				date: r.date,
+				date: r.date.slice(0, 10),
 				currency: "USD",
 				amountCents: cents,
 				service: r.model,
@@ -58,7 +59,7 @@ export function activityLines(
 		if (cents <= 0) continue;
 		out.push({
 			externalId: `${k}:none`,
-			date: r.date,
+			date: r.date.slice(0, 10),
 			currency: "USD",
 			amountCents: cents,
 			service: r.model,
