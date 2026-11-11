@@ -11,8 +11,8 @@ import {
 const BASE = "https://api.vercel.com";
 const headers = (c: Credentials) => ({ Authorization: `Bearer ${c.token}` });
 const DAY = 86_400_000;
-// 365 days fits the 1-year limit in leap years too.
-const YEAR = 365 * DAY;
+// The API wants a range "less than one year": exactly 365 days is refused.
+const YEAR = 364 * DAY;
 
 type Charge = {
 	BilledCost: number;

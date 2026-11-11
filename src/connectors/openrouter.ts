@@ -15,12 +15,14 @@ type Key = {
 
 // Sum usage per day and model. `usage` is OpenRouter credits in USD;
 // byok_usage_inference is billed by the user's own provider account, so it
-// stays out (that provider's connector counts it).
+// stays out (that provider's connector counts it). `date` comes as
+// "YYYY-MM-DD HH:MM:SS"; lines and FX lookups take the day only.
 const byDayModel = (rows: Row[]) => {
 	const m = new Map<string, Row>();
 	for (const r of rows) {
-		const k = `${r.date}:${r.model}`;
-		const s = m.get(k) ?? { date: r.date, model: r.model, usage: 0 };
+		const date = r.date.slice(0, 10);
+		const k = `${date}:${r.model}`;
+		const s = m.get(k) ?? { date, model: r.model, usage: 0 };
 		s.usage += r.usage;
 		m.set(k, s);
 	}
