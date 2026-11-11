@@ -72,7 +72,13 @@ export const vercel = register({
 	// https://vercel.com/docs/rest-api/reference/endpoints/billing/list-focus-billing-charges
 	async fetchCosts(c, range: SyncRange) {
 		const team = await teamId(c);
-		const end = Date.parse(`${range.to}T00:00:00Z`) + DAY;
+		// `to` is exclusive and day-granular. Stop at the start of the current
+		// UTC day rather than past it: today's partial day comes with the next
+		// sync, which rereads the last 3 days.
+		const end = Math.min(
+			Date.parse(`${range.to}T00:00:00Z`) + DAY,
+			Math.floor(Date.now() / DAY) * DAY,
+		);
 		let text = "";
 		for (
 			let start = Date.parse(`${range.from}T00:00:00Z`);
