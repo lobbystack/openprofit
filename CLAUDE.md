@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-OpenProfit: open-source finance for developers. Pulls revenue (Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway and more) from provider APIs, assigns them to products, shows profit per product, and turns the same lines into books and tax-form numbers. One TanStack Start app serves the landing page, docs, blog, marketing content and the app. Hosted at openprofit.dev (Dokploy on an OVH server, behind Cloudflare), self-hostable as one Docker image. Repo: github.com/morencyr/openprofit. Operator: Lobbystack Inc.
+OpenProfit: open-source finance for developers. Pulls revenue (Stripe, Polar, Paddle, Lemon Squeezy, RevenueCat) and costs (OpenAI, Anthropic, Vercel, Cloudflare, Railway and more) from provider APIs, assigns them to products, shows profit per product, and turns the same lines into books and tax-form numbers. One TanStack Start app serves the landing page, docs, blog, marketing content and the app. Hosted at openprofit.dev (Dokploy on an OVH server, behind Cloudflare), self-hostable as one Docker image. Repo: github.com/lobbystack/openprofit. Operator: Lobbystack Inc.
 
 ## Commands
 
@@ -103,6 +103,6 @@ Before editing files for a substantial task:
 
 ## Deploy
 
-Pull requests run `.github/workflows/check.yml`. A push to `main` runs `.github/workflows/docker.yml`: the same checks, then it publishes `ghcr.io/morencyr/openprofit:latest`, then calls the Dokploy deploy webhook (secret `DOKPLOY_DEPLOY_WEBHOOK`). A failed check stops the image and the deploy.
+Pull requests run `.github/workflows/check.yml`. A push to `main` runs `.github/workflows/docker.yml`: the same checks, then it publishes `ghcr.io/lobbystack/openprofit:latest`, then calls the Dokploy deploy webhook (secret `DOKPLOY_DEPLOY_WEBHOOK`). A failed check stops the image and the deploy.
 
 Production runs on Dokploy at deploy.lobbystack.com: project `OpenProfit`, application `web` (Docker source, that image, port 3000) and a `postgres` service (Postgres 18, reached over `dokploy-network`). Env vars live on the Dokploy application. The server's firewall admits ports 80 and 443 from Cloudflare only, so openprofit.dev's DNS is on Cloudflare (proxied, SSL mode Full). The domain is registered through Railway Domains (workspace level, not tied to a project), with its nameservers delegated to Cloudflare and the app reads the client's address from `CLIENT_IP_HEADER=cf-connecting-ip`. Records for mail (iCloud), Resend (`send`) and the PostHog proxy (`e`) stay DNS-only. Cloudflare may cache `.xml` responses, so give those an explicit `Cache-Control`.

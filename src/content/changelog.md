@@ -5,7 +5,7 @@ description: Every OpenProfit release, newest first, from Books and the tax repo
 
 # Changelog
 
-Every release, newest first. The full history is in the [commit log on GitHub](https://github.com/morencyr/openprofit/commits/main).
+Every release, newest first. The full history is in the [commit log on GitHub](https://github.com/lobbystack/openprofit/commits/main).
 
 ## October 19, 2026
 
